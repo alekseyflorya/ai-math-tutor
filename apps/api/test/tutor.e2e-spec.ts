@@ -11,7 +11,8 @@ import { Test } from '@nestjs/testing';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Pool } from 'pg';
 import request from 'supertest';
-import type { AttemptView, ProblemView, ProgressView } from '@tutor/shared';
+import type { App } from 'supertest/types';
+import type { ApiErrorBody, AttemptView, ProblemView, ProgressView, UserView } from '@tutor/shared';
 import { LLM_PROVIDER, type LlmProvider } from '../src/llm/llm.types';
 
 const DB_URL = process.env.DATABASE_URL_TEST ?? 'postgres://tutor:tutor@localhost:5433/tutor_test';
@@ -26,6 +27,7 @@ Object.assign(process.env, {
 
 describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
   let app: INestApplication;
+  let server: App;
   let agent: ReturnType<typeof request.agent>;
   let provider: LlmProvider;
 
@@ -43,7 +45,8 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     app = moduleRef.createNestApplication<NestExpressApplication>();
     configureApp(app as NestExpressApplication);
     await app.init();
-    agent = request.agent(app.getHttpServer());
+    server = app.getHttpServer() as App;
+    agent = request.agent(server);
     provider = app.get<LlmProvider>(LLM_PROVIDER);
   });
 
@@ -65,17 +68,13 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     (await agent.post(`/api/attempts/${attemptId}/hint`).send({}).expect(200)).body as AttemptView;
 
   it('rejects unauthenticated and non-JSON requests', async () => {
-    await request(app.getHttpServer()).get('/api/progress').expect(401);
-    await request(app.getHttpServer())
-      .post('/api/auth/demo')
-      .type('form')
-      .send('locale=en')
-      .expect(415);
+    await request(server).get('/api/progress').expect(401);
+    await request(server).post('/api/auth/demo').type('form').send('locale=en').expect(415);
   });
 
   it('creates an isolated demo student with seeded history', async () => {
     const res = await agent.post('/api/auth/demo').send({ locale: 'en' }).expect(200);
-    expect(res.body.isDemo).toBe(true);
+    expect((res.body as UserView).isDemo).toBe(true);
     expect(res.headers['set-cookie']?.[0]).toMatch(/tutor_session=.*HttpOnly/i);
     const progress = (await agent.get('/api/progress').expect(200)).body as ProgressView;
     expect(progress.totals.solved).toBe(4);
@@ -183,7 +182,7 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     await agent.post('/api/attempts').send({ equation: '2(x + 1) = 2x + 2' }).expect(400);
     const mine = (await agent.post('/api/attempts').send({ equation: 'x + 1 = 2' }).expect(201))
       .body as AttemptView;
-    const other = request.agent(app.getHttpServer());
+    const other = request.agent(server);
     await other.post('/api/auth/demo').send({}).expect(200);
     await other.get(`/api/attempts/${mine.id}`).expect(404);
   });
@@ -238,16 +237,16 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     const send = () => agent.post(`/api/attempts/${a.id}/messages`).send({ text: 'why?' });
     const [first, second] = await Promise.all([send(), send()]);
     expect([first.status, second.status].sort()).toEqual([200, 409]);
-    expect([first.body.code, second.body.code]).toContain('BUSY');
+    expect([first, second].map((r) => (r.body as ApiErrorBody).code)).toContain('BUSY');
 
     await say(a.id, 'x = 3');
     const closed = await agent.post(`/api/attempts/${a.id}/messages`).send({ text: 'x = 3' });
     expect(closed.status).toBe(409);
-    expect(closed.body.code).toBe('ATTEMPT_CLOSED');
+    expect((closed.body as ApiErrorBody).code).toBe('ATTEMPT_CLOSED');
   });
 
   it('registers, logs out and logs in with email and password', async () => {
-    const user = request.agent(app.getHttpServer());
+    const user = request.agent(server);
     const credentials = { email: 'Student@Example.com', password: 'correct-horse-1' };
     await user
       .post('/api/auth/register')
@@ -258,11 +257,11 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
       locale: 'uk',
     });
 
-    const duplicate = await request(app.getHttpServer())
+    const duplicate = await request(server)
       .post('/api/auth/register')
       .send({ ...credentials, name: 'Twin' })
       .expect(409);
-    expect(duplicate.body.code).toBe('EMAIL_TAKEN');
+    expect((duplicate.body as ApiErrorBody).code).toBe('EMAIL_TAKEN');
 
     await user.post('/api/auth/logout').send({}).expect(204);
     await user.get('/api/auth/me').expect(401);

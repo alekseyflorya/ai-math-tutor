@@ -22,7 +22,7 @@ export function LoginPage() {
 
   const onUser = (user: Awaited<ReturnType<typeof api.me>>) => {
     qc.setQueryData(['me'], user);
-    navigate('/learn', { replace: true });
+    void navigate('/learn', { replace: true });
   };
   const onError = (e: unknown) => setError(errorText(e, t));
 

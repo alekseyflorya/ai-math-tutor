@@ -244,8 +244,16 @@ const isVariableName = (name: string) => /^[a-z]$/.test(name);
 
 type FeatureFlags = { hasDistribution: boolean; hasFractionCoefficients: boolean };
 
+/** The node shapes the walker understands. Anything else falls to `default` and is rejected. */
+type KnownNode =
+  | { type: 'ConstantNode'; value: unknown }
+  | { type: 'SymbolNode'; name: string }
+  | { type: 'ParenthesisNode'; content: MathNode }
+  | { type: 'FunctionNode'; fn: { name?: unknown } | undefined; args: MathNode[] }
+  | { type: 'OperatorNode'; fn: string; op: string; args: MathNode[] };
+
 function toLinear(node: MathNode, vars: Set<string>, flags: FeatureFlags): Linear {
-  const n = node as MathNode & Record<string, any>;
+  const n = node as unknown as KnownNode;
   switch (n.type) {
     case 'ConstantNode': {
       if (typeof n.value !== 'number')
@@ -265,12 +273,12 @@ function toLinear(node: MathNode, vars: Set<string>, flags: FeatureFlags): Linea
       const fnName: unknown = n.fn?.name;
       if (typeof fnName === 'string' && isVariableName(fnName) && n.args.length === 1) {
         vars.add(fnName);
-        return multiply({ a: Fraction.ONE, b: Fraction.ZERO }, toLinear(n.args[0], vars, flags));
+        return multiply({ a: Fraction.ONE, b: Fraction.ZERO }, toLinear(n.args[0]!, vars, flags));
       }
       throw new MathInputError('UNSUPPORTED', 'Functions are not supported');
     }
     case 'OperatorNode': {
-      const args: MathNode[] = n.args;
+      const args = n.args;
       switch (n.fn) {
         case 'unaryPlus':
           return toLinear(args[0]!, vars, flags);

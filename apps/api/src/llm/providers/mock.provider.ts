@@ -10,7 +10,11 @@ export class MockProvider implements LlmProvider {
   readonly name = 'mock';
   readonly model = 'mock-1';
 
-  async completeJson(req: LlmJsonRequest<unknown>): Promise<string> {
+  completeJson(req: LlmJsonRequest<unknown>): Promise<string> {
+    return Promise.resolve(this.answer(req));
+  }
+
+  private answer(req: LlmJsonRequest<unknown>): string {
     const p = req.prompt;
     switch (req.purpose) {
       case 'diagnose': {

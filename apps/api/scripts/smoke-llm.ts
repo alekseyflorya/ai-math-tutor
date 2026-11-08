@@ -50,6 +50,7 @@ async function run<T>(req: LlmJsonRequest<T>): Promise<T> {
   } catch (e) {
     throw new Error(
       `[${req.purpose}] failed after ${Date.now() - started} ms: ${(e as Error).message}`,
+      { cause: e },
     );
   }
   const parsed = req.schema.parse(JSON.parse(raw));
@@ -117,7 +118,7 @@ async function main() {
   );
 }
 
-main().catch((e) => {
-  console.error('\nSmoke test failed:', e?.message ?? e);
+main().catch((e: unknown) => {
+  console.error('\nSmoke test failed:', e instanceof Error ? e.message : e);
   process.exit(1);
 });

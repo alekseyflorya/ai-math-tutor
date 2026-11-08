@@ -8,7 +8,7 @@ import { LlmUnavailableError, type LlmJsonRequest, type LlmProvider } from './ll
 function fakeDb(used = 0) {
   const logged: { ok: boolean; error: string | null }[] = [];
   const db = {
-    select: () => ({ from: () => ({ where: async () => [{ n: used }] }) }),
+    select: () => ({ from: () => ({ where: () => Promise.resolve([{ n: used }]) }) }),
     insert: () => ({
       values: (row: { ok: boolean; error: string | null }) => {
         logged.push(row);
@@ -30,7 +30,8 @@ const config = (overrides: Record<string, number> = {}) =>
       })[key],
   }) as unknown as AppConfig;
 
-function provider(...answers: (string | Error | 'hang')[]) {
+/** Each call takes the next answer: JSON text, an error to throw, or 'hang' (never answers). */
+function provider(...answers: (string | Error)[]) {
   const calls: { prompt: string; attempt: number }[] = [];
   const p: LlmProvider = {
     name: 'fake',

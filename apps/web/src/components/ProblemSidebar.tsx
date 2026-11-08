@@ -197,7 +197,7 @@ function CustomItem({ attempt, active }: { attempt: AttemptSummary; active: bool
     <li>
       <button
         type="button"
-        onClick={() => navigate(`/learn/${attempt.id}`)}
+        onClick={() => void navigate(`/learn/${attempt.id}`)}
         aria-current={active ? 'true' : undefined}
         className={`relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition ${
           active

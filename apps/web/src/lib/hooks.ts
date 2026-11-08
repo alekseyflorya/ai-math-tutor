@@ -23,7 +23,7 @@ export function useStartAttempt() {
     onSuccess: (attempt) => {
       qc.setQueryData(['attempt', attempt.id], attempt);
       void qc.invalidateQueries({ queryKey: ['attempts'] });
-      navigate(`/learn/${attempt.id}`);
+      void navigate(`/learn/${attempt.id}`);
     },
   });
 }

@@ -53,7 +53,7 @@ export class LlmService {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       const started = Date.now();
-      let errorText: string | null = null;
+      let errorText: string;
 
       try {
         const raw = await this.provider.completeJson(

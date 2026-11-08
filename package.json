@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "pnpm --filter @tutor/shared build && pnpm -r --parallel --filter @tutor/shared --filter @tutor/api --filter @tutor/web dev",
     "build": "pnpm -r build",
+    "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "format": "prettier --write .",
@@ -20,7 +21,12 @@
     "postinstall": "pnpm --filter @tutor/shared build"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
     "prettier": "^3.6.2",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.1"
   }
 }

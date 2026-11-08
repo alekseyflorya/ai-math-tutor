@@ -38,6 +38,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @tutor/shared build
       - run: pnpm typecheck
+      - run: pnpm lint
       - run: pnpm format:check
       - name: Tests (math engine unit tests + API e2e on Postgres with the mock LLM)
         run: pnpm test

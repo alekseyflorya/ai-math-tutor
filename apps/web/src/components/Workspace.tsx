@@ -63,7 +63,7 @@ export function Workspace({ attemptId }: { attemptId: string }) {
       <div className="min-w-0 space-y-4">
         <ProblemHeader attempt={attempt} />
         <Notebook attempt={attempt} />
-        {solved && <SolvedCard attempt={attempt} onNext={(id) => navigate(`/learn/${id}`)} />}
+        {solved && <SolvedCard attempt={attempt} onNext={(id) => void navigate(`/learn/${id}`)} />}
       </div>
 
       <div className="flex min-h-[26rem] flex-col rounded-2xl border border-line bg-surface shadow-sm xl:sticky xl:top-19 xl:h-[calc(100dvh-6.5rem)]">
