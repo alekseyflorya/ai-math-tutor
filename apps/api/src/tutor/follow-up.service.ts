@@ -88,7 +88,7 @@ export function validateFollowUp(
   if (eq.variable !== 'x') return 'the unknown must be x';
   const s = solve(eq);
   if (s.kind !== 'unique') return 'it must have exactly one solution';
-  if (!s.value.isInteger() || Math.abs(s.value.num) > 20)
+  if (!s.value.isInteger() || !s.value.fitsWithin(20))
     return 'the solution must be a whole number between -20 and 20';
   const norm = normalizeMathInput(equation).replace(/\s/g, '');
   if (avoid.some((a) => normalizeMathInput(a).replace(/\s/g, '') === norm))

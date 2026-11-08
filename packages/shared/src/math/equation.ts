@@ -1,5 +1,6 @@
 import { create, parseDependencies } from 'mathjs/number';
 import type { MathNode } from 'mathjs';
+import { MathInputError } from './errors';
 import { Fraction } from './fraction';
 
 /**
@@ -17,27 +18,7 @@ export const MAX_INPUT_LENGTH = 120;
 const MAX_NODES = 200;
 const MAX_POWER = 6;
 
-export type MathErrorCode =
-  | 'EMPTY'
-  | 'TOO_LONG'
-  | 'NOT_AN_EQUATION'
-  | 'MULTIPLE_EQUALS'
-  | 'SYNTAX'
-  | 'UNSUPPORTED'
-  | 'MULTIPLE_VARIABLES'
-  | 'WRONG_VARIABLE'
-  | 'NONLINEAR'
-  | 'DIVISION_BY_ZERO';
-
-export class MathInputError extends Error {
-  constructor(
-    readonly code: MathErrorCode,
-    message: string,
-  ) {
-    super(message);
-    this.name = 'MathInputError';
-  }
-}
+export { MathInputError, type MathErrorCode } from './errors';
 
 /** a·x + b */
 export interface Linear {
@@ -219,8 +200,10 @@ export function formatLinear(side: Linear, variable = 'x'): string {
   if (!side.b.isZero() || parts.length === 0) {
     if (parts.length === 0) parts.push(side.b.toString());
     else {
-      const sign = side.b.num < 0 ? '-' : '+';
-      parts.push(`${sign} ${side.b.num < 0 ? side.b.neg().toString() : side.b.toString()}`);
+      const negative = side.b.isNegative();
+      parts.push(
+        `${negative ? '-' : '+'} ${negative ? side.b.neg().toString() : side.b.toString()}`,
+      );
     }
   }
   return parts.join(' ');
@@ -267,11 +250,7 @@ function toLinear(node: MathNode, vars: Set<string>, flags: FeatureFlags): Linea
     case 'ConstantNode': {
       if (typeof n.value !== 'number')
         throw new MathInputError('UNSUPPORTED', 'Only numbers are allowed');
-      try {
-        return { a: Fraction.ZERO, b: Fraction.fromDecimal(n.value) };
-      } catch {
-        throw new MathInputError('UNSUPPORTED', 'Number is too large');
-      }
+      return { a: Fraction.ZERO, b: Fraction.fromDecimal(n.value) };
     }
     case 'SymbolNode': {
       if (!isVariableName(n.name))
@@ -326,10 +305,15 @@ function toLinear(node: MathNode, vars: Set<string>, flags: FeatureFlags): Linea
         case 'pow': {
           const base = toLinear(args[0]!, vars, flags);
           const exp = toLinear(args[1]!, vars, flags);
-          if (!exp.a.isZero() || !exp.b.isInteger() || exp.b.num < 0 || exp.b.num > MAX_POWER) {
+          if (
+            !exp.a.isZero() ||
+            !exp.b.isInteger() ||
+            exp.b.isNegative() ||
+            !exp.b.fitsWithin(MAX_POWER)
+          ) {
             throw new MathInputError('UNSUPPORTED', 'Only small whole-number powers are supported');
           }
-          const k = exp.b.num;
+          const k = Number(exp.b.num);
           if (k === 0) return { a: Fraction.ZERO, b: Fraction.ONE };
           if (k === 1) return base;
           if (!base.a.isZero())

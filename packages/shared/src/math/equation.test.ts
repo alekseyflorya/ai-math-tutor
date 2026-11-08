@@ -65,6 +65,23 @@ describe('parseEquation', () => {
     expect(code('x'.padEnd(200, '+1') + '=1')).toBe('TOO_LONG');
   });
 
+  it('stays exact with large numbers and rejects huge ones as input errors', () => {
+    // Intermediate products pass 2^53 before reduction: plain numbers gave a wrong answer here.
+    expect(solution('x/99999989 + x/99999971 = 1')).toBe('9999996000000319/199999960');
+    expect(solution('x = 9999999^3')).toBe('999999700000029999999');
+    const error = (s: string) => {
+      try {
+        parseEquation(s);
+        return 'ok';
+      } catch (e) {
+        return e instanceof MathInputError ? e.code : 'crash';
+      }
+    };
+    expect(error('x = 99999999^6')).toBe('TOO_LONG');
+    expect(error('x = 12345678901234567890')).toBe('TOO_LONG');
+    expect(error('x = 1e300')).toBe('TOO_LONG');
+  });
+
   it('detects the final answer form', () => {
     expect(isFinalForm(parseEquation('x = 7'))).toBe(true);
     expect(isFinalForm(parseEquation('7 = x'))).toBe(true);

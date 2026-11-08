@@ -1,36 +1,52 @@
+import { MathInputError } from './errors';
+
+/** Reduced numerators/denominators above this are rejected as "too large" input. */
+const MAX_MAGNITUDE = 10n ** 30n;
+
 /**
- * Minimal exact rational arithmetic. Floats would make "is this step equivalent?"
- * unreliable (0.1 + 0.2 !== 0.3), and the tutor must never mark a correct step wrong.
+ * Exact rational arithmetic on bigint. Floats would make "is this step equivalent?"
+ * unreliable (0.1 + 0.2 !== 0.3), and plain numbers silently lose precision once an
+ * intermediate product passes 2^53 — the tutor must never mark a correct step wrong.
  */
 export class Fraction {
-  readonly num: number;
-  readonly den: number;
+  readonly num: bigint;
+  readonly den: bigint;
 
-  constructor(num: number, den = 1) {
-    if (!Number.isInteger(num) || !Number.isInteger(den)) {
-      throw new Error('Fraction parts must be integers');
-    }
-    if (den === 0) throw new Error('Division by zero');
-    const sign = den < 0 ? -1 : 1;
-    const g = gcd(Math.abs(num), Math.abs(den)) || 1;
+  constructor(num: bigint, den: bigint = 1n) {
+    if (den === 0n) throw new MathInputError('DIVISION_BY_ZERO', 'Division by zero');
+    const sign = den < 0n ? -1n : 1n;
+    const g = gcd(abs(num), abs(den)) || 1n;
     this.num = (sign * num) / g;
-    this.den = Math.abs(den) / g;
-    if (!Number.isSafeInteger(this.num) || !Number.isSafeInteger(this.den)) {
-      throw new Error('Number too large');
+    this.den = abs(den) / g;
+    if (abs(this.num) > MAX_MAGNITUDE || this.den > MAX_MAGNITUDE) {
+      throw new MathInputError('TOO_LONG', 'Number is too large');
     }
   }
 
-  static readonly ZERO = new Fraction(0);
-  static readonly ONE = new Fraction(1);
+  static readonly ZERO = new Fraction(0n);
+  static readonly ONE = new Fraction(1n);
 
-  /** Exact conversion of a finite decimal literal such as 2.5 or 0.125. */
+  static fromInteger(value: number): Fraction {
+    if (!Number.isSafeInteger(value)) throw new MathInputError('TOO_LONG', 'Number is too large');
+    return new Fraction(BigInt(value));
+  }
+
+  /**
+   * Exact conversion of a finite decimal literal such as 2.5 or 0.125. The parser hands us a
+   * JS number, so anything that is not exactly representable (more than ~15 significant
+   * digits, exponent notation) is rejected instead of being silently rounded.
+   */
   static fromDecimal(value: number): Fraction {
-    if (!Number.isFinite(value)) throw new Error('Invalid number');
     const text = String(value);
-    if (/e/i.test(text)) throw new Error('Number too large');
-    const [intPart, fracPart = ''] = text.split('.');
-    const den = 10 ** fracPart.length;
-    return new Fraction(Number(`${intPart}${fracPart}`.replace(/^(-?)0+(?=\d)/, '$1')), den);
+    if (!Number.isFinite(value) || /e/i.test(text)) {
+      throw new MathInputError('TOO_LONG', 'Number is too large');
+    }
+    const [intPart = '0', fracPart = ''] = text.split('.');
+    const digits = `${intPart}${fracPart}`;
+    if (!Number.isSafeInteger(Number(digits))) {
+      throw new MathInputError('TOO_LONG', 'Number is too large');
+    }
+    return new Fraction(BigInt(digits), 10n ** BigInt(fracPart.length));
   }
 
   add(o: Fraction) {
@@ -43,35 +59,46 @@ export class Fraction {
     return new Fraction(this.num * o.num, this.den * o.den);
   }
   div(o: Fraction) {
-    if (o.num === 0) throw new Error('Division by zero');
+    if (o.num === 0n) throw new MathInputError('DIVISION_BY_ZERO', 'Division by zero');
     return new Fraction(this.num * o.den, this.den * o.num);
   }
   neg() {
     return new Fraction(-this.num, this.den);
   }
   isZero() {
-    return this.num === 0;
+    return this.num === 0n;
+  }
+  isNegative() {
+    return this.num < 0n;
   }
   isInteger() {
-    return this.den === 1;
+    return this.den === 1n;
   }
   equals(o: Fraction) {
     return this.num === o.num && this.den === o.den;
   }
+  /** |this| ≤ limit */
+  fitsWithin(limit: number) {
+    return abs(this.num) <= BigInt(limit) * this.den;
+  }
   toNumber() {
-    return this.num / this.den;
+    return Number(this.num) / Number(this.den);
   }
   toString() {
-    return this.den === 1 ? String(this.num) : `${this.num}/${this.den}`;
+    return this.den === 1n ? String(this.num) : `${this.num}/${this.den}`;
   }
   toLatex() {
-    if (this.den === 1) return String(this.num);
-    const sign = this.num < 0 ? '-' : '';
-    return `${sign}\\frac{${Math.abs(this.num)}}{${this.den}}`;
+    if (this.den === 1n) return String(this.num);
+    const sign = this.num < 0n ? '-' : '';
+    return `${sign}\\frac{${abs(this.num)}}{${this.den}}`;
   }
 }
 
-function gcd(a: number, b: number): number {
+function abs(n: bigint): bigint {
+  return n < 0n ? -n : n;
+}
+
+function gcd(a: bigint, b: bigint): bigint {
   while (b) [a, b] = [b, a % b];
   return a;
 }
