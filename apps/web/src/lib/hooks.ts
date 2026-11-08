@@ -5,6 +5,9 @@ import { api } from './api';
 
 export const useProblems = () => useQuery({ queryKey: ['problems'], queryFn: api.problems });
 
+export const useCustomAttempts = () =>
+  useQuery({ queryKey: ['attempts', 'custom'], queryFn: api.customAttempts });
+
 export const useAttempt = (id: string) =>
   useQuery({ queryKey: ['attempt', id], queryFn: () => api.attempt(id) });
 
@@ -13,10 +16,13 @@ export function useStartAttempt() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   return useMutation({
-    mutationFn: (arg: { problemId: string } | { equation: string }) =>
-      'problemId' in arg ? api.startProblem(arg.problemId) : api.startCustom(arg.equation),
+    mutationFn: (arg: { problemId: string; restart?: boolean } | { equation: string }) =>
+      'problemId' in arg
+        ? api.startProblem(arg.problemId, arg.restart)
+        : api.startCustom(arg.equation),
     onSuccess: (attempt) => {
       qc.setQueryData(['attempt', attempt.id], attempt);
+      void qc.invalidateQueries({ queryKey: ['attempts'] });
       navigate(`/learn/${attempt.id}`);
     },
   });
@@ -29,6 +35,7 @@ export function useAttemptUpdate(id: string) {
     qc.setQueryData(['attempt', id], attempt);
     if (attempt.status === 'SOLVED') {
       void qc.invalidateQueries({ queryKey: ['problems'] });
+      void qc.invalidateQueries({ queryKey: ['attempts'] });
     }
     void qc.invalidateQueries({ queryKey: ['progress'] });
   };

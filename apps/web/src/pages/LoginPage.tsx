@@ -4,6 +4,7 @@ import { ArrowRight, CheckCheck, MessageCircleQuestion, Repeat2 } from 'lucide-r
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { LanguageToggle } from '../components/LanguageToggle';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { Logo } from '../components/Logo';
 import { Tex } from '../components/MathText';
 import { useI18n } from '../i18n/i18n';
@@ -57,7 +58,10 @@ export function LoginPage() {
     <div className="graph-paper min-h-dvh">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
         <Logo />
-        <LanguageToggle />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <LanguageToggle />
+        </div>
       </header>
 
       <main className="mx-auto grid max-w-6xl items-center gap-10 px-5 pb-16 pt-4 lg:grid-cols-[1.15fr_1fr] lg:pt-12">
@@ -112,7 +116,7 @@ export function LoginPage() {
               demo.mutate();
             }}
             disabled={demo.isPending}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-pen px-4 py-3.5 text-base font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-pen px-4 py-3.5 text-base font-bold text-paper transition hover:brightness-110 disabled:opacity-60"
           >
             {t.tryDemo} <ArrowRight size={18} aria-hidden />
           </button>

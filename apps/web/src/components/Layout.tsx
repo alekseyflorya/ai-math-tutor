@@ -4,6 +4,7 @@ import { NavLink, Outlet } from 'react-router';
 import { useI18n } from '../i18n/i18n';
 import { useLogout } from '../lib/auth';
 import { LanguageToggle } from './LanguageToggle';
+import { ThemeToggle } from './ThemeToggle';
 import { Logo } from './Logo';
 
 export function Layout({ user }: { user: UserView }) {
@@ -29,6 +30,7 @@ export function Layout({ user }: { user: UserView }) {
             </NavLink>
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <LanguageToggle />
             <span
               className="hidden max-w-40 truncate text-sm text-muted md:inline"

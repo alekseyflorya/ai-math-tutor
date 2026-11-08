@@ -18,10 +18,10 @@ export function WelcomePanel() {
           type="button"
           onClick={() => start.mutate({ problemId: featured.id })}
           disabled={start.isPending}
-          className="mt-8 inline-flex w-fit items-center gap-3 rounded-lg bg-pen px-5 py-3 font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+          className="mt-8 inline-flex w-fit items-center gap-3 rounded-lg bg-pen px-5 py-3 font-bold text-paper transition hover:brightness-110 disabled:opacity-60"
         >
           {t.startScenario}
-          <span className="rounded bg-white/15 px-2 py-0.5">
+          <span className="rounded bg-paper/15 px-2 py-0.5">
             <Tex tex={featured.latex} />
           </span>
           <ArrowRight size={18} aria-hidden />

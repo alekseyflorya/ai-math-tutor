@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { ERROR_LABELS, SKILL_LABELS } from '../i18n/dict';
 import { useI18n } from '../i18n/i18n';
 import { api } from '../lib/api';
+import { MathText } from '../components/MathText';
 
 export function ProgressPage() {
   const { t, locale } = useI18n();
@@ -117,7 +118,9 @@ export function ProgressPage() {
                         {m.stepInput}
                       </code>
                     </p>
-                    <p className="text-sm text-muted">{m.description}</p>
+                    <p className="text-sm text-muted">
+                      <MathText text={m.description} />
+                    </p>
                   </div>
                 </li>
               ))}

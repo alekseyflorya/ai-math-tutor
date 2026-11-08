@@ -58,8 +58,10 @@ export const api = {
 
   problems: () => request<ProblemView[]>('GET', '/problems'),
   attempts: () => request<AttemptSummary[]>('GET', '/attempts'),
+  customAttempts: () => request<AttemptSummary[]>('GET', '/attempts?kind=custom'),
   attempt: (id: string) => request<AttemptView>('GET', `/attempts/${id}`),
-  startProblem: (problemId: string) => request<AttemptView>('POST', '/attempts', { problemId }),
+  startProblem: (problemId: string, restart = false) =>
+    request<AttemptView>('POST', '/attempts', { problemId, restart }),
   startCustom: (equation: string) => request<AttemptView>('POST', '/attempts', { equation }),
   send: (id: string, text: string) =>
     request<AttemptView>('POST', `/attempts/${id}/messages`, { text }),

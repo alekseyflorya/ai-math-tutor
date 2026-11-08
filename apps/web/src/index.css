@@ -92,6 +92,22 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Tailwind 4 resets buttons to cursor: default; restore the pointer for everything clickable. */
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  [role='tab'],
+  select,
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+}
+
 /* Squared exercise-book paper with a red margin line. */
 .notebook {
   background-color: var(--surface);

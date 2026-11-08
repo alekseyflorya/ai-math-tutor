@@ -9,6 +9,8 @@ interface Props {
   variable: string;
   onSend: (text: string) => void;
   onHint: () => void;
+  /** Last verified line, shown above the input on phones where the notebook scrolls away. */
+  currentLatex: string;
 }
 
 /**
@@ -16,7 +18,7 @@ interface Props {
  * uses (from @tutor/shared) shows live whether this will be checked as a step,
  * and the same parser renders a preview, so what you see is what gets checked.
  */
-export function Composer({ busy, variable, onSend, onHint }: Props) {
+export function Composer({ busy, variable, onSend, onHint, currentLatex }: Props) {
   const { t } = useI18n();
   const [text, setText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -80,6 +82,12 @@ export function Composer({ busy, variable, onSend, onHint }: Props) {
               <span className="text-xs text-muted">…</span>
             )}
           </>
+        )}
+        {!preview && (
+          <span className="flex min-w-0 items-center gap-2 text-xs text-muted xl:hidden">
+            <span className="shrink-0">{t.lastLine}:</span>
+            <Tex tex={currentLatex} className="truncate text-sm text-ink" />
+          </span>
         )}
         {preview?.kind === 'message' && (
           <span className="rounded bg-paper-2 px-1.5 py-0.5 text-xs font-bold text-muted">

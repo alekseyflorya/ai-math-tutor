@@ -1,5 +1,5 @@
 import { parseEquation, type MessageView } from '@tutor/shared';
-import { ArrowRight, Lightbulb } from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useI18n } from '../i18n/i18n';
 import { MathText, Tex } from './MathText';
@@ -8,10 +8,9 @@ interface Props {
   messages: MessageView[];
   pending: MessageView | null;
   thinking: boolean;
-  onOpenAttempt: (id: string) => void;
 }
 
-export function Chat({ messages, pending, thinking, onOpenAttempt }: Props) {
+export function Chat({ messages, pending, thinking }: Props) {
   const { t } = useI18n();
   const endRef = useRef<HTMLDivElement>(null);
   const all = useMemo(() => (pending ? [...messages, pending] : messages), [messages, pending]);
@@ -22,7 +21,7 @@ export function Chat({ messages, pending, thinking, onOpenAttempt }: Props) {
 
   return (
     <div
-      className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
+      className="flex-1 space-y-3 px-4 py-4 xl:overflow-y-auto"
       role="log"
       aria-live="polite"
       aria-label={t.tutor}
@@ -31,7 +30,7 @@ export function Chat({ messages, pending, thinking, onOpenAttempt }: Props) {
         m.role === 'STUDENT' ? (
           <StudentBubble key={m.id} m={m} />
         ) : (
-          <TutorBubble key={m.id} m={m} onOpenAttempt={onOpenAttempt} />
+          <TutorBubble key={m.id} m={m} />
         ),
       )}
       {thinking && (
@@ -48,7 +47,8 @@ export function Chat({ messages, pending, thinking, onOpenAttempt }: Props) {
           {t.thinking}
         </div>
       )}
-      <div ref={endRef} />
+      {/* scroll margin keeps the last message above the pinned input on phones */}
+      <div ref={endRef} className="scroll-mb-52 xl:scroll-mb-0" />
     </div>
   );
 }
@@ -75,16 +75,9 @@ function StudentBubble({ m }: { m: MessageView }) {
   );
 }
 
-function TutorBubble({
-  m,
-  onOpenAttempt,
-}: {
-  m: MessageView;
-  onOpenAttempt: (id: string) => void;
-}) {
+function TutorBubble({ m }: { m: MessageView }) {
   const { t } = useI18n();
   const hintLevel = typeof m.meta?.hintLevel === 'number' ? m.meta.hintLevel : null;
-  const nextId = typeof m.meta?.nextAttemptId === 'string' ? m.meta.nextAttemptId : null;
 
   const tone =
     m.kind === 'HINT' || m.kind === 'EXPLANATION'
@@ -110,15 +103,6 @@ function TutorBubble({
           </span>
         )}
         <MathText text={m.content} />
-        {nextId && (
-          <button
-            type="button"
-            onClick={() => onOpenAttempt(nextId)}
-            className="mt-2.5 flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-sm font-bold text-paper transition hover:brightness-110"
-          >
-            {t.startFollowUp} <ArrowRight size={15} aria-hidden />
-          </button>
-        )}
       </div>
     </div>
   );
