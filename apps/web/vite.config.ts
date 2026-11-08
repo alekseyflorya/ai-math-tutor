@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
@@ -9,6 +10,11 @@ export default defineConfig({
     // Same-origin in dev too: the browser talks to Vite, Vite forwards /api to Nest.
     // This keeps the session cookie first-party and avoids CORS entirely.
     proxy: { '/api': `http://localhost:${process.env.API_PORT ?? 3100}` },
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['src/test/setup.ts'],
+    restoreMocks: true,
   },
   build: {
     sourcemap: false,
