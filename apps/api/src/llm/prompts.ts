@@ -58,7 +58,7 @@ export interface TutorContext {
     stepInput: string;
     previousLine: string;
   } | null;
-  recentDialogue: { role: string; content: string }[];
+  recentDialogue: { role: 'Student' | 'Tutor'; content: string }[];
   isFollowUp: boolean;
   /** Mistakes from the student's EARLIER problems, by category. */
   history: StudentHistory;
@@ -83,15 +83,19 @@ export function historyLine(h: StudentHistory): string {
 
 export function contextBlock(ctx: TutorContext): string {
   const steps = ctx.steps.length
-    ? ctx.steps.map((s, i) => `  ${i + 1}. ${s.isCorrect ? '✓' : '✗'} ${s.input}`).join('\n')
+    ? ctx.steps
+        .map((s, i) => `  ${i + 1}. ${s.isCorrect ? '✓' : '✗'} ${studentInput(s.input)}`)
+        .join('\n')
     : '  (none yet)';
   const mistake = ctx.activeMistake
     ? `Mistake being worked on: ${ctx.activeMistake.errorType} — ${ctx.activeMistake.description}\n` +
-      `  The wrong step was "${ctx.activeMistake.stepInput}" written after "${ctx.activeMistake.previousLine}".\n` +
+      `  The wrong step was ${studentInput(ctx.activeMistake.stepInput)} written after "${ctx.activeMistake.previousLine}".\n` +
       `  Current hint level: ${ctx.hintLevel} of 3.`
     : 'No open mistake.';
   const dialogue = ctx.recentDialogue.length
-    ? ctx.recentDialogue.map((m) => `  ${m.role}: ${m.content}`).join('\n')
+    ? ctx.recentDialogue
+        .map((m) => `  ${m.role}: ${m.role === 'Student' ? studentInput(m.content) : m.content}`)
+        .join('\n')
     : '  (empty)';
   return `<context>
 Problem: ${ctx.problem}${ctx.isFollowUp ? ' (follow-up practice problem to verify understanding)' : ''}
@@ -105,8 +109,13 @@ ${dialogue}
 </context>`;
 }
 
+/**
+ * Everything the student typed (steps, questions, dialogue) goes through here. Our own
+ * delimiters are stripped first, so input can't "close" the data block and pose as instructions.
+ * Lines already accepted by the math engine (problem, current line) can only contain math
+ * tokens and are inserted as is.
+ */
 export function studentInput(text: string): string {
-  // Strip anything that looks like our own delimiters so input can't "close" the data block.
   const clean = text.replace(/<\/?\s*(student_input|context)[^>]*>/gi, '');
   return `<student_input>${clean}</student_input>`;
 }

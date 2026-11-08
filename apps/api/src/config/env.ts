@@ -19,7 +19,10 @@ export const EnvSchema = z
     GEMINI_MODEL: z.string().default('gemini-3.5-flash,gemini-3.5-flash-lite'),
     ANTHROPIC_API_KEY: z.string().optional(),
     ANTHROPIC_MODEL: z.string().default('claude-haiku-5-5'),
+    /** One model call (one try). */
     LLM_TIMEOUT_MS: z.coerce.number().int().min(1000).default(15000),
+    /** All model calls of one student turn together (retries, follow-up, celebration). */
+    LLM_TURN_BUDGET_MS: z.coerce.number().int().min(5000).default(25000),
 
     /** Protects the LLM budget/quota on a public demo. */
     LLM_DAILY_LIMIT_PER_USER: z.coerce.number().int().min(1).default(150),
@@ -38,6 +41,15 @@ export const EnvSchema = z
         code: 'custom',
         path: ['ANTHROPIC_API_KEY'],
         message: 'Required when LLM_PROVIDER=anthropic',
+      });
+    }
+    if (env.NODE_ENV === 'production' && /change-me/i.test(env.JWT_SECRET)) {
+      // The .env.example placeholder is long enough to pass the length check; anyone who
+      // knows it could forge a session for any user.
+      ctx.addIssue({
+        code: 'custom',
+        path: ['JWT_SECRET'],
+        message: 'replace the .env.example placeholder (e.g. openssl rand -base64 48)',
       });
     }
     if (env.LLM_PROVIDER === 'mock' && env.NODE_ENV === 'production') {
