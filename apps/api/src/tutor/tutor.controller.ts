@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import {
   StartAttemptSchema,
@@ -16,8 +16,8 @@ export class TutorController {
   constructor(private readonly tutor: TutorService) {}
 
   @Get()
-  list(@CurrentUser() user: AuthUser) {
-    return this.tutor.listRecent(user.id);
+  list(@CurrentUser() user: AuthUser, @Query('kind') kind?: string) {
+    return this.tutor.listRecent(user.id, kind === 'custom' ? 'custom' : undefined);
   }
 
   @Post()

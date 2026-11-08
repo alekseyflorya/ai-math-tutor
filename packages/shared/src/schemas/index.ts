@@ -77,6 +77,8 @@ export const StartAttemptSchema = z
   .object({
     problemId: z.string().min(1).max(64).optional(),
     equation: z.string().trim().min(3).max(120).optional(),
+    /** Start a fresh attempt even if this problem was already solved (otherwise the solved one opens). */
+    restart: z.boolean().optional(),
   })
   .refine((v) => Boolean(v.problemId) !== Boolean(v.equation), {
     message: 'Provide either problemId or equation',
@@ -139,6 +141,14 @@ export interface AttemptView {
   steps: StepView[];
   messages: MessageView[];
   nextAttemptId: string | null;
+  /** Status of that practice problem, so the original attempt can show "lesson consolidated". */
+  nextAttemptStatus: AttemptStatus | null;
+  /** For a practice problem: the attempt whose mistake it targets. */
+  parentAttemptId: string | null;
+  /** The targeted mistake was not repeated on the practice problem (understanding verified). */
+  understandingVerified: boolean;
+  /** Curriculum problem this attempt belongs to (null for custom equations and follow-ups). */
+  problemId: string | null;
 }
 
 export interface ProblemView {

@@ -5,12 +5,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, desc, eq, notInArray } from 'drizzle-orm';
+import { and, asc, count, desc, eq, isNull, ne, notInArray, sql } from 'drizzle-orm';
 import {
   checkStep,
   classifyInput,
   ERROR_TO_SKILL,
   MathInputError,
+  normalizeMathInput,
   parseEquation,
   solve,
   type AttemptView,
@@ -101,16 +102,35 @@ export class TutorService {
         .where(eq(messages.attemptId, attemptId))
         .orderBy(asc(messages.seq)),
       this.db
-        .select({ id: attempts.id })
+        .select({
+          id: attempts.id,
+          status: attempts.status,
+          sourceMistakeId: attempts.sourceMistakeId,
+        })
         .from(attempts)
         .where(eq(attempts.parentAttemptId, attemptId))
         .orderBy(desc(attempts.createdAt))
         .limit(1),
     ]);
-    return toAttemptView(attempt, stepRows, messageRows, next?.id ?? null);
+    // The same mistake row links the original attempt and its practice problem.
+    const mistakeId = attempt.sourceMistakeId ?? next?.sourceMistakeId ?? null;
+    const [mistake] = mistakeId
+      ? await this.db
+          .select({ verified: mistakes.verified })
+          .from(mistakes)
+          .where(eq(mistakes.id, mistakeId))
+      : [];
+    return toAttemptView(
+      attempt,
+      stepRows,
+      messageRows,
+      next ? { id: next.id, status: next.status } : null,
+      Boolean(mistake?.verified),
+    );
   }
 
-  async listRecent(userId: string) {
+  /** kind = 'custom': only the student's own equations (no curriculum problems, no practice problems). */
+  async listRecent(userId: string, kind?: 'custom') {
     const rows = await this.db
       .select({
         id: attempts.id,
@@ -121,7 +141,15 @@ export class TutorService {
         updatedAt: attempts.updatedAt,
       })
       .from(attempts)
-      .where(eq(attempts.userId, userId))
+      .where(
+        kind === 'custom'
+          ? and(
+              eq(attempts.userId, userId),
+              isNull(attempts.problemId),
+              isNull(attempts.parentAttemptId),
+            )
+          : eq(attempts.userId, userId),
+      )
       .orderBy(desc(attempts.updatedAt))
       .limit(20);
     return rows.map(({ parentAttemptId, updatedAt, ...r }) => ({
@@ -155,12 +183,44 @@ export class TutorService {
         .orderBy(desc(attempts.updatedAt))
         .limit(1);
       if (open) return this.getView(userId, open.id);
+      // Clicking a solved problem shows the solution; "Solve again" sends restart: true.
+      if (!input.restart) {
+        const [solved] = await this.db
+          .select({ id: attempts.id })
+          .from(attempts)
+          .where(
+            and(
+              eq(attempts.userId, userId),
+              eq(attempts.problemId, problem.id),
+              eq(attempts.status, 'SOLVED'),
+            ),
+          )
+          .orderBy(desc(attempts.solvedAt))
+          .limit(1);
+        if (solved) return this.getView(userId, solved.id);
+      }
       equation = problem.equation;
       title = locale === 'uk' ? problem.titleUk : problem.title;
       problemId = problem.id;
     } else {
       equation = input.equation!;
       title = notices.customTitle(locale);
+      // Same equation typed again while it's still open → resume it instead of duplicating.
+      const [open] = await this.db
+        .select({ id: attempts.id, equation: attempts.equation })
+        .from(attempts)
+        .where(
+          and(
+            eq(attempts.userId, userId),
+            isNull(attempts.problemId),
+            isNull(attempts.parentAttemptId),
+            eq(attempts.status, 'IN_PROGRESS'),
+          ),
+        )
+        .orderBy(desc(attempts.updatedAt))
+        .limit(20)
+        .then((rows) => rows.filter((r) => sameText(r.equation, equation)));
+      if (open) return this.getView(userId, open.id);
     }
 
     let latex: string;
@@ -386,6 +446,9 @@ export class TutorService {
         ? `${attempt.variable} = ${check.currentSolution.value.toLatex()}`
         : '';
 
+    // Build the follow-up first so the celebration can point at the real problem.
+    const followUp = target ? await this.createFollowUp(turn, target) : null;
+
     const ctx = await this.context(turn);
     try {
       const out = await this.llm.generate(
@@ -395,7 +458,8 @@ export class TutorService {
           prompt: celebratePrompt(
             ctx,
             solution,
-            target ? fixed.map((m) => `${m.errorType}: ${m.description}`) : [],
+            fixed.map((m) => `${m.errorType}: ${m.description}`),
+            followUp?.latex ?? null,
           ),
           schema: FeedbackSchema,
         },
@@ -408,7 +472,20 @@ export class TutorService {
       });
     }
 
-    if (target) await this.createFollowUp(turn, target);
+    if (followUp && target) {
+      await this.say(
+        attempt.id,
+        'TUTOR',
+        'FOLLOW_UP',
+        notices.followUpReady(locale, followUp.latex, followUp.title),
+        {
+          nextAttemptId: followUp.id,
+          equation: followUp.equation,
+          errorType: target.errorType,
+          source: followUp.source,
+        },
+      );
+    }
   }
 
   private async handleChat(turn: Turn, text: string) {
@@ -477,12 +554,13 @@ export class TutorService {
       })
       .returning();
     await this.say(child!.id, 'TUTOR', 'GREETING', notices.greeting(locale, parsed.latex, true));
-    await this.say(parent.id, 'TUTOR', 'FOLLOW_UP', notices.followUpReady(locale, parsed.latex), {
-      nextAttemptId: child!.id,
+    return {
+      id: child!.id,
       equation: problem.equation,
-      errorType: mistake.errorType,
+      latex: parsed.latex,
+      title: child!.title,
       source: problem.source,
-    });
+    };
   }
 
   private async recordMistake(
@@ -541,6 +619,29 @@ export class TutorService {
       )
       .orderBy(desc(messages.seq))
       .limit(8);
+    // Short profile of EARLIER work so explanations can connect to recurring patterns.
+    const [pastMistakes, [solved]] = await Promise.all([
+      this.db
+        .select({
+          errorType: mistakes.errorType,
+          total: count(),
+          verified: sql<number>`count(*) filter (where ${mistakes.verified})`.mapWith(Number),
+        })
+        .from(mistakes)
+        .where(and(eq(mistakes.userId, attempt.userId), ne(mistakes.attemptId, attempt.id)))
+        .groupBy(mistakes.errorType)
+        .orderBy(desc(count())),
+      this.db
+        .select({ n: count() })
+        .from(attempts)
+        .where(
+          and(
+            eq(attempts.userId, attempt.userId),
+            eq(attempts.status, 'SOLVED'),
+            ne(attempts.id, attempt.id),
+          ),
+        ),
+    ]);
     return {
       locale: turn.locale,
       problem: attempt.equation,
@@ -561,6 +662,10 @@ export class TutorService {
         content: m.content.slice(0, 400),
       })),
       isFollowUp: Boolean(attempt.targetErrorType),
+      history: {
+        solvedProblems: solved?.n ?? 0,
+        mistakes: pastMistakes.filter((m) => m.errorType !== 'OTHER'),
+      },
       ...override,
     };
   }
@@ -662,3 +767,6 @@ export class TutorService {
     }
   }
 }
+
+const sameText = (a: string, b: string) =>
+  normalizeMathInput(a).replace(/\s/g, '') === normalizeMathInput(b).replace(/\s/g, '');

@@ -4,7 +4,7 @@
  * machine: step checking, diagnosis, hint escalation, mistake tracking,
  * follow-up generation + validation, and progress.
  *
- *   DATABASE_URL_TEST=postgres://tutor:tutor@localhost:5432/tutor_test pnpm --filter @tutor/api test
+ *   DATABASE_URL_TEST=postgres://tutor:tutor@localhost:5433/tutor_test pnpm --filter @tutor/api test
  */
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -13,7 +13,7 @@ import { Pool } from 'pg';
 import request from 'supertest';
 import type { AttemptView, ProblemView, ProgressView } from '@tutor/shared';
 
-const DB_URL = process.env.DATABASE_URL_TEST ?? 'postgres://tutor:tutor@localhost:5432/tutor_test';
+const DB_URL = process.env.DATABASE_URL_TEST ?? 'postgres://tutor:tutor@localhost:5433/tutor_test';
 
 Object.assign(process.env, {
   NODE_ENV: 'test',
@@ -108,6 +108,17 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     expect(followUpMsg.meta).toMatchObject({ errorType: 'DISTRIBUTION', source: 'llm' });
     expect(a.nextAttemptId).toBeTruthy();
 
+    // Re-opening a solved problem shows the solution; "Solve again" starts a fresh attempt.
+    const reopened = (
+      await agent.post('/api/attempts').send({ problemId: featured.id }).expect(201)
+    ).body as AttemptView;
+    expect(reopened.id).toBe(a.id);
+    const fresh = (
+      await agent.post('/api/attempts').send({ problemId: featured.id, restart: true }).expect(201)
+    ).body as AttemptView;
+    expect(fresh.id).not.toBe(a.id);
+    expect(fresh.status).toBe('IN_PROGRESS');
+
     // 5. Follow-up targets the same skill and was validated by the math engine.
     let f = (await agent.get(`/api/attempts/${a.nextAttemptId}`).expect(200)).body as AttemptView;
     expect(f.isFollowUp).toBe(true);
@@ -118,6 +129,12 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     f = await say(f.id, '2x = 14');
     f = await say(f.id, 'x = 7');
     expect(f.status).toBe('SOLVED');
+
+    expect(f.understandingVerified).toBe(true);
+    expect(f.parentAttemptId).toBe(a.id);
+    const original = (await agent.get(`/api/attempts/${a.id}`).expect(200)).body as AttemptView;
+    expect(original.nextAttemptStatus).toBe('SOLVED');
+    expect(original.understandingVerified).toBe(true);
 
     // 6. Progress: the distribution mistake is corrected AND verified.
     const progress = (await agent.get('/api/progress').expect(200)).body as ProgressView;
@@ -132,6 +149,18 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     const after = await say(a.id, '2x + = 11');
     expect(lastTutor(after)).toMatchObject({ kind: 'NOTICE', meta: { inputError: 'SYNTAX' } });
     expect(after.steps).toHaveLength(0);
+  });
+
+  it('lists the student’s own equations and resumes an open one instead of duplicating it', async () => {
+    const first = (await agent.post('/api/attempts').send({ equation: '4x - 3 = 9' }).expect(201))
+      .body as AttemptView;
+    const again = (await agent.post('/api/attempts').send({ equation: '4x-3=9' }).expect(201))
+      .body as AttemptView;
+    expect(again.id).toBe(first.id);
+    const own = (await agent.get('/api/attempts?kind=custom').expect(200)).body as { id: string }[];
+    expect(own.map((a) => a.id)).toContain(first.id);
+    const all = (await agent.get('/api/attempts').expect(200)).body as { id: string }[];
+    expect(own.length).toBeLessThan(all.length); // curriculum and practice attempts are excluded
   });
 
   it('rejects equations without a unique solution and other users’ attempts', async () => {

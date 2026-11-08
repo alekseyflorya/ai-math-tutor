@@ -91,11 +91,11 @@ export const notices = {
   solvedNoAi: (locale: Locale, solution: string) =>
     t({ en: `Solved: $${solution}$ ✓`, uk: `Розв'язано: $${solution}$ ✓` }, locale),
 
-  followUpReady: (locale: Locale, latex: string) =>
+  followUpReady: (locale: Locale, latex: string, title: string) =>
     t(
       {
-        en: `Your follow-up problem is ready: $${latex}$`,
-        uk: `Задача для перевірки готова: $${latex}$`,
+        en: `${title}. A similar problem to check the lesson stuck: $${latex}$`,
+        uk: `${title}. Схожа задача, щоб перевірити, що урок засвоєно: $${latex}$`,
       },
       locale,
     ),
@@ -111,7 +111,7 @@ export const notices = {
       OTHER: { en: 'practice', uk: 'практика' },
     };
     return t(
-      { en: `Follow-up: ${names[errorType].en}`, uk: `Перевірка: ${names[errorType].uk}` },
+      { en: `Practice: ${names[errorType].en}`, uk: `Закріплення: ${names[errorType].uk}` },
       locale,
     );
   },

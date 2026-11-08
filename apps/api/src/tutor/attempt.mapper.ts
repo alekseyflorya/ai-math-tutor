@@ -13,7 +13,8 @@ export function toAttemptView(
   a: Attempt,
   steps: Step[],
   messages: Message[],
-  nextAttemptId: string | null,
+  next: { id: string; status: Attempt['status'] } | null,
+  understandingVerified: boolean,
 ): AttemptView {
   return {
     id: a.id,
@@ -43,6 +44,10 @@ export function toAttemptView(
       createdAt: m.createdAt.toISOString(),
       meta: m.meta ?? null,
     })),
-    nextAttemptId,
+    nextAttemptId: next?.id ?? null,
+    nextAttemptStatus: next?.status ?? null,
+    parentAttemptId: a.parentAttemptId ?? null,
+    understandingVerified,
+    problemId: a.problemId ?? null,
   };
 }
