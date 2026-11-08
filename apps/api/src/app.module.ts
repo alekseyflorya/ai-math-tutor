@@ -39,6 +39,7 @@ import { TutorService } from './tutor/tutor.service';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JsonOnlyMiddleware).forRoutes('*');
+    // Express 5 / path-to-regexp v8 wildcard syntax: every route.
+    consumer.apply(JsonOnlyMiddleware).forRoutes('{*splat}');
   }
 }

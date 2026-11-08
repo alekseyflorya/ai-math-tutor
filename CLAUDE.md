@@ -25,8 +25,8 @@ verifies understanding with an LLM-generated follow-up problem that the math eng
 
 ```bash
 pnpm install
-pnpm db:up                                   # Postgres (tutor + tutor_test) on :5432
-pnpm dev                                     # shared (watch) + api :3000 + web :5173
+pnpm db:up                                   # Postgres (tutor + tutor_test) on :5433
+pnpm dev                                     # shared (watch) + api :3100 + web :5173
 pnpm typecheck && pnpm test && pnpm format:check   # what CI runs
 pnpm --filter @tutor/api db:generate         # after changing src/db/schema.ts → new SQL migration
 pnpm smoke:llm                               # real-model check of the scenario prompts (uses .env)
@@ -46,3 +46,4 @@ docker compose up --build                    # full stack on http://localhost:80
 - Keep the e2e test (`apps/api/test/tutor.e2e-spec.ts`) green; extend it when the state machine changes.
 - Prettier formatting (single quotes, width 100). No CORS: the web app is same-origin by design.
 - Never commit `.env` or keys.
+- Commits and PRs carry no AI attribution (no `Co-Authored-By`, no “Generated with”): set in `.claude/settings.json` → `attribution`.

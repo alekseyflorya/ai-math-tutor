@@ -8,7 +8,7 @@ export default defineConfig({
     port: 5173,
     // Same-origin in dev too: the browser talks to Vite, Vite forwards /api to Nest.
     // This keeps the session cookie first-party and avoids CORS entirely.
-    proxy: { '/api': 'http://localhost:3000' },
+    proxy: { '/api': `http://localhost:${process.env.API_PORT ?? 3100}` },
   },
   build: {
     sourcemap: false,

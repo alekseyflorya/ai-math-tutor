@@ -31,7 +31,9 @@ open the **test scenario** `3(x + 4) = 2x + 19` and type the classic wrong step 
    2. the rule, illustrated on a _different_ example;
    3. the corrected step with a one-line justification.
       The level rises only when the student is still stuck (asks for help, guesses, or writes
-      another wrong line). The final answer is never given.
+      another wrong line). The final answer is never given. Every prompt also carries a short
+      **profile of the student’s earlier mistakes** (e.g. `SIGN_TRANSFER ×2, 1 verified`), so the
+      tutor can connect a slip to a recurring pattern instead of explaining from scratch.
 4. **Correct.** When the student writes any line equivalent to the last correct one
    (`3x + 12 = 2x + 19`, `3x − 2x = 19 − 12`, `6x + 24 = 4x + 38` …) the mistake is marked
    _corrected_ — there is no single “expected path”.
@@ -130,8 +132,8 @@ docker compose up --build     # → http://localhost:8080
 ```bash
 pnpm install
 cp .env.example .env          # set GEMINI_API_KEY and JWT_SECRET
-pnpm db:up                    # Postgres in Docker on :5432
-pnpm dev                      # API on :3000, web on http://localhost:5173
+pnpm db:up                    # Postgres in Docker on :5433
+pnpm dev                      # API on :3100, web on http://localhost:5173
 pnpm smoke:llm                # check the key/model: runs the scenario prompts against the real model
 ```
 

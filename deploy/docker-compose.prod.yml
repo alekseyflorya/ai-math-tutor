@@ -37,6 +37,7 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
+      PORT: '3000'
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       COOKIE_SECURE: 'true'
     depends_on:

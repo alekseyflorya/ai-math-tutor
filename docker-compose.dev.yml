@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: tutor
       POSTGRES_DB: tutor
     ports:
-      - '5432:5432'
+      - '5433:5432' # 5433 on the host: avoids clashing with a locally installed Postgres
     volumes:
       - pgdata-dev:/var/lib/postgresql/data
       - ./deploy/dev/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro

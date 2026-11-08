@@ -7,12 +7,12 @@ WORKDIR /repo
 FROM base AS build
 # Manifests first so the dependency layer is cached between code changes.
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY packages/shared/package.json packages/shared/
 COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
-RUN pnpm install --frozen-lockfile --filter "@tutor/api..."
+# @tutor/shared sources go in before install: the root postinstall builds it.
 COPY tsconfig.base.json ./
 COPY packages/shared packages/shared
+RUN pnpm install --frozen-lockfile --filter "@tutor/api..."
 COPY apps/api apps/api
 RUN pnpm --filter @tutor/shared build \
  && pnpm --filter @tutor/api build \
