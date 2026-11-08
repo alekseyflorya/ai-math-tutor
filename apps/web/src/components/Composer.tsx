@@ -1,6 +1,6 @@
 import { classifyInput, MathInputError, parseEquation } from '@tutor/shared';
 import { Lightbulb, SendHorizontal } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useI18n } from '../i18n/i18n';
 import { Tex } from './MathText';
 
@@ -64,10 +64,6 @@ export function Composer({ busy, variable, onSend, onHint, currentLatex }: Props
     });
   };
 
-  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) submit();
-  };
-
   return (
     <form onSubmit={submit} className="border-t border-line p-3">
       <div className="mb-2 flex min-h-6 items-center gap-2 text-sm">
@@ -101,7 +97,6 @@ export function Composer({ busy, variable, onSend, onHint, currentLatex }: Props
           ref={inputRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          onKeyDown={onKeyDown}
           placeholder={t.inputPlaceholder}
           maxLength={400}
           disabled={busy}

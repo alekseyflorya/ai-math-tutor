@@ -29,4 +29,10 @@ describe('validateFollowUp (math engine as referee for generated problems)', () 
         expect(validateFollowUp(templateProblem(t), t, [])).toBeUndefined();
     }
   });
+
+  it('template fallback does not repeat earlier problems', () => {
+    const seen: string[] = [];
+    for (let i = 0; i < 30; i++) seen.push(templateProblem('DISTRIBUTION', seen));
+    expect(new Set(seen.map((e) => e.replace(/\s/g, ''))).size).toBe(seen.length);
+  });
 });

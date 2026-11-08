@@ -16,8 +16,9 @@
 	# Same origin for app and API: the session cookie stays first-party, no CORS needed.
 	handle /api/* {
 		reverse_proxy api:3000 {
-			health_uri /api/health
-			health_interval 30s
+			# A single upstream: retry briefly while it restarts (deploys) instead of an
+			# active health check that would take the whole API out for 30 s after one miss.
+			lb_try_duration 5s
 		}
 	}
 

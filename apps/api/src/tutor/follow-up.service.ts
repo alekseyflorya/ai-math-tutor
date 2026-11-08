@@ -72,7 +72,10 @@ export class FollowUpService {
       }
     }
     // The model is down or kept missing the constraints: fall back to a verified template.
-    return { equation: templateProblem(params.errorType), source: 'template' };
+    return {
+      equation: templateProblem(params.errorType, [params.source, ...params.avoid]),
+      source: 'template',
+    };
   }
 }
 
@@ -111,9 +114,12 @@ export function validateFollowUp(
 const rand = (min: number, max: number) => min + Math.floor(Math.random() * (max - min + 1));
 const signed = (n: number) => (n < 0 ? `- ${-n}` : `+ ${n}`);
 
-/** Parametrised templates that always produce an integer solution (and are re-validated). */
-export function templateProblem(errorType: ErrorType): string {
-  for (;;) {
+/**
+ * Parametrised templates that always produce an integer solution (and are re-validated).
+ * The parameter space is large, so avoiding earlier problems practically never needs the cap.
+ */
+export function templateProblem(errorType: ErrorType, avoid: string[] = []): string {
+  for (let tries = 0; ; tries++) {
     const x = rand(-6, 12);
     let eq: string;
     if (errorType === 'DISTRIBUTION') {
@@ -133,6 +139,6 @@ export function templateProblem(errorType: ErrorType): string {
       const b = rand(-9, 9) || 4;
       eq = `${a}x ${signed(b)} = ${a * x + b}`;
     }
-    if (!validateFollowUp(eq, errorType, [])) return eq;
+    if (!validateFollowUp(eq, errorType, tries < 100 ? avoid : [])) return eq;
   }
 }

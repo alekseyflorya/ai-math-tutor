@@ -3,8 +3,10 @@ packages:
   - packages/*
 
 onlyBuiltDependencies:
-  - '@prisma/client'
-  - '@prisma/engines'
-  - prisma
   - '@swc/core'
   - esbuild
+
+# Ship prebuilt binaries / only print notices in their install scripts; nothing to build.
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - protobufjs
