@@ -1,0 +1,25 @@
+{
+  "name": "ai-math-tutor",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI math tutor prototype: detects reasoning errors in equation steps, teaches Socratically, verifies with follow-up problems.",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @tutor/shared build && pnpm -r --parallel --filter @tutor/shared --filter @tutor/api --filter @tutor/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose -f docker-compose.dev.yml up -d db",
+    "db:migrate": "pnpm --filter @tutor/api prisma:migrate",
+    "smoke:llm": "pnpm --filter @tutor/api smoke:llm"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "typescript": "~5.9.3"
+  }
+}
