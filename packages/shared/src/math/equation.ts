@@ -174,16 +174,33 @@ export function describeSolution(s: SolutionSet, variable = 'x'): string {
 }
 
 /**
- * "x = 7", "7 = x", "x = -3/2": the bare variable on one side and a single number on
- * the other, as WRITTEN. "3x - 2x = 19 - 12" has the same solution but is not an answer
- * yet — the student still has to simplify it.
+ * "x = 7", "7 = x", "x = -3/2", "x = 2.5": the bare variable on one side and a single,
+ * fully simplified number on the other, as WRITTEN. Not final yet: "3x - 2x = 19 - 12"
+ * (same solution, still needs simplifying) and "x = 18/3" (the fraction can be reduced).
  */
 export function isFinalForm(eq: ParsedEquation): boolean {
   if (!eq.variable) return false;
   const v = eq.variable;
-  const num = String.raw`-?\d+(?:\.\d+)?(?:\s*\/\s*\d+)?`;
-  const re = new RegExp(String.raw`^(?:${v}\s*=\s*${num}|${num}\s*=\s*${v})$`);
-  return re.test(eq.normalized.trim());
+  const num = String.raw`(-?\d+(?:\.\d+)?(?:\s*\/\s*-?\d+(?:\.\d+)?)?)`;
+  const m = new RegExp(String.raw`^(?:${v}\s*=\s*${num}|${num}\s*=\s*${v})$`).exec(
+    eq.normalized.trim(),
+  );
+  if (!m) return false;
+  return isSimplifiedNumber((m[1] ?? m[2])!);
+}
+
+/** "6", "-2.5", "3/2" are simplified; "18/3", "4/2", "6/1", "1.5/3", "3/-2" are not. */
+function isSimplifiedNumber(text: string): boolean {
+  const [numerator, denominator] = text.replace(/\s/g, '').split('/');
+  if (denominator === undefined) return true;
+  if (!/^-?\d+$/.test(numerator!) || !/^\d+$/.test(denominator)) return false;
+  const p = Math.abs(Number(numerator));
+  const q = Number(denominator);
+  if (q <= 1) return false;
+  let a = p;
+  let b = q;
+  while (b) [a, b] = [b, a % b];
+  return a === 1;
 }
 
 export function evaluateSide(side: Linear, value: Fraction): Fraction {

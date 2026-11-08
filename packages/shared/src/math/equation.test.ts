@@ -69,6 +69,13 @@ describe('parseEquation', () => {
     expect(isFinalForm(parseEquation('x = 7'))).toBe(true);
     expect(isFinalForm(parseEquation('7 = x'))).toBe(true);
     expect(isFinalForm(parseEquation('2x = 14'))).toBe(false);
+    // A reducible fraction is not an answer yet (regression: "x = 18/3" was accepted).
+    expect(isFinalForm(parseEquation('x = 18/3'))).toBe(false);
+    expect(isFinalForm(parseEquation('x = 4/2'))).toBe(false);
+    expect(isFinalForm(parseEquation('x = 6/1'))).toBe(false);
+    expect(isFinalForm(parseEquation('x = 1.5/3'))).toBe(false);
+    expect(isFinalForm(parseEquation('x = 2.5'))).toBe(true);
+    expect(isFinalForm(parseEquation('-4/3 = x'))).toBe(true);
     expect(isFinalForm(parseEquation('x = 3 + 4'))).toBe(false);
     expect(isFinalForm(parseEquation('3x - 2x = 19 - 12'))).toBe(false);
     expect(isFinalForm(parseEquation('x = -3/2'))).toBe(true);
@@ -109,6 +116,8 @@ describe('checkStep — the test scenario', () => {
       expect(checkStep(prev, step).equivalent, step).toBe(true);
     }
     expect(checkStep(prev, 'x = 7').solved).toBe(true);
+    expect(checkStep('3x = 18', 'x = 18/3').solved).toBe(false);
+    expect(checkStep('3x = 18', 'x = 18/3').equivalent).toBe(true);
   });
 
   it('catches a sign error when moving terms', () => {
