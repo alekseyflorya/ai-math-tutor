@@ -51,6 +51,7 @@ export class LlmService {
           { ...req, prompt },
           jsonSchema,
           controller.signal,
+          attempt - 1,
         );
         const parsed = req.schema.safeParse(safeJson(raw));
         if (parsed.success) {

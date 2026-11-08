@@ -19,11 +19,15 @@ export interface LlmJsonRequest<T> {
 export interface LlmProvider {
   readonly name: string;
   readonly model: string;
-  /** Returns the raw JSON text produced by the model. */
+  /**
+   * Returns the raw JSON text produced by the model. `attempt` (0-based) lets a provider
+   * fall back to another model when the previous attempt timed out or was rejected.
+   */
   completeJson(
     req: LlmJsonRequest<unknown>,
     jsonSchema: object,
     signal: AbortSignal,
+    attempt?: number,
   ): Promise<string>;
 }
 

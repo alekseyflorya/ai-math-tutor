@@ -6,7 +6,8 @@ const bool = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' |
 export const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-    PORT: z.coerce.number().int().default(3000),
+    /** 3100 in local dev (3000 is often taken by other projects); the Docker image sets 3000. */
+    PORT: z.coerce.number().int().default(3100),
     DATABASE_URL: z.string().min(1),
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     JWT_TTL_DAYS: z.coerce.number().int().min(1).max(30).default(7),
@@ -14,10 +15,11 @@ export const EnvSchema = z
 
     LLM_PROVIDER: z.enum(['gemini', 'anthropic', 'mock']).default('gemini'),
     GEMINI_API_KEY: z.string().optional(),
-    GEMINI_MODEL: z.string().default('gemini-flash-latest'),
+    /** Comma-separated: the first is primary, the rest are fallbacks tried on retry. */
+    GEMINI_MODEL: z.string().default('gemini-3.5-flash,gemini-3.5-flash-lite'),
     ANTHROPIC_API_KEY: z.string().optional(),
     ANTHROPIC_MODEL: z.string().default('claude-haiku-5-5'),
-    LLM_TIMEOUT_MS: z.coerce.number().int().min(1000).default(25000),
+    LLM_TIMEOUT_MS: z.coerce.number().int().min(1000).default(15000),
 
     /** Protects the LLM budget/quota on a public demo. */
     LLM_DAILY_LIMIT_PER_USER: z.coerce.number().int().min(1).default(150),

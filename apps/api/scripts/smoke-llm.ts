@@ -6,6 +6,7 @@
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { GoogleGenAI } from '@google/genai';
 import { z } from 'zod';
 import { checkStep } from '@tutor/shared';
 import {
@@ -36,22 +37,43 @@ const provider: LlmProvider =
       )
     : new GeminiProvider(
         process.env.GEMINI_API_KEY!,
-        process.env.GEMINI_MODEL ?? 'gemini-flash-latest',
+        process.env.GEMINI_MODEL ?? 'gemini-3.5-flash,gemini-3.5-flash-lite',
       );
 
 async function run<T>(req: LlmJsonRequest<T>): Promise<T> {
   const schema = z.toJSONSchema(req.schema);
   delete (schema as Record<string, unknown>).$schema;
   const started = Date.now();
-  const raw = await provider.completeJson(req, schema, AbortSignal.timeout(30_000));
+  let raw: string;
+  try {
+    raw = await provider.completeJson(req, schema, AbortSignal.timeout(60_000));
+  } catch (e) {
+    throw new Error(
+      `[${req.purpose}] failed after ${Date.now() - started} ms: ${(e as Error).message}`,
+    );
+  }
   const parsed = req.schema.parse(JSON.parse(raw));
   console.log(`\n[${req.purpose}] ${Date.now() - started} ms`);
   console.log(JSON.stringify(parsed, null, 2));
   return parsed;
 }
 
+/** Plain-text round trip: separates network/key/model problems from structured-output ones. */
+async function ping() {
+  if (process.env.LLM_PROVIDER === 'anthropic') return;
+  const started = Date.now();
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY!, apiVersion: 'v1beta' });
+  const res = await ai.models.generateContent({
+    model: provider.model.split(',')[0]!.trim(),
+    contents: 'Reply with the single word OK.',
+    config: { abortSignal: AbortSignal.timeout(60_000) },
+  });
+  console.log(`[ping] ${Date.now() - started} ms → ${res.text?.trim()}`);
+}
+
 async function main() {
   console.log(`Provider: ${provider.name} / ${provider.model}`);
+  await ping();
   const problem = '3(x + 4) = 2x + 19';
   const step = '3x + 4 = 2x + 19';
   const check = checkStep(problem, step);
@@ -66,6 +88,10 @@ async function main() {
       activeMistake: null,
       recentDialogue: [],
       isFollowUp: false,
+      history: {
+        solvedProblems: 3,
+        mistakes: [{ errorType: 'DISTRIBUTION', total: 1, verified: 0 }],
+      },
     };
     await run({
       purpose: 'diagnose',
