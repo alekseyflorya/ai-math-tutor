@@ -14,8 +14,10 @@ import {
   normalizeMathInput,
   parseEquation,
   solve,
+  type AttemptSummary,
   type AttemptView,
   type ErrorType,
+  type ListAttemptsQuery,
   type Locale,
   type MessageKind,
   type MessageRole,
@@ -134,7 +136,7 @@ export class TutorService {
   }
 
   /** kind = 'custom': only the student's own equations (no curriculum problems, no practice problems). */
-  async listRecent(userId: string, kind?: 'custom') {
+  async listRecent(userId: string, kind?: ListAttemptsQuery['kind']): Promise<AttemptSummary[]> {
     const rows = await this.db
       .select({
         id: attempts.id,

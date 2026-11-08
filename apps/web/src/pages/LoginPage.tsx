@@ -8,7 +8,9 @@ import { ThemeToggle } from '../components/ThemeToggle';
 import { Logo } from '../components/Logo';
 import { Tex } from '../components/MathText';
 import { useI18n } from '../i18n/i18n';
-import { api, ApiError } from '../lib/api';
+import type { Dict } from '../i18n/dict';
+import { api } from '../lib/api';
+import { errorText, UserFacingError } from '../lib/errors';
 
 export function LoginPage() {
   const { t, locale } = useI18n();
@@ -22,23 +24,18 @@ export function LoginPage() {
     qc.setQueryData(['me'], user);
     navigate('/learn', { replace: true });
   };
-  const onError = (e: unknown) => setError(e instanceof ApiError ? e.message : t.errorGeneric);
+  const onError = (e: unknown) => setError(errorText(e, t));
 
   const demo = useMutation({ mutationFn: () => api.demo(locale), onSuccess: onUser, onError });
   const submit = useMutation({
     mutationFn: async () => {
       if (mode === 'signin') {
         const input = LoginSchema.safeParse(form);
-        if (!input.success) throw new ApiError(400, 'VALIDATION', input.error.issues[0]!.message);
+        if (!input.success) throw formError(input.error, mode, t);
         return api.login(input.data);
       }
       const input = RegisterSchema.safeParse({ ...form, locale });
-      if (!input.success)
-        throw new ApiError(
-          400,
-          'VALIDATION',
-          input.error.issues.map((i) => `${String(i.path[0])}: ${i.message}`).join('; '),
-        );
+      if (!input.success) throw formError(input.error, mode, t);
       return api.register(input.data);
     },
     onSuccess: onUser,
@@ -202,4 +199,24 @@ export function LoginPage() {
       </main>
     </div>
   );
+}
+
+/** The first invalid field, in the student's language (zod's own messages are English). */
+function formError(
+  error: { issues: { path: PropertyKey[] }[] },
+  mode: 'signin' | 'signup',
+  t: Dict,
+): UserFacingError {
+  const field = error.issues[0]?.path[0];
+  const message =
+    field === 'email'
+      ? t.formInvalidEmail
+      : field === 'name'
+        ? t.formNameRequired
+        : field === 'password'
+          ? mode === 'signin'
+            ? t.formPasswordRequired
+            : t.formPasswordTooShort
+          : t.errorGeneric;
+  return new UserFacingError(message);
 }

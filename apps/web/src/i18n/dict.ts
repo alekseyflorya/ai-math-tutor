@@ -1,4 +1,4 @@
-import type { ErrorType, Skill } from '@tutor/shared';
+import type { ApiErrorCode, ErrorType, Skill } from '@tutor/shared';
 
 const en = {
   appName: 'AI Math Tutor',
@@ -98,6 +98,28 @@ const en = {
   followUp: 'practice',
 
   errorGeneric: 'Something went wrong. Please try again.',
+  apiErrors: {
+    VALIDATION_ERROR: 'Please check what you entered.',
+    JSON_REQUIRED: 'Something went wrong. Please try again.',
+    UNAUTHORIZED: 'Your session has ended. Please sign in again.',
+    INVALID_CREDENTIALS: 'Wrong email or password.',
+    EMAIL_TAKEN: 'This email is already registered. Try signing in.',
+    NOT_FOUND: 'Not found.',
+    ATTEMPT_NOT_FOUND: 'This problem was not found.',
+    PROBLEM_NOT_FOUND: 'This problem was not found.',
+    ATTEMPT_CLOSED: 'This problem is already solved. Start it again or pick another one.',
+    BUSY: 'The tutor is still answering your previous message.',
+    INVALID_EQUATION: 'Enter a linear equation with one unknown, e.g. 2x + 3 = 11.',
+    NO_UNIQUE_SOLUTION:
+      'This equation has no single solution (none or infinitely many). Try another one.',
+    RATE_LIMITED: 'Too many requests. Wait a moment and try again.',
+    DB_DOWN: 'The service is temporarily unavailable. Please try again soon.',
+    INTERNAL_ERROR: 'Something went wrong. Please try again.',
+  } satisfies Record<ApiErrorCode, string>,
+  formInvalidEmail: 'Enter a valid email address.',
+  formPasswordRequired: 'Enter your password.',
+  formPasswordTooShort: 'The password must be at least 8 characters.',
+  formNameRequired: 'Enter your name.',
 };
 
 export type Dict = typeof en;
@@ -199,6 +221,28 @@ const uk: Dict = {
   followUp: 'закріплення',
 
   errorGeneric: 'Щось пішло не так. Спробуй ще раз.',
+  apiErrors: {
+    VALIDATION_ERROR: 'Перевір введені дані.',
+    JSON_REQUIRED: 'Щось пішло не так. Спробуй ще раз.',
+    UNAUTHORIZED: 'Сесія завершилася. Увійди ще раз.',
+    INVALID_CREDENTIALS: 'Неправильний email або пароль.',
+    EMAIL_TAKEN: 'Цей email уже зареєстровано. Спробуй увійти.',
+    NOT_FOUND: 'Не знайдено.',
+    ATTEMPT_NOT_FOUND: 'Цю задачу не знайдено.',
+    PROBLEM_NOT_FOUND: 'Цю задачу не знайдено.',
+    ATTEMPT_CLOSED: "Цю задачу вже розв'язано. Почни її заново або вибери іншу.",
+    BUSY: 'Репетитор ще відповідає на попереднє повідомлення.',
+    INVALID_EQUATION: 'Введи лінійне рівняння з одним невідомим, наприклад 2x + 3 = 11.',
+    NO_UNIQUE_SOLUTION:
+      "У цього рівняння немає єдиного розв'язку (їх немає або безліч). Спробуй інше.",
+    RATE_LIMITED: 'Забагато запитів. Зачекай трохи й спробуй ще раз.',
+    DB_DOWN: 'Сервіс тимчасово недоступний. Спробуй трохи згодом.',
+    INTERNAL_ERROR: 'Щось пішло не так. Спробуй ще раз.',
+  },
+  formInvalidEmail: 'Введи коректну адресу email.',
+  formPasswordRequired: 'Введи пароль.',
+  formPasswordTooShort: 'Пароль має містити щонайменше 8 символів.',
+  formNameRequired: "Введи ім'я.",
 };
 
 export const DICTS = { en, uk };

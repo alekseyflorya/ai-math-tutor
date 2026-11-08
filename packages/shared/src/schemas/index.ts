@@ -63,6 +63,10 @@ export type LoginInput = z.infer<typeof LoginSchema>;
 
 export const UpdateMeSchema = z.object({ locale: LocaleSchema });
 
+/** POST /auth/demo — every call creates an isolated demo student. */
+export const DemoSchema = z.object({ locale: LocaleSchema.default('en') });
+export type DemoInput = z.infer<typeof DemoSchema>;
+
 export interface UserView {
   id: string;
   name: string;
@@ -190,20 +194,50 @@ export interface ProgressView {
   mistakesByType: { errorType: ErrorType; total: number; corrected: number; verified: number }[];
   skills: { skill: Skill; mastery: number; attempts: number }[];
   recentMistakes: MistakeView[];
-  recentAttempts: {
-    id: string;
-    title: string;
-    equation: string;
-    status: AttemptStatus;
-    isFollowUp: boolean;
-    updatedAt: string;
-  }[];
+  recentAttempts: AttemptSummary[];
   /** Solved problems per day, last 14 days. */
   activity: { date: string; solved: number; steps: number }[];
 }
 
+/** GET /attempts?kind=custom — only equations the student typed in themselves. */
+export const ListAttemptsQuerySchema = z.object({ kind: z.enum(['custom']).optional() });
+export type ListAttemptsQuery = z.infer<typeof ListAttemptsQuerySchema>;
+
+/** One row of GET /attempts and of the progress page. */
+export interface AttemptSummary {
+  id: string;
+  title: string;
+  equation: string;
+  status: AttemptStatus;
+  isFollowUp: boolean;
+  updatedAt: string;
+}
+
+/** Stable, machine-readable error codes; the web app translates them, `message` is a fallback. */
+export const API_ERROR_CODES = [
+  'VALIDATION_ERROR',
+  'JSON_REQUIRED',
+  'UNAUTHORIZED',
+  'INVALID_CREDENTIALS',
+  'EMAIL_TAKEN',
+  'NOT_FOUND',
+  'ATTEMPT_NOT_FOUND',
+  'PROBLEM_NOT_FOUND',
+  'ATTEMPT_CLOSED',
+  'BUSY',
+  'INVALID_EQUATION',
+  'NO_UNIQUE_SOLUTION',
+  'RATE_LIMITED',
+  'DB_DOWN',
+  'INTERNAL_ERROR',
+] as const;
+export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
+
+export const isApiErrorCode = (code: string): code is ApiErrorCode =>
+  (API_ERROR_CODES as readonly string[]).includes(code);
+
 export interface ApiErrorBody {
   statusCode: number;
-  code: string;
+  code: ApiErrorCode | (string & {});
   message: string;
 }

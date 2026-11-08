@@ -5,7 +5,8 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { ERROR_LABELS } from '../i18n/dict';
 import { useI18n } from '../i18n/i18n';
-import { api, ApiError } from '../lib/api';
+import { api } from '../lib/api';
+import { errorText } from '../lib/errors';
 import { useAttempt, useAttemptUpdate, useStartAttempt } from '../lib/hooks';
 import { Chat } from './Chat';
 import { Composer } from './Composer';
@@ -38,7 +39,7 @@ export function Workspace({ attemptId }: { attemptId: string }) {
       }
     },
     onSuccess: (a) => applyUpdate(a),
-    onError: (e) => setSendError(e instanceof ApiError ? e.message : t.errorGeneric),
+    onError: (e) => setSendError(errorText(e, t)),
     onSettled: () => setPending(null),
   });
 
@@ -46,7 +47,7 @@ export function Workspace({ attemptId }: { attemptId: string }) {
   if (error || !attempt) {
     return (
       <div className="rounded-xl border border-line bg-surface p-6">
-        <p className="text-pen">{error instanceof ApiError ? error.message : t.errorGeneric}</p>
+        <p className="text-pen">{errorText(error, t)}</p>
         <Link to="/learn" className="mt-3 inline-block font-bold text-ink">
           {t.newProblem}
         </Link>
@@ -97,7 +98,7 @@ export function Workspace({ attemptId }: { attemptId: string }) {
             <Composer
               busy={turn.isPending}
               variable={attempt.variable}
-              onSend={(text) => turn.mutate({ kind: 'send', text })}
+              onSend={(text) => turn.mutateAsync({ kind: 'send', text })}
               onHint={() => turn.mutate({ kind: 'hint' })}
               currentLatex={attempt.currentLatex}
             />

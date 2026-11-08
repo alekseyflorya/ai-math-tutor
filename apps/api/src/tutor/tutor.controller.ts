@@ -1,9 +1,12 @@
 import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import {
+  ListAttemptsQuerySchema,
   StartAttemptSchema,
   SubmitSchema,
+  type AttemptSummary,
   type AttemptView,
+  type ListAttemptsQuery,
   type StartAttemptInput,
   type SubmitInput,
 } from '@tutor/shared';
@@ -16,8 +19,11 @@ export class TutorController {
   constructor(private readonly tutor: TutorService) {}
 
   @Get()
-  list(@CurrentUser() user: AuthUser, @Query('kind') kind?: string) {
-    return this.tutor.listRecent(user.id, kind === 'custom' ? 'custom' : undefined);
+  list(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(ListAttemptsQuerySchema)) query: ListAttemptsQuery,
+  ): Promise<AttemptSummary[]> {
+    return this.tutor.listRecent(user.id, query.kind);
   }
 
   @Post()

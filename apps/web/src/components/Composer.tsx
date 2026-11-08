@@ -7,7 +7,8 @@ import { Tex } from './MathText';
 interface Props {
   busy: boolean;
   variable: string;
-  onSend: (text: string) => void;
+  /** Rejects when the server did not accept the message; the text is then put back. */
+  onSend: (text: string) => Promise<unknown>;
   onHint: () => void;
   /** Last verified line, shown above the input on phones where the notebook scrolls away. */
   currentLatex: string;
@@ -47,8 +48,9 @@ export function Composer({ busy, variable, onSend, onHint, currentLatex }: Props
     e?.preventDefault();
     const value = text.trim();
     if (!value || busy) return;
-    onSend(value);
     setText('');
+    // The error itself is shown by the parent; here we only give the student their line back.
+    onSend(value).catch(() => setText((current) => current || value));
   };
 
   const insert = (s: string) => {

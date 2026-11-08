@@ -1,5 +1,6 @@
 import type {
   ApiErrorBody,
+  AttemptSummary,
   AttemptView,
   Locale,
   LoginInput,
@@ -37,15 +38,6 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     throw new ApiError(res.status, err.code ?? 'ERROR', err.message ?? res.statusText);
   }
   return data as T;
-}
-
-export interface AttemptSummary {
-  id: string;
-  title: string;
-  equation: string;
-  status: AttemptView['status'];
-  isFollowUp: boolean;
-  updatedAt: string;
 }
 
 export const api = {

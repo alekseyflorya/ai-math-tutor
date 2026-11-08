@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { parseEquation, type ProblemView } from '@tutor/shared';
+import { parseEquation, type AttemptSummary, type ProblemView } from '@tutor/shared';
 import { Check, Circle, Sparkles, Star } from 'lucide-react';
 import { useMemo, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useI18n } from '../i18n/i18n';
-import { api, ApiError } from '../lib/api';
+import { api } from '../lib/api';
+import { errorText } from '../lib/errors';
 import { useCustomAttempts, useProblems, useStartAttempt } from '../lib/hooks';
-import type { AttemptSummary } from '../lib/api';
 import { Tex } from './MathText';
 
 export function ProblemSidebar() {
@@ -101,7 +101,7 @@ export function ProblemSidebar() {
         </div>
         {start.error && (
           <p role="alert" className="mt-2 text-xs text-pen">
-            {start.error instanceof ApiError ? start.error.message : t.errorGeneric}
+            {errorText(start.error, t)}
           </p>
         )}
       </form>

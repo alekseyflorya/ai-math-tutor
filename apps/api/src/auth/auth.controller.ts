@@ -2,10 +2,11 @@ import { Body, Controller, Get, HttpCode, Patch, Post, Res } from '@nestjs/commo
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import {
-  LocaleSchema,
+  DemoSchema,
   LoginSchema,
   RegisterSchema,
   UpdateMeSchema,
+  type DemoInput,
   type LoginInput,
   type RegisterInput,
   type UserView,
@@ -16,8 +17,6 @@ import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AuthService } from './auth.service';
 import { CurrentUser, Public, SESSION_COOKIE, type AuthUser } from './auth.guard';
 import type { User } from '../db/schema';
-
-const DemoSchema = z.object({ locale: LocaleSchema.default('en') });
 
 @Controller('auth')
 export class AuthController {
@@ -53,7 +52,7 @@ export class AuthController {
   @HttpCode(200)
   @Post('demo')
   async demo(
-    @Body(new ZodValidationPipe(DemoSchema)) body: z.infer<typeof DemoSchema>,
+    @Body(new ZodValidationPipe(DemoSchema)) body: DemoInput,
     @Res({ passthrough: true }) res: Response,
   ): Promise<UserView> {
     return this.startSession(await this.auth.createDemoUser(body.locale), res);
