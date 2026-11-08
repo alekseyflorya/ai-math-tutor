@@ -10,6 +10,11 @@ export interface LlmJsonRequest<T> {
   schema: ZodType<T>;
   temperature?: number;
   maxOutputTokens?: number;
+  /**
+   * Epoch ms by which the whole call, retries included, must finish. Set per student turn so
+   * one HTTP request never waits for several full timeouts in a row.
+   */
+  deadline?: number;
 }
 
 /**

@@ -20,15 +20,8 @@ export class AuthService {
   ) {}
 
   async register(input: RegisterInput): Promise<User> {
-    const [existing] = await this.db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.email, input.email));
-    if (existing)
-      throw new ConflictException({
-        code: 'EMAIL_TAKEN',
-        message: 'This email is already registered',
-      });
+    // One atomic insert: two parallel sign-ups with the same email can't both pass a
+    // "select, then insert" check and end in a unique-violation 500.
     const [user] = await this.db
       .insert(users)
       .values({
@@ -37,8 +30,14 @@ export class AuthService {
         locale: input.locale,
         passwordHash: await hash(input.password),
       })
+      .onConflictDoNothing({ target: users.email })
       .returning();
-    return user!;
+    if (!user)
+      throw new ConflictException({
+        code: 'EMAIL_TAKEN',
+        message: 'This email is already registered',
+      });
+    return user;
   }
 
   async login(input: LoginInput): Promise<User> {

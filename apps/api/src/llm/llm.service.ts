@@ -13,6 +13,9 @@ import {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_ATTEMPTS = 2;
+/** Not worth starting a model call with less time than this left before the deadline. */
+const MIN_USEFUL_MS = 2000;
+const RATE_LIMIT_BACKOFF_MS = 1500;
 
 /**
  * The only door to the model. Adds what every call needs: quotas, timeout,
@@ -41,8 +44,14 @@ export class LlmService {
     let lastError: LlmUnavailableError | null = null;
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const left = timeLeft(req.deadline);
+      if (left < MIN_USEFUL_MS) {
+        lastError ??= new LlmUnavailableError('timeout', 'No time left for this turn');
+        break;
+      }
+      const timeoutMs = Math.min(this.config.get('LLM_TIMEOUT_MS'), left);
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), this.config.get('LLM_TIMEOUT_MS'));
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
       const started = Date.now();
       let errorText: string | null = null;
 
@@ -71,7 +80,7 @@ export class LlmService {
             'rate_limited',
             'The model provider is rate limiting requests',
           );
-          await sleep(1500);
+          if (attempt < MAX_ATTEMPTS) await sleep(RATE_LIMIT_BACKOFF_MS);
         } else {
           lastError = new LlmUnavailableError(
             'provider_error',
@@ -143,5 +152,8 @@ function safeJson(raw: string): unknown {
     return undefined;
   }
 }
+
+const timeLeft = (deadline?: number) =>
+  deadline === undefined ? Number.POSITIVE_INFINITY : deadline - Date.now();
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

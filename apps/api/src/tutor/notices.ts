@@ -27,7 +27,10 @@ export const notices = {
   parseError: (locale: Locale, code: MathErrorCode) => {
     const reasons: Record<MathErrorCode, Dict> = {
       EMPTY: { en: 'the step is empty', uk: 'крок порожній' },
-      TOO_LONG: { en: 'it is too long', uk: 'він задовгий' },
+      TOO_LONG: {
+        en: 'it is too long or the numbers are too large',
+        uk: 'він задовгий або числа завеликі',
+      },
       NOT_AN_EQUATION: { en: 'it has no "=" sign', uk: 'у ньому немає знака "="' },
       MULTIPLE_EQUALS: {
         en: 'it has more than one "=" sign',
@@ -90,6 +93,16 @@ export const notices = {
       {
         en: 'This step changes the solution of the equation, so something went wrong in it. Compare it with the previous line, term by term. (The AI tutor is temporarily unavailable.)',
         uk: "Цей крок змінює розв'язок рівняння, отже в ньому помилка. Порівняй його з попереднім рядком доданок за доданком. (AI-тьютор тимчасово недоступний.)",
+      },
+      locale,
+    ),
+
+  /** Stored as the mistake's description when the model could not diagnose it. */
+  notDiagnosed: (locale: Locale) =>
+    t(
+      {
+        en: 'Not diagnosed: the AI tutor was unavailable',
+        uk: 'Не діагностовано: AI-тьютор був недоступний',
       },
       locale,
     ),

@@ -37,6 +37,8 @@ export class FollowUpService {
     errorType: ErrorType;
     misconception: string;
     avoid: string[];
+    /** Epoch ms; when it passes, the verified template is used instead. */
+    deadline: number;
   }): Promise<GeneratedProblem> {
     let rejection: string | undefined;
     for (let i = 0; i < MAX_LLM_TRIES; i++) {
@@ -54,6 +56,7 @@ export class FollowUpService {
             ),
             schema: FollowUpSchema,
             temperature: 0.9,
+            deadline: params.deadline,
           },
           params.userId,
         );
@@ -65,7 +68,7 @@ export class FollowUpService {
         this.logger.warn(`Follow-up "${out.equation}" rejected: ${rejection}`);
       } catch (e) {
         if (!(e instanceof LlmUnavailableError)) throw e;
-        break;
+        break; // timeout, quota or outage: don't spend the turn on more tries
       }
     }
     // The model is down or kept missing the constraints: fall back to a verified template.

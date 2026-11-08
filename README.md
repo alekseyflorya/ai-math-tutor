@@ -79,10 +79,13 @@ The same package runs in the browser (live preview, “step vs question” detec
 server, and also holds the zod schemas for the API contract.
 
 **Tutor state machine** (`apps/api/src/tutor/tutor.service.ts`): `SOLVING → REMEDIATION (hint 1→2→3)
-→ SOLVING → SOLVED → follow-up`. Each turn needs at most one model call with a typed JSON
-response. All pedagogy (system prompt, error taxonomy, hint ladder, prompts per turn type) is in
-one file, `apps/api/src/llm/prompts.ts`. Student input is passed as delimited data and the prompt
-forbids following instructions inside it.
+→ SOLVING → SOLVED → follow-up`. A turn makes one model call with a typed JSON response; the
+solving turn makes two (generate the follow-up problem, then the celebration that points at it).
+All calls of a turn share one time budget (25 s by default), so a slow model degrades a single
+message instead of hanging the request. All pedagogy (system prompt, error taxonomy, hint ladder,
+prompts per turn type) is in one file, `apps/api/src/llm/prompts.ts`. Everything the student
+typed — steps, questions, earlier dialogue — is passed as delimited data, and the prompt forbids
+following instructions inside it.
 
 **Why no LangChain / LangGraph.** The flow is a small explicit state machine with state in
 Postgres; a framework would hide it behind abstractions. The provider port (`LlmProvider`) is

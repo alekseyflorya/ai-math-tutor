@@ -12,6 +12,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Pool } from 'pg';
 import request from 'supertest';
 import type { AttemptView, ProblemView, ProgressView } from '@tutor/shared';
+import { LLM_PROVIDER, type LlmProvider } from '../src/llm/llm.types';
 
 const DB_URL = process.env.DATABASE_URL_TEST ?? 'postgres://tutor:tutor@localhost:5433/tutor_test';
 
@@ -26,6 +27,7 @@ Object.assign(process.env, {
 describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
   let app: INestApplication;
   let agent: ReturnType<typeof request.agent>;
+  let provider: LlmProvider;
 
   beforeAll(async () => {
     // Fresh schema for every run.
@@ -42,7 +44,10 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     configureApp(app as NestExpressApplication);
     await app.init();
     agent = request.agent(app.getHttpServer());
+    provider = app.get<LlmProvider>(LLM_PROVIDER);
   });
+
+  afterEach(() => jest.restoreAllMocks());
 
   afterAll(async () => {
     await app?.close();
@@ -54,6 +59,10 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     return res.body as AttemptView;
   };
   const lastTutor = (a: AttemptView) => [...a.messages].reverse().find((m) => m.role === 'TUTOR')!;
+  const startCustom = async (equation: string) =>
+    (await agent.post('/api/attempts').send({ equation }).expect(201)).body as AttemptView;
+  const hint = async (attemptId: string) =>
+    (await agent.post(`/api/attempts/${attemptId}/hint`).send({}).expect(200)).body as AttemptView;
 
   it('rejects unauthenticated and non-JSON requests', async () => {
     await request(app.getHttpServer()).get('/api/progress').expect(401);
@@ -177,5 +186,91 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     const other = request.agent(app.getHttpServer());
     await other.post('/api/auth/demo').send({}).expect(200);
     await other.get(`/api/attempts/${mine.id}`).expect(404);
+  });
+
+  it('gives hints on request up to level 3 without revealing more', async () => {
+    let a = await startCustom('2(x + 3) = 14');
+    a = await say(a.id, '2x + 3 = 14');
+    expect(a.hintLevel).toBe(1);
+
+    a = await hint(a.id);
+    expect(a.hintLevel).toBe(2);
+    expect(lastTutor(a)).toMatchObject({ kind: 'HINT', meta: { hintLevel: 2, requested: true } });
+
+    a = await hint(a.id);
+    a = await hint(a.id);
+    expect(a.hintLevel).toBe(3);
+    expect(lastTutor(a)).toMatchObject({ kind: 'EXPLANATION', meta: { hintLevel: 3 } });
+  });
+
+  it('keeps checking every step when the AI is down', async () => {
+    jest.spyOn(provider, 'completeJson').mockRejectedValue(new Error('provider is down'));
+    let a = await startCustom('3x - 5 = 10');
+
+    a = await say(a.id, '3x = 5');
+    expect(a.steps.at(-1)!.isCorrect).toBe(false);
+    expect(a.mode).toBe('REMEDIATION');
+    expect(lastTutor(a)).toMatchObject({
+      kind: 'NOTICE',
+      meta: { correct: false, aiUnavailable: 'provider_error' },
+    });
+
+    // A failed hint request does not use up a level of the ladder.
+    a = await hint(a.id);
+    expect(a.hintLevel).toBe(1);
+
+    a = await say(a.id, '3x = 15');
+    expect(a.steps.at(-1)!.isCorrect).toBe(true);
+    expect(lastTutor(a)).toMatchObject({ kind: 'NOTICE', meta: { correct: true } });
+
+    a = await say(a.id, 'x = 5');
+    expect(a.status).toBe('SOLVED');
+    expect(lastTutor(a)).toMatchObject({ kind: 'NOTICE', meta: { solved: true } });
+  });
+
+  it('rejects overlapping turns and messages to a finished problem', async () => {
+    const real = provider.completeJson.bind(provider);
+    jest.spyOn(provider, 'completeJson').mockImplementation(async (...args) => {
+      await new Promise((r) => setTimeout(r, 300));
+      return real(...args);
+    });
+    const a = await startCustom('x + 2 = 5');
+    const send = () => agent.post(`/api/attempts/${a.id}/messages`).send({ text: 'why?' });
+    const [first, second] = await Promise.all([send(), send()]);
+    expect([first.status, second.status].sort()).toEqual([200, 409]);
+    expect([first.body.code, second.body.code]).toContain('BUSY');
+
+    await say(a.id, 'x = 3');
+    const closed = await agent.post(`/api/attempts/${a.id}/messages`).send({ text: 'x = 3' });
+    expect(closed.status).toBe(409);
+    expect(closed.body.code).toBe('ATTEMPT_CLOSED');
+  });
+
+  it('registers, logs out and logs in with email and password', async () => {
+    const user = request.agent(app.getHttpServer());
+    const credentials = { email: 'Student@Example.com', password: 'correct-horse-1' };
+    await user
+      .post('/api/auth/register')
+      .send({ ...credentials, name: 'Student', locale: 'uk' })
+      .expect(201);
+    expect((await user.get('/api/auth/me').expect(200)).body).toMatchObject({
+      email: 'student@example.com',
+      locale: 'uk',
+    });
+
+    const duplicate = await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({ ...credentials, name: 'Twin' })
+      .expect(409);
+    expect(duplicate.body.code).toBe('EMAIL_TAKEN');
+
+    await user.post('/api/auth/logout').send({}).expect(204);
+    await user.get('/api/auth/me').expect(401);
+    await user
+      .post('/api/auth/login')
+      .send({ ...credentials, password: 'wrong-pass' })
+      .expect(401);
+    await user.post('/api/auth/login').send(credentials).expect(200);
+    await user.get('/api/auth/me').expect(200);
   });
 });

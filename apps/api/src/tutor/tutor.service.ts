@@ -50,6 +50,7 @@ import { ChatReplySchema, DiagnosisSchema, FeedbackSchema } from '../llm/tutor-s
 import { ProblemsService } from '../problems/problems.service';
 import { OUTCOME, SkillsService } from '../progress/skills.service';
 import { toAttemptView } from './attempt.mapper';
+import { AppConfig } from '../config/config.service';
 import { FollowUpService } from './follow-up.service';
 import { notices } from './notices';
 
@@ -60,6 +61,8 @@ interface Turn {
   mistakes: Mistake[];
   problemSkills: Skill[];
   locale: Locale;
+  /** Epoch ms: every model call of this turn, together, must finish by then. */
+  deadline: number;
 }
 
 const MAX_HINT = 3;
@@ -88,6 +91,7 @@ export class TutorService {
     private readonly followUps: FollowUpService,
     private readonly skills: SkillsService,
     private readonly problems: ProblemsService,
+    private readonly config: AppConfig,
   ) {}
 
   // --- Queries ---------------------------------------------------------------
@@ -266,8 +270,7 @@ export class TutorService {
     return this.exclusive(attemptId, async () => {
       const turn = await this.loadTurn(userId, attemptId);
       const level = Math.min(MAX_HINT, turn.attempt.hintLevel + 1) as 1 | 2 | 3;
-      await this.update(turn, { hintLevel: level });
-      const ctx = await this.context(turn);
+      const ctx = await this.context(turn, { hintLevel: level });
       try {
         const out = await this.llm.generate(
           {
@@ -275,9 +278,12 @@ export class TutorService {
             system: systemPrompt(turn.locale),
             prompt: hintPrompt(ctx, level),
             schema: FeedbackSchema,
+            deadline: turn.deadline,
           },
           userId,
         );
+        // Raised only once the hint exists: an outage must not silently "spend" a level.
+        await this.update(turn, { hintLevel: level });
         await this.say(attemptId, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', out.message, {
           hintLevel: level,
           requested: true,
@@ -366,6 +372,7 @@ export class TutorService {
           system: systemPrompt(locale),
           prompt: stepFeedbackPrompt(ctx, text, check.facts, Boolean(fixed)),
           schema: FeedbackSchema,
+          deadline: turn.deadline,
         },
         attempt.userId,
       );
@@ -389,7 +396,7 @@ export class TutorService {
     let errorType: ErrorType = active?.errorType ?? 'OTHER';
     let tutorMessage: string | null = null;
     let unavailable: unknown = null;
-    let misconception = 'Not diagnosed: AI tutor unavailable';
+    let misconception = notices.notDiagnosed(locale);
     try {
       const diagnosis = await this.llm.generate(
         {
@@ -397,6 +404,7 @@ export class TutorService {
           system: systemPrompt(locale),
           prompt: diagnosePrompt(ctx, text, check.facts, level),
           schema: DiagnosisSchema,
+          deadline: turn.deadline,
           temperature: 0.3,
         },
         attempt.userId,
@@ -475,6 +483,7 @@ export class TutorService {
             followUp?.latex ?? null,
           ),
           schema: FeedbackSchema,
+          deadline: turn.deadline,
         },
         attempt.userId,
       );
@@ -512,6 +521,7 @@ export class TutorService {
           system: systemPrompt(locale),
           prompt: chatPrompt(ctx, text),
           schema: ChatReplySchema,
+          deadline: turn.deadline,
         },
         attempt.userId,
       );
@@ -552,6 +562,8 @@ export class TutorService {
       errorType: mistake.errorType,
       misconception: mistake.description,
       avoid: previous.map((p) => p.equation),
+      // At most half of what is left: the celebration still needs its call afterwards.
+      deadline: Date.now() + (turn.deadline - Date.now()) / 2,
     });
     const parsed = parseEquation(problem.equation);
     const [child] = await this.db
@@ -754,6 +766,7 @@ export class TutorService {
       mistakes: mistakeRows,
       problemSkills: (problem?.skills ?? []) as Skill[],
       locale,
+      deadline: Date.now() + this.config.get('LLM_TURN_BUDGET_MS'),
     };
   }
 
