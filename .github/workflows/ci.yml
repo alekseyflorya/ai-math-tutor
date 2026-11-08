@@ -1,0 +1,122 @@
+name: CI / CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: tutor
+          POSTGRES_PASSWORD: tutor
+          POSTGRES_DB: tutor_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tutor" --health-interval 5s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @tutor/shared build
+      - run: pnpm typecheck
+      - run: pnpm format:check
+      - name: Tests (math engine unit tests + API e2e on Postgres with the mock LLM)
+        run: pnpm test
+        env:
+          DATABASE_URL_TEST: postgres://tutor:tutor@localhost:5432/tutor_test
+      - run: pnpm --filter @tutor/web build
+
+  images:
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        app: [api, web]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/ai-math-tutor-${{ matrix.app }}:latest
+            ghcr.io/${{ github.repository_owner }}/ai-math-tutor-${{ matrix.app }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+
+  deploy:
+    needs: images
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+    env:
+      HAS_SSH: ${{ secrets.SSH_HOST != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.HAS_SSH == 'true'
+      - name: Copy compose file
+        if: env.HAS_SSH == 'true'
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: deploy/docker-compose.prod.yml
+          target: /opt/ai-math-tutor
+          strip_components: 1
+      - name: Pull and restart
+        if: env.HAS_SSH == 'true'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/ai-math-tutor
+            # The job token can read this repo's packages, so images may stay private.
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            export IMAGE_TAG=${{ github.sha }}
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker logout ghcr.io
+            docker image prune -f
+            for i in $(seq 1 30); do
+              if docker compose -f docker-compose.prod.yml exec -T api node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+                echo "API healthy"; exit 0
+              fi
+              sleep 2
+            done
+            docker compose -f docker-compose.prod.yml logs --tail=80 api
+            exit 1
+      - name: Skipped
+        if: env.HAS_SSH != 'true'
+        run: echo "SSH secrets are not configured yet; images are pushed, deploy skipped."

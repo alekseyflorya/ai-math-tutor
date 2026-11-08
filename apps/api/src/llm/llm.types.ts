@@ -20,14 +20,24 @@ export interface LlmProvider {
   readonly name: string;
   readonly model: string;
   /** Returns the raw JSON text produced by the model. */
-  completeJson(req: LlmJsonRequest<unknown>, jsonSchema: object, signal: AbortSignal): Promise<string>;
+  completeJson(
+    req: LlmJsonRequest<unknown>,
+    jsonSchema: object,
+    signal: AbortSignal,
+  ): Promise<string>;
 }
 
 export const LLM_PROVIDER = Symbol('LLM_PROVIDER');
 
 export class LlmUnavailableError extends Error {
   constructor(
-    readonly reason: 'quota_user' | 'quota_global' | 'rate_limited' | 'timeout' | 'invalid_output' | 'provider_error',
+    readonly reason:
+      | 'quota_user'
+      | 'quota_global'
+      | 'rate_limited'
+      | 'timeout'
+      | 'invalid_output'
+      | 'provider_error',
     message: string,
   ) {
     super(message);

@@ -1,0 +1,7 @@
+# Additional Caddy sites served by the same container are imported from this folder.
+# Example for a future portfolio on the root domain (serve files mounted at /srv/portfolio):
+#
+# florik.pp.ua, www.florik.pp.ua {
+# 	root * /srv/portfolio
+# 	file_server
+# }

@@ -52,7 +52,10 @@ export const problems = pgTable('problems', {
   titleUk: text('title_uk').notNull(),
   equation: text('equation').notNull(),
   difficulty: integer('difficulty').notNull(),
-  skills: text('skills').array().notNull().default(sql`'{}'::text[]`),
+  skills: text('skills')
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
   order: integer('order').notNull(),
   featured: boolean('featured').notNull().default(false),
 });
@@ -76,7 +79,9 @@ export const attempts = pgTable(
     /** Mistake being remediated while mode = REMEDIATION. */
     activeMistakeId: uuid('active_mistake_id'),
     /** Follow-up practice: the attempt it came from and the error it verifies. */
-    parentAttemptId: uuid('parent_attempt_id').references((): AnyPgColumn => attempts.id, { onDelete: 'set null' }),
+    parentAttemptId: uuid('parent_attempt_id').references((): AnyPgColumn => attempts.id, {
+      onDelete: 'set null',
+    }),
     targetErrorType: errorType('target_error_type'),
     sourceMistakeId: uuid('source_mistake_id'),
     createdAt: createdAt(),
@@ -175,7 +180,10 @@ export const llmCalls = pgTable(
     error: text('error'),
     createdAt: createdAt(),
   },
-  (t) => [index('llm_calls_created_idx').on(t.createdAt), index('llm_calls_user_created_idx').on(t.userId, t.createdAt)],
+  (t) => [
+    index('llm_calls_created_idx').on(t.createdAt),
+    index('llm_calls_user_created_idx').on(t.userId, t.createdAt),
+  ],
 );
 
 export type User = typeof users.$inferSelect;

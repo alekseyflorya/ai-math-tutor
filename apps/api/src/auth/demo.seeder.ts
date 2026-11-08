@@ -57,15 +57,32 @@ export class DemoSeeder {
         return a!;
       };
 
-      await solved({ problemId: 'lin-01', title: 'One step', equation: 'x + 5 = 12', lines: [{ input: 'x = 12 - 5' }, { input: 'x = 7' }], when: daysAgo(3) });
-      await solved({ problemId: 'lin-02', title: 'Two steps', equation: '3x - 7 = 11', lines: [{ input: '3x = 18' }, { input: 'x = 6' }], when: daysAgo(2) });
+      await solved({
+        problemId: 'lin-01',
+        title: 'One step',
+        equation: 'x + 5 = 12',
+        lines: [{ input: 'x = 12 - 5' }, { input: 'x = 7' }],
+        when: daysAgo(3),
+      });
+      await solved({
+        problemId: 'lin-02',
+        title: 'Two steps',
+        equation: '3x - 7 = 11',
+        lines: [{ input: '3x = 18' }, { input: 'x = 6' }],
+        when: daysAgo(2),
+      });
 
       const when = daysAgo(1);
       const withMistake = await solved({
         problemId: 'lin-03',
         title: 'Unknown on both sides',
         equation: '5x + 3 = 2x + 18',
-        lines: [{ input: '5x + 2x = 18 - 3', ok: false }, { input: '5x - 2x = 18 - 3' }, { input: '3x = 15' }, { input: 'x = 5' }],
+        lines: [
+          { input: '5x + 2x = 18 - 3', ok: false },
+          { input: '5x - 2x = 18 - 3' },
+          { input: '3x = 15' },
+          { input: 'x = 5' },
+        ],
         when,
       });
       const [mistake] = await tx

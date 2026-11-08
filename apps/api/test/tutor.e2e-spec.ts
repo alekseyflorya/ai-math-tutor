@@ -30,7 +30,9 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
   beforeAll(async () => {
     // Fresh schema for every run.
     const pool = new Pool({ connectionString: DB_URL });
-    await pool.query('DROP SCHEMA IF EXISTS public CASCADE; DROP SCHEMA IF EXISTS drizzle CASCADE; CREATE SCHEMA public;');
+    await pool.query(
+      'DROP SCHEMA IF EXISTS public CASCADE; DROP SCHEMA IF EXISTS drizzle CASCADE; CREATE SCHEMA public;',
+    );
     await pool.end();
 
     const { AppModule } = await import('../src/app.module');
@@ -55,7 +57,11 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
 
   it('rejects unauthenticated and non-JSON requests', async () => {
     await request(app.getHttpServer()).get('/api/progress').expect(401);
-    await request(app.getHttpServer()).post('/api/auth/demo').type('form').send('locale=en').expect(415);
+    await request(app.getHttpServer())
+      .post('/api/auth/demo')
+      .type('form')
+      .send('locale=en')
+      .expect(415);
   });
 
   it('creates an isolated demo student with seeded history', async () => {
@@ -71,7 +77,8 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     const featured = problems.find((p) => p.featured)!;
     expect(featured.equation).toBe('3(x + 4) = 2x + 19');
 
-    let a = (await agent.post('/api/attempts').send({ problemId: featured.id }).expect(201)).body as AttemptView;
+    let a = (await agent.post('/api/attempts').send({ problemId: featured.id }).expect(201))
+      .body as AttemptView;
     expect(a.messages[0]!.kind).toBe('GREETING');
 
     // 1. The classic mistake: only the first term was multiplied.
@@ -120,7 +127,8 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
   });
 
   it('explains unreadable input instead of guessing', async () => {
-    const a = (await agent.post('/api/attempts').send({ equation: '2x + 3 = 11' }).expect(201)).body as AttemptView;
+    const a = (await agent.post('/api/attempts').send({ equation: '2x + 3 = 11' }).expect(201))
+      .body as AttemptView;
     const after = await say(a.id, '2x + = 11');
     expect(lastTutor(after)).toMatchObject({ kind: 'NOTICE', meta: { inputError: 'SYNTAX' } });
     expect(after.steps).toHaveLength(0);
@@ -128,7 +136,8 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
 
   it('rejects equations without a unique solution and other users’ attempts', async () => {
     await agent.post('/api/attempts').send({ equation: '2(x + 1) = 2x + 2' }).expect(400);
-    const mine = (await agent.post('/api/attempts').send({ equation: 'x + 1 = 2' }).expect(201)).body as AttemptView;
+    const mine = (await agent.post('/api/attempts').send({ equation: 'x + 1 = 2' }).expect(201))
+      .body as AttemptView;
     const other = request.agent(app.getHttpServer());
     await other.post('/api/auth/demo').send({}).expect(200);
     await other.get(`/api/attempts/${mine.id}`).expect(404);

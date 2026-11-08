@@ -12,7 +12,11 @@ export class AnthropicProvider implements LlmProvider {
     this.client = new Anthropic({ apiKey, maxRetries: 0 });
   }
 
-  async completeJson(req: LlmJsonRequest<unknown>, jsonSchema: object, signal: AbortSignal): Promise<string> {
+  async completeJson(
+    req: LlmJsonRequest<unknown>,
+    jsonSchema: object,
+    signal: AbortSignal,
+  ): Promise<string> {
     const msg = await this.client.messages.create(
       {
         model: this.model,

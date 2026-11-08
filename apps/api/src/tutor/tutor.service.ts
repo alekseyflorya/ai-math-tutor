@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { and, asc, desc, eq, notInArray } from 'drizzle-orm';
 import {
   checkStep,
@@ -17,7 +23,17 @@ import {
   type StepCheckResult,
 } from '@tutor/shared';
 import { DB, type Db } from '../db/db.module';
-import { attempts, messages, mistakes, problems, steps, users, type Attempt, type Mistake, type Step } from '../db/schema';
+import {
+  attempts,
+  messages,
+  mistakes,
+  problems,
+  steps,
+  users,
+  type Attempt,
+  type Mistake,
+  type Step,
+} from '../db/schema';
 import { LlmService } from '../llm/llm.service';
 import { LlmUnavailableError } from '../llm/llm.types';
 import {
@@ -79,7 +95,11 @@ export class TutorService {
     const attempt = await this.findOwned(userId, attemptId);
     const [stepRows, messageRows, [next]] = await Promise.all([
       this.db.select().from(steps).where(eq(steps.attemptId, attemptId)).orderBy(asc(steps.index)),
-      this.db.select().from(messages).where(eq(messages.attemptId, attemptId)).orderBy(asc(messages.seq)),
+      this.db
+        .select()
+        .from(messages)
+        .where(eq(messages.attemptId, attemptId))
+        .orderBy(asc(messages.seq)),
       this.db
         .select({ id: attempts.id })
         .from(attempts)
@@ -125,7 +145,13 @@ export class TutorService {
       const [open] = await this.db
         .select({ id: attempts.id })
         .from(attempts)
-        .where(and(eq(attempts.userId, userId), eq(attempts.problemId, problem.id), eq(attempts.status, 'IN_PROGRESS')))
+        .where(
+          and(
+            eq(attempts.userId, userId),
+            eq(attempts.problemId, problem.id),
+            eq(attempts.status, 'IN_PROGRESS'),
+          ),
+        )
         .orderBy(desc(attempts.updatedAt))
         .limit(1);
       if (open) return this.getView(userId, open.id);
@@ -154,7 +180,8 @@ export class TutorService {
       latex = parsed.latex;
       variable = parsed.variable ?? 'x';
     } catch (e) {
-      if (e instanceof MathInputError) throw new BadRequestException({ code: 'INVALID_EQUATION', message: e.message });
+      if (e instanceof MathInputError)
+        throw new BadRequestException({ code: 'INVALID_EQUATION', message: e.message });
       throw e;
     }
 
@@ -183,10 +210,18 @@ export class TutorService {
       const ctx = await this.context(turn);
       try {
         const out = await this.llm.generate(
-          { purpose: 'hint', system: systemPrompt(turn.locale), prompt: hintPrompt(ctx, level), schema: FeedbackSchema },
+          {
+            purpose: 'hint',
+            system: systemPrompt(turn.locale),
+            prompt: hintPrompt(ctx, level),
+            schema: FeedbackSchema,
+          },
           userId,
         );
-        await this.say(attemptId, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', out.message, { hintLevel: level, requested: true });
+        await this.say(attemptId, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', out.message, {
+          hintLevel: level,
+          requested: true,
+        });
       } catch (e) {
         await this.sayUnavailable(attemptId, e, notices.aiUnavailable(turn.locale));
       }
@@ -205,7 +240,9 @@ export class TutorService {
       check = checkStep(attempt.currentLine, text, attempt.variable);
     } catch (e) {
       if (e instanceof MathInputError) {
-        await this.say(attempt.id, 'TUTOR', 'NOTICE', notices.parseError(locale, e.code), { inputError: e.code });
+        await this.say(attempt.id, 'TUTOR', 'NOTICE', notices.parseError(locale, e.code), {
+          inputError: e.code,
+        });
         return;
       }
       throw e;
@@ -213,7 +250,13 @@ export class TutorService {
 
     const [step] = await this.db
       .insert(steps)
-      .values({ attemptId: attempt.id, index: turn.steps.length, input: text, latex: check.current.latex, isCorrect: check.equivalent })
+      .values({
+        attemptId: attempt.id,
+        index: turn.steps.length,
+        input: text,
+        latex: check.current.latex,
+        isCorrect: check.equivalent,
+      })
       .returning();
     turn.steps.push(step!);
 
@@ -233,7 +276,12 @@ export class TutorService {
       fixed.corrected = true;
       await this.skills.record(attempt.userId, ERROR_TO_SKILL[fixed.errorType], OUTCOME.CORRECTED);
     }
-    await this.update(turn, { currentLine: text, mode: 'SOLVING', hintLevel: 0, activeMistakeId: null });
+    await this.update(turn, {
+      currentLine: text,
+      mode: 'SOLVING',
+      hintLevel: 0,
+      activeMistakeId: null,
+    });
 
     if (check.solved) return this.onSolved(turn, check);
 
@@ -248,7 +296,10 @@ export class TutorService {
         },
         attempt.userId,
       );
-      await this.say(attempt.id, 'TUTOR', 'FEEDBACK', out.message, { correct: true, fixedErrorType: fixed?.errorType ?? null });
+      await this.say(attempt.id, 'TUTOR', 'FEEDBACK', out.message, {
+        correct: true,
+        fixedErrorType: fixed?.errorType ?? null,
+      });
     } catch (e) {
       await this.sayUnavailable(attempt.id, e, notices.stepCorrectNoAi(locale), { correct: true });
     }
@@ -285,7 +336,8 @@ export class TutorService {
       unavailable = e; // the math engine still knows the step is wrong; record it anyway
     }
 
-    const mistakeId = active?.id ?? (await this.recordMistake(turn, text, errorType, misconception)).id;
+    const mistakeId =
+      active?.id ?? (await this.recordMistake(turn, text, errorType, misconception)).id;
     await this.update(turn, { mode: 'REMEDIATION', hintLevel: level, activeMistakeId: mistakeId });
 
     if (tutorMessage) {
@@ -295,7 +347,9 @@ export class TutorService {
         correct: false,
       });
     } else {
-      await this.sayUnavailable(attempt.id, unavailable, notices.stepWrongNoAi(locale), { correct: false });
+      await this.sayUnavailable(attempt.id, unavailable, notices.stepWrongNoAi(locale), {
+        correct: false,
+      });
     }
   }
 
@@ -304,7 +358,8 @@ export class TutorService {
     await this.update(turn, { status: 'SOLVED', solvedAt: new Date() });
 
     const outcome = turn.mistakes.length ? OUTCOME.SOLVED_WITH_MISTAKES : OUTCOME.CLEAN;
-    for (const skill of turn.problemSkills) await this.skills.record(attempt.userId, skill, outcome);
+    for (const skill of turn.problemSkills)
+      await this.skills.record(attempt.userId, skill, outcome);
 
     // Follow-up passed: the original error was not repeated → understanding verified.
     if (attempt.targetErrorType && attempt.sourceMistakeId) {
@@ -313,15 +368,23 @@ export class TutorService {
         await this.db
           .update(mistakes)
           .set({ verified: true, verifiedAt: new Date() })
-          .where(and(eq(mistakes.id, attempt.sourceMistakeId), eq(mistakes.userId, attempt.userId)));
-        await this.skills.record(attempt.userId, ERROR_TO_SKILL[attempt.targetErrorType], OUTCOME.CLEAN);
+          .where(
+            and(eq(mistakes.id, attempt.sourceMistakeId), eq(mistakes.userId, attempt.userId)),
+          );
+        await this.skills.record(
+          attempt.userId,
+          ERROR_TO_SKILL[attempt.targetErrorType],
+          OUTCOME.CLEAN,
+        );
       }
     }
 
     const fixed = turn.mistakes.filter((m) => m.corrected && m.errorType !== 'OTHER');
     const target = (await this.followUpDepth(attempt)) < MAX_FOLLOW_UP_DEPTH ? fixed[0] : undefined;
     const solution =
-      check.currentSolution.kind === 'unique' ? `${attempt.variable} = ${check.currentSolution.value.toLatex()}` : '';
+      check.currentSolution.kind === 'unique'
+        ? `${attempt.variable} = ${check.currentSolution.value.toLatex()}`
+        : '';
 
     const ctx = await this.context(turn);
     try {
@@ -329,14 +392,20 @@ export class TutorService {
         {
           purpose: 'celebrate',
           system: systemPrompt(locale),
-          prompt: celebratePrompt(ctx, solution, target ? fixed.map((m) => `${m.errorType}: ${m.description}`) : []),
+          prompt: celebratePrompt(
+            ctx,
+            solution,
+            target ? fixed.map((m) => `${m.errorType}: ${m.description}`) : [],
+          ),
           schema: FeedbackSchema,
         },
         attempt.userId,
       );
       await this.say(attempt.id, 'TUTOR', 'CELEBRATION', out.message, { solved: true });
     } catch (e) {
-      await this.sayUnavailable(attempt.id, e, notices.solvedNoAi(locale, solution), { solved: true });
+      await this.sayUnavailable(attempt.id, e, notices.solvedNoAi(locale, solution), {
+        solved: true,
+      });
     }
 
     if (target) await this.createFollowUp(turn, target);
@@ -348,15 +417,28 @@ export class TutorService {
     const ctx = await this.context(turn);
     try {
       const reply = await this.llm.generate(
-        { purpose: 'chat', system: systemPrompt(locale), prompt: chatPrompt(ctx, text), schema: ChatReplySchema },
+        {
+          purpose: 'chat',
+          system: systemPrompt(locale),
+          prompt: chatPrompt(ctx, text),
+          schema: ChatReplySchema,
+        },
         attempt.userId,
       );
       if (attempt.mode === 'REMEDIATION' && this.activeMistake(turn) && reply.escalate) {
         const level = Math.min(MAX_HINT, attempt.hintLevel + 1);
         await this.update(turn, { hintLevel: level });
-        await this.say(attempt.id, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', reply.message, { hintLevel: level });
+        await this.say(attempt.id, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', reply.message, {
+          hintLevel: level,
+        });
       } else {
-        await this.say(attempt.id, 'TUTOR', 'CHAT', reply.message, reply.understood ? { understood: true } : null);
+        await this.say(
+          attempt.id,
+          'TUTOR',
+          'CHAT',
+          reply.message,
+          reply.understood ? { understood: true } : null,
+        );
       }
     } catch (e) {
       await this.sayUnavailable(attempt.id, e, notices.aiUnavailable(locale));
@@ -370,7 +452,9 @@ export class TutorService {
     const previous = await this.db
       .select({ equation: attempts.equation })
       .from(attempts)
-      .where(and(eq(attempts.userId, parent.userId), eq(attempts.targetErrorType, mistake.errorType)))
+      .where(
+        and(eq(attempts.userId, parent.userId), eq(attempts.targetErrorType, mistake.errorType)),
+      )
       .limit(10);
     const problem = await this.followUps.generate({
       userId: parent.userId,
@@ -401,7 +485,12 @@ export class TutorService {
     });
   }
 
-  private async recordMistake(turn: Turn, stepInput: string, errorType: ErrorType, description: string) {
+  private async recordMistake(
+    turn: Turn,
+    stepInput: string,
+    errorType: ErrorType,
+    description: string,
+  ) {
     const [mistake] = await this.db
       .insert(mistakes)
       .values({
@@ -414,7 +503,8 @@ export class TutorService {
       })
       .returning();
     turn.mistakes.push(mistake!);
-    if (errorType !== 'OTHER') await this.skills.record(turn.attempt.userId, ERROR_TO_SKILL[errorType], OUTCOME.MISTAKE);
+    if (errorType !== 'OTHER')
+      await this.skills.record(turn.attempt.userId, ERROR_TO_SKILL[errorType], OUTCOME.MISTAKE);
     return mistake!;
   }
 
@@ -443,7 +533,12 @@ export class TutorService {
     const recent = await this.db
       .select({ role: messages.role, content: messages.content })
       .from(messages)
-      .where(and(eq(messages.attemptId, attempt.id), notInArray(messages.kind, ['GREETING', 'FOLLOW_UP'])))
+      .where(
+        and(
+          eq(messages.attemptId, attempt.id),
+          notInArray(messages.kind, ['GREETING', 'FOLLOW_UP']),
+        ),
+      )
       .orderBy(desc(messages.seq))
       .limit(8);
     return {
@@ -454,7 +549,12 @@ export class TutorService {
       mode: attempt.mode,
       hintLevel: attempt.hintLevel,
       activeMistake: active
-        ? { errorType: active.errorType, description: active.description, stepInput: active.stepInput, previousLine: active.previousLine }
+        ? {
+            errorType: active.errorType,
+            description: active.description,
+            stepInput: active.stepInput,
+            previousLine: active.previousLine,
+          }
         : null,
       recentDialogue: recent.reverse().map((m) => ({
         role: m.role === 'STUDENT' ? 'Student' : 'Tutor',
@@ -474,49 +574,85 @@ export class TutorService {
     turn.attempt = row!;
   }
 
-  private async say(attemptId: string, role: MessageRole, kind: MessageKind, content: string, meta: Record<string, unknown> | null = null) {
+  private async say(
+    attemptId: string,
+    role: MessageRole,
+    kind: MessageKind,
+    content: string,
+    meta: Record<string, unknown> | null = null,
+  ) {
     await this.db.insert(messages).values({ attemptId, role, kind, content, meta });
   }
 
-  private async sayUnavailable(attemptId: string, e: unknown, text: string, meta: Record<string, unknown> = {}) {
+  private async sayUnavailable(
+    attemptId: string,
+    e: unknown,
+    text: string,
+    meta: Record<string, unknown> = {},
+  ) {
     if (!(e instanceof LlmUnavailableError)) throw e;
     await this.say(attemptId, 'TUTOR', 'NOTICE', text, { ...meta, aiUnavailable: e.reason });
   }
 
   private async findOwned(userId: string, attemptId: string): Promise<Attempt> {
-    if (!/^[0-9a-f-]{36}$/i.test(attemptId)) throw new NotFoundException({ code: 'ATTEMPT_NOT_FOUND', message: 'Attempt not found' });
+    if (!/^[0-9a-f-]{36}$/i.test(attemptId))
+      throw new NotFoundException({ code: 'ATTEMPT_NOT_FOUND', message: 'Attempt not found' });
     const [attempt] = await this.db
       .select()
       .from(attempts)
       .where(and(eq(attempts.id, attemptId), eq(attempts.userId, userId)));
-    if (!attempt) throw new NotFoundException({ code: 'ATTEMPT_NOT_FOUND', message: 'Attempt not found' });
+    if (!attempt)
+      throw new NotFoundException({ code: 'ATTEMPT_NOT_FOUND', message: 'Attempt not found' });
     return attempt;
   }
 
   private async loadTurn(userId: string, attemptId: string): Promise<Turn> {
     const attempt = await this.findOwned(userId, attemptId);
     if (attempt.status !== 'IN_PROGRESS') {
-      throw new ConflictException({ code: 'ATTEMPT_CLOSED', message: 'This problem is already finished' });
+      throw new ConflictException({
+        code: 'ATTEMPT_CLOSED',
+        message: 'This problem is already finished',
+      });
     }
     const [stepRows, mistakeRows, problem, locale] = await Promise.all([
       this.db.select().from(steps).where(eq(steps.attemptId, attemptId)).orderBy(asc(steps.index)),
-      this.db.select().from(mistakes).where(eq(mistakes.attemptId, attemptId)).orderBy(asc(mistakes.createdAt)),
+      this.db
+        .select()
+        .from(mistakes)
+        .where(eq(mistakes.attemptId, attemptId))
+        .orderBy(asc(mistakes.createdAt)),
       attempt.problemId
-        ? this.db.select({ skills: problems.skills }).from(problems).where(eq(problems.id, attempt.problemId)).then((r) => r[0])
+        ? this.db
+            .select({ skills: problems.skills })
+            .from(problems)
+            .where(eq(problems.id, attempt.problemId))
+            .then((r) => r[0])
         : Promise.resolve(undefined),
       this.localeOf(userId),
     ]);
-    return { attempt, steps: stepRows, mistakes: mistakeRows, problemSkills: (problem?.skills ?? []) as Skill[], locale };
+    return {
+      attempt,
+      steps: stepRows,
+      mistakes: mistakeRows,
+      problemSkills: (problem?.skills ?? []) as Skill[],
+      locale,
+    };
   }
 
   private async localeOf(userId: string): Promise<Locale> {
-    const [u] = await this.db.select({ locale: users.locale }).from(users).where(eq(users.id, userId));
+    const [u] = await this.db
+      .select({ locale: users.locale })
+      .from(users)
+      .where(eq(users.id, userId));
     return u?.locale === 'uk' ? 'uk' : 'en';
   }
 
   private async exclusive<T>(key: string, fn: () => Promise<T>): Promise<T> {
     if (this.busy.has(key)) {
-      throw new ConflictException({ code: 'BUSY', message: 'The tutor is still answering your previous message' });
+      throw new ConflictException({
+        code: 'BUSY',
+        message: 'The tutor is still answering your previous message',
+      });
     }
     this.busy.add(key);
     try {

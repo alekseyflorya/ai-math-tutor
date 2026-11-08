@@ -1,0 +1,144 @@
+@import 'tailwindcss';
+@import 'katex/dist/katex.min.css';
+
+/*
+ * Visual idea: a Soviet school exercise book ("зошит у клітинку") — squared paper,
+ * a red margin, the student's work in blue ink, the teacher's notes in red pen.
+ * Dark mode turns the page into a classroom chalkboard.
+ */
+@theme {
+  --font-sans: 'PT Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'PT Serif', ui-serif, Georgia, serif;
+  --font-hand: 'Caveat', 'Comic Sans MS', cursive;
+
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-grid: var(--grid);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-pen: var(--pen);
+  --color-pen-soft: var(--pen-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-margin: var(--margin);
+}
+
+:root {
+  --paper: #fbfaf5;
+  --paper-2: #f3f1e8;
+  --surface: #ffffff;
+  --line: #e2ded0;
+  --grid: rgb(96 132 186 / 0.16);
+  --ink: #1d3f94;
+  --ink-soft: rgb(29 63 148 / 0.08);
+  --pen: #c62828;
+  --pen-soft: rgb(198 40 40 / 0.08);
+  --ok: #2e7d32;
+  --ok-soft: rgb(46 125 50 / 0.1);
+  --text: #20232a;
+  --muted: #6b6f78;
+  --margin: rgb(198 40 40 / 0.45);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #18221f;
+    --paper-2: #1f2b27;
+    --surface: #22302b;
+    --line: #34443e;
+    --grid: rgb(220 235 225 / 0.06);
+    --ink: #cfe0ff;
+    --ink-soft: rgb(207 224 255 / 0.09);
+    --pen: #ff8a80;
+    --pen-soft: rgb(255 138 128 / 0.1);
+    --ok: #9be7a0;
+    --ok-soft: rgb(155 231 160 / 0.1);
+    --text: #eef2ee;
+    --muted: #a3b0aa;
+    --margin: rgb(255 138 128 / 0.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --paper: #18221f;
+  --paper-2: #1f2b27;
+  --surface: #22302b;
+  --line: #34443e;
+  --grid: rgb(220 235 225 / 0.06);
+  --ink: #cfe0ff;
+  --ink-soft: rgb(207 224 255 / 0.09);
+  --pen: #ff8a80;
+  --pen-soft: rgb(255 138 128 / 0.1);
+  --ok: #9be7a0;
+  --ok-soft: rgb(155 231 160 / 0.1);
+  --text: #eef2ee;
+  --muted: #a3b0aa;
+  --margin: rgb(255 138 128 / 0.35);
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--text);
+}
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Squared exercise-book paper with a red margin line. */
+.notebook {
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(
+      to right,
+      transparent 2.75rem,
+      var(--margin) 2.75rem,
+      var(--margin) calc(2.75rem + 1.5px),
+      transparent calc(2.75rem + 1.5px)
+    ),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    1.25rem 1.25rem,
+    1.25rem 1.25rem;
+}
+.graph-paper {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 1.25rem 1.25rem;
+}
+
+.katex {
+  font-size: 1.08em;
+}
+.katex-display {
+  margin: 0;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-rise {
+  animation: rise 220ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise {
+    animation: none;
+  }
+}

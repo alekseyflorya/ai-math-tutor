@@ -26,10 +26,13 @@ Teaching rules:
 }
 
 export const ERROR_TYPE_GUIDE: Record<ErrorType, string> = {
-  DISTRIBUTION: 'Opening brackets incorrectly, e.g. multiplying only the first term: 3(x + 4) → 3x + 4, or losing a sign: −2(x − 1) → −2x − 2.',
+  DISTRIBUTION:
+    'Opening brackets incorrectly, e.g. multiplying only the first term: 3(x + 4) → 3x + 4, or losing a sign: −2(x − 1) → −2x − 2.',
   SIGN_TRANSFER: 'Moving a term to the other side of "=" without changing its sign.',
-  COMBINING_LIKE_TERMS: 'Adding/subtracting x-terms or numbers incorrectly, or combining an x-term with a number.',
-  INVERSE_OPERATION: 'Using the wrong inverse operation to isolate x, e.g. subtracting the coefficient instead of dividing.',
+  COMBINING_LIKE_TERMS:
+    'Adding/subtracting x-terms or numbers incorrectly, or combining an x-term with a number.',
+  INVERSE_OPERATION:
+    'Using the wrong inverse operation to isolate x, e.g. subtracting the coefficient instead of dividing.',
   ONE_SIDE_ONLY: 'Applying an operation to only one side, or to only one term of a side.',
   ARITHMETIC: 'A plain calculation slip (e.g. 19 − 12 = 8) while the method is right.',
   OTHER: 'Anything else.',
@@ -48,7 +51,12 @@ export interface TutorContext {
   steps: { input: string; isCorrect: boolean }[];
   mode: 'SOLVING' | 'REMEDIATION';
   hintLevel: number;
-  activeMistake: { errorType: ErrorType; description: string; stepInput: string; previousLine: string } | null;
+  activeMistake: {
+    errorType: ErrorType;
+    description: string;
+    stepInput: string;
+    previousLine: string;
+  } | null;
   recentDialogue: { role: string; content: string }[];
   isFollowUp: boolean;
 }
@@ -82,7 +90,12 @@ export function studentInput(text: string): string {
   return `<student_input>${clean}</student_input>`;
 }
 
-export function diagnosePrompt(ctx: TutorContext, step: string, facts: string[], level: 1 | 2 | 3 = 1): string {
+export function diagnosePrompt(
+  ctx: TutorContext,
+  step: string,
+  facts: string[],
+  level: 1 | 2 | 3 = 1,
+): string {
   const guide = Object.entries(ERROR_TYPE_GUIDE)
     .map(([k, v]) => `- ${k}: ${v}`)
     .join('\n');
@@ -105,7 +118,12 @@ Then write the tutor's message: ${HINT_LADDER[level]}${
   }`;
 }
 
-export function stepFeedbackPrompt(ctx: TutorContext, step: string, facts: string[], afterCorrection: boolean): string {
+export function stepFeedbackPrompt(
+  ctx: TutorContext,
+  step: string,
+  facts: string[],
+  afterCorrection: boolean,
+): string {
   return `${contextBlock(ctx)}
 
 The student just wrote this step:
@@ -155,7 +173,11 @@ Task: ${
   }`;
 }
 
-export function celebratePrompt(ctx: TutorContext, solution: string, fixedMistakes: string[]): string {
+export function celebratePrompt(
+  ctx: TutorContext,
+  solution: string,
+  fixedMistakes: string[],
+): string {
   return `${contextBlock(ctx)}
 
 The student has solved the problem: ${solution} (verified by the math engine).
@@ -169,7 +191,13 @@ ${
 Keep it to 2 sentences.`;
 }
 
-export function followUpPrompt(source: string, errorType: ErrorType, misconception: string, avoid: string[], rejection?: string): string {
+export function followUpPrompt(
+  source: string,
+  errorType: ErrorType,
+  misconception: string,
+  avoid: string[],
+  rejection?: string,
+): string {
   return `Create ONE new practice problem that checks whether a student has overcome this mistake.
 
 Original problem: ${source}

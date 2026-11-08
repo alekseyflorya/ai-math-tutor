@@ -1,4 +1,5 @@
-import { create, parseDependencies, type MathNode } from 'mathjs';
+import { create, parseDependencies } from 'mathjs/number';
+import type { MathNode } from 'mathjs';
 import { Fraction } from './fraction';
 
 /**
@@ -66,10 +67,7 @@ export interface EquationFeatures {
   hasFractionCoefficients: boolean;
 }
 
-export type SolutionSet =
-  | { kind: 'unique'; value: Fraction }
-  | { kind: 'all' }
-  | { kind: 'none' };
+export type SolutionSet = { kind: 'unique'; value: Fraction } | { kind: 'all' } | { kind: 'none' };
 
 /**
  * Normalises what students actually type: unicode minus and multiplication signs,
@@ -110,11 +108,17 @@ export function parseEquation(input: string, opts: { variable?: string } = {}): 
   rightVars.forEach((v) => vars.add(v));
 
   if (vars.size > 1) {
-    throw new MathInputError('MULTIPLE_VARIABLES', `Only one variable is supported, found: ${[...vars].join(', ')}`);
+    throw new MathInputError(
+      'MULTIPLE_VARIABLES',
+      `Only one variable is supported, found: ${[...vars].join(', ')}`,
+    );
   }
   const variable = vars.size === 1 ? [...vars][0]! : null;
   if (opts.variable && variable && variable !== opts.variable) {
-    throw new MathInputError('WRONG_VARIABLE', `Expected the variable "${opts.variable}", found "${variable}"`);
+    throw new MathInputError(
+      'WRONG_VARIABLE',
+      `Expected the variable "${opts.variable}", found "${variable}"`,
+    );
   }
 
   for (const lin of [left, right]) {
@@ -132,7 +136,8 @@ export function parseEquation(input: string, opts: { variable?: string } = {}): 
     latex: `${leftLatex} = ${rightLatex}`,
     features: {
       ...features,
-      variableOnBothSides: leftVars.size > 0 && rightVars.size > 0 && !left.a.isZero() && !right.a.isZero(),
+      variableOnBothSides:
+        leftVars.size > 0 && rightVars.size > 0 && !left.a.isZero() && !right.a.isZero(),
     },
   };
 }
@@ -228,7 +233,8 @@ function parseSide(text: string): MathNode {
 
 function toTex(node: MathNode): string {
   try {
-    return node.toTex({ implicit: 'hide', parenthesis: 'keep' });
+    // mathjs puts "~" (a visible space) around implicit multiplication: "3~\left(x+4\right)".
+    return node.toTex({ implicit: 'hide', parenthesis: 'keep' }).replace(/~\s*/g, '');
   } catch {
     return node.toString();
   }
@@ -242,7 +248,8 @@ function toLinear(node: MathNode, vars: Set<string>, flags: FeatureFlags): Linea
   const n = node as MathNode & Record<string, any>;
   switch (n.type) {
     case 'ConstantNode': {
-      if (typeof n.value !== 'number') throw new MathInputError('UNSUPPORTED', 'Only numbers are allowed');
+      if (typeof n.value !== 'number')
+        throw new MathInputError('UNSUPPORTED', 'Only numbers are allowed');
       try {
         return { a: Fraction.ZERO, b: Fraction.fromDecimal(n.value) };
       } catch {
@@ -250,7 +257,8 @@ function toLinear(node: MathNode, vars: Set<string>, flags: FeatureFlags): Linea
       }
     }
     case 'SymbolNode': {
-      if (!isVariableName(n.name)) throw new MathInputError('UNSUPPORTED', `Unknown symbol "${n.name}"`);
+      if (!isVariableName(n.name))
+        throw new MathInputError('UNSUPPORTED', `Unknown symbol "${n.name}"`);
       vars.add(n.name);
       return { a: Fraction.ONE, b: Fraction.ZERO };
     }
@@ -293,7 +301,8 @@ function toLinear(node: MathNode, vars: Set<string>, flags: FeatureFlags): Linea
         case 'divide': {
           const l = toLinear(args[0]!, vars, flags);
           const r = toLinear(args[1]!, vars, flags);
-          if (!r.a.isZero()) throw new MathInputError('NONLINEAR', 'The variable cannot be in a denominator');
+          if (!r.a.isZero())
+            throw new MathInputError('NONLINEAR', 'The variable cannot be in a denominator');
           if (r.b.isZero()) throw new MathInputError('DIVISION_BY_ZERO', 'Division by zero');
           return { a: l.a.div(r.b), b: l.b.div(r.b) };
         }
@@ -306,7 +315,8 @@ function toLinear(node: MathNode, vars: Set<string>, flags: FeatureFlags): Linea
           const k = exp.b.num;
           if (k === 0) return { a: Fraction.ZERO, b: Fraction.ONE };
           if (k === 1) return base;
-          if (!base.a.isZero()) throw new MathInputError('NONLINEAR', 'Only linear equations are supported');
+          if (!base.a.isZero())
+            throw new MathInputError('NONLINEAR', 'Only linear equations are supported');
           let value = Fraction.ONE;
           for (let i = 0; i < k; i++) value = value.mul(base.b);
           return { a: Fraction.ZERO, b: value };

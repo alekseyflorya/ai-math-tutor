@@ -12,7 +12,11 @@ export class GeminiProvider implements LlmProvider {
     this.client = new GoogleGenAI({ apiKey });
   }
 
-  async completeJson(req: LlmJsonRequest<unknown>, jsonSchema: object, signal: AbortSignal): Promise<string> {
+  async completeJson(
+    req: LlmJsonRequest<unknown>,
+    jsonSchema: object,
+    signal: AbortSignal,
+  ): Promise<string> {
     const res = await this.client.models.generateContent({
       model: this.model,
       contents: [{ role: 'user', parts: [{ text: req.prompt }] }],

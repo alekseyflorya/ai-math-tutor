@@ -27,7 +27,11 @@ export class ProgressService {
         .innerJoin(attempts, eq(steps.attemptId, attempts.id))
         .where(ownAttempts)
         .groupBy(steps.isCorrect),
-      this.db.select().from(mistakes).where(eq(mistakes.userId, userId)).orderBy(desc(mistakes.createdAt)),
+      this.db
+        .select()
+        .from(mistakes)
+        .where(eq(mistakes.userId, userId))
+        .orderBy(desc(mistakes.createdAt)),
       this.db.select().from(skillStats).where(eq(skillStats.userId, userId)),
       this.db
         .select({
@@ -63,7 +67,10 @@ export class ProgressService {
 
     const activity = new Map<string, { solved: number; steps: number }>();
     for (let i = DAYS - 1; i >= 0; i--) {
-      activity.set(new Date(Date.now() - i * DAY_MS).toISOString().slice(0, 10), { solved: 0, steps: 0 });
+      activity.set(new Date(Date.now() - i * DAY_MS).toISOString().slice(0, 10), {
+        solved: 0,
+        steps: 0,
+      });
     }
     for (const a of attemptRows) {
       if (a.solvedAt && a.solvedAt >= since) {
@@ -91,7 +98,10 @@ export class ProgressService {
         verifiedMistakes: verified,
         followUpsPassed: verified,
       },
-      mistakesByType: ERROR_TYPES.filter((t) => byType.has(t)).map((errorType) => ({ errorType, ...byType.get(errorType)! })),
+      mistakesByType: ERROR_TYPES.filter((t) => byType.has(t)).map((errorType) => ({
+        errorType,
+        ...byType.get(errorType)!,
+      })),
       skills: SKILLS.map((skill) => ({
         skill,
         mastery: Math.round((skillMap.get(skill)?.mastery ?? 0) * 100) / 100,

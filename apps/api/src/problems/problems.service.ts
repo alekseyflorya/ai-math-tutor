@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import { and, asc, eq, isNotNull } from 'drizzle-orm';
 import { parseEquation, solve, type Locale, type ProblemView, type Skill } from '@tutor/shared';
 import { DB, type Db } from '../db/db.module';
@@ -27,14 +33,18 @@ export class ProblemsService implements OnApplicationBootstrap {
         order,
         featured: Boolean(p.featured),
       };
-      await this.db.insert(problems).values({ id: p.id, ...data }).onConflictDoUpdate({ target: problems.id, set: data });
+      await this.db
+        .insert(problems)
+        .values({ id: p.id, ...data })
+        .onConflictDoUpdate({ target: problems.id, set: data });
     }
     this.logger.log(`Curriculum synced: ${CURRICULUM.length} problems`);
   }
 
   async get(id: string) {
     const [problem] = await this.db.select().from(problems).where(eq(problems.id, id));
-    if (!problem) throw new NotFoundException({ code: 'PROBLEM_NOT_FOUND', message: 'Problem not found' });
+    if (!problem)
+      throw new NotFoundException({ code: 'PROBLEM_NOT_FOUND', message: 'Problem not found' });
     return problem;
   }
 
@@ -48,13 +58,29 @@ export class ProblemsService implements OnApplicationBootstrap {
       this.db
         .selectDistinct({ problemId: attempts.problemId })
         .from(attempts)
-        .where(and(eq(attempts.userId, userId), eq(attempts.status, 'SOLVED'), isNotNull(attempts.problemId))),
-      this.db.select().from(skillStats).where(eq(skillStats.userId, userId)).orderBy(asc(skillStats.mastery)),
+        .where(
+          and(
+            eq(attempts.userId, userId),
+            eq(attempts.status, 'SOLVED'),
+            isNotNull(attempts.problemId),
+          ),
+        ),
+      this.db
+        .select()
+        .from(skillStats)
+        .where(eq(skillStats.userId, userId))
+        .orderBy(asc(skillStats.mastery)),
     ]);
     const solved = new Set(solvedRows.map((r) => r.problemId));
     const unsolved = all.filter((p) => !solved.has(p.id));
-    const weakest = skills.find((s) => s.mastery < 0.7)?.skill;
-    const recommended = (weakest && unsolved.find((p) => p.skills.includes(weakest))) || unsolved[0] || null;
+    // Stay within the student's zone: never jump more than one difficulty level ahead.
+    const frontier = Math.min(...unsolved.map((p) => p.difficulty));
+    const reachable = unsolved.filter((p) => p.difficulty <= frontier + 1);
+    const weakSkills = skills.filter((s) => s.mastery < 0.7).map((s) => s.skill);
+    const recommended =
+      weakSkills.map((skill) => reachable.find((p) => p.skills.includes(skill))).find(Boolean) ??
+      unsolved[0] ??
+      null;
 
     return all.map((p) => ({
       id: p.id,

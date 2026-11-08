@@ -9,11 +9,17 @@ const latexOf = (equation: string) => {
   }
 };
 
-export function toAttemptView(a: Attempt, steps: Step[], messages: Message[], nextAttemptId: string | null): AttemptView {
+export function toAttemptView(
+  a: Attempt,
+  steps: Step[],
+  messages: Message[],
+  nextAttemptId: string | null,
+): AttemptView {
   return {
     id: a.id,
     equation: a.equation,
     latex: latexOf(a.equation),
+    variable: a.variable,
     title: a.title,
     status: a.status,
     mode: a.mode,
@@ -22,7 +28,13 @@ export function toAttemptView(a: Attempt, steps: Step[], messages: Message[], ne
     currentLatex: latexOf(a.currentLine),
     isFollowUp: Boolean(a.parentAttemptId),
     targetErrorType: a.targetErrorType ?? null,
-    steps: steps.map((s) => ({ id: s.id, input: s.input, latex: s.latex, isCorrect: s.isCorrect, index: s.index })),
+    steps: steps.map((s) => ({
+      id: s.id,
+      input: s.input,
+      latex: s.latex,
+      isCorrect: s.isCorrect,
+      index: s.index,
+    })),
     messages: messages.map((m) => ({
       id: m.id,
       role: m.role,

@@ -42,7 +42,10 @@ export const ERROR_TO_SKILL: Record<ErrorType, Skill> = {
 // --- Auth -------------------------------------------------------------------
 
 export const RegisterSchema = z.object({
-  email: z.email().max(254).transform((v) => v.toLowerCase()),
+  email: z
+    .email()
+    .max(254)
+    .transform((v) => v.toLowerCase()),
   password: z.string().min(8).max(72),
   name: z.string().trim().min(1).max(50),
   locale: LocaleSchema.default('en'),
@@ -50,7 +53,10 @@ export const RegisterSchema = z.object({
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 
 export const LoginSchema = z.object({
-  email: z.email().max(254).transform((v) => v.toLowerCase()),
+  email: z
+    .email()
+    .max(254)
+    .transform((v) => v.toLowerCase()),
   password: z.string().min(1).max(72),
 });
 export type LoginInput = z.infer<typeof LoginSchema>;
@@ -120,6 +126,7 @@ export interface AttemptView {
   id: string;
   equation: string;
   latex: string;
+  variable: string;
   title: string;
   status: AttemptStatus;
   mode: TutorMode;
@@ -173,7 +180,14 @@ export interface ProgressView {
   mistakesByType: { errorType: ErrorType; total: number; corrected: number; verified: number }[];
   skills: { skill: Skill; mastery: number; attempts: number }[];
   recentMistakes: MistakeView[];
-  recentAttempts: { id: string; title: string; equation: string; status: AttemptStatus; isFollowUp: boolean; updatedAt: string }[];
+  recentAttempts: {
+    id: string;
+    title: string;
+    equation: string;
+    status: AttemptStatus;
+    isFollowUp: boolean;
+    updatedAt: string;
+  }[];
   /** Solved problems per day, last 14 days. */
   activity: { date: string; solved: number; steps: number }[];
 }

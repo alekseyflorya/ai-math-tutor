@@ -25,7 +25,8 @@ class PoolCloser implements OnModuleDestroy {
       provide: Pool,
       inject: [AppConfig],
       // A 1–2 GB VPS: a small pool is plenty and keeps Postgres memory low.
-      useFactory: (config: AppConfig) => new Pool({ connectionString: config.get('DATABASE_URL'), max: 10 }),
+      useFactory: (config: AppConfig) =>
+        new Pool({ connectionString: config.get('DATABASE_URL'), max: 10 }),
     },
     {
       provide: DB,

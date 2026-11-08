@@ -35,7 +35,11 @@ export interface StepCheckResult {
  * we compute exactly. This is the source of truth for "is this step right?" —
  * the LLM is only asked *why* a wrong step is wrong.
  */
-export function checkStep(previousRaw: string, currentRaw: string, variable = 'x'): StepCheckResult {
+export function checkStep(
+  previousRaw: string,
+  currentRaw: string,
+  variable = 'x',
+): StepCheckResult {
   const previous = parseEquation(previousRaw);
   const current = parseEquation(currentRaw, { variable });
   const previousSolution = solve(previous);

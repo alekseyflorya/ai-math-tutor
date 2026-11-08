@@ -45,13 +45,22 @@ export class FollowUpService {
           {
             purpose: 'follow_up',
             system: systemPrompt('en'),
-            prompt: followUpPrompt(params.source, params.errorType, params.misconception, params.avoid, rejection),
+            prompt: followUpPrompt(
+              params.source,
+              params.errorType,
+              params.misconception,
+              params.avoid,
+              rejection,
+            ),
             schema: FollowUpSchema,
             temperature: 0.9,
           },
           params.userId,
         );
-        rejection = validateFollowUp(out.equation, params.errorType, [params.source, ...params.avoid]);
+        rejection = validateFollowUp(out.equation, params.errorType, [
+          params.source,
+          ...params.avoid,
+        ]);
         if (!rejection) return { equation: out.equation.trim(), source: 'llm' };
         this.logger.warn(`Follow-up "${out.equation}" rejected: ${rejection}`);
       } catch (e) {
@@ -65,7 +74,11 @@ export class FollowUpService {
 }
 
 /** Returns a rejection reason, or undefined when the problem is acceptable. */
-export function validateFollowUp(equation: string, errorType: ErrorType, avoid: string[]): string | undefined {
+export function validateFollowUp(
+  equation: string,
+  errorType: ErrorType,
+  avoid: string[],
+): string | undefined {
   let eq: ParsedEquation;
   try {
     eq = parseEquation(equation);
@@ -75,13 +88,18 @@ export function validateFollowUp(equation: string, errorType: ErrorType, avoid: 
   if (eq.variable !== 'x') return 'the unknown must be x';
   const s = solve(eq);
   if (s.kind !== 'unique') return 'it must have exactly one solution';
-  if (!s.value.isInteger() || Math.abs(s.value.num) > 20) return 'the solution must be a whole number between -20 and 20';
+  if (!s.value.isInteger() || Math.abs(s.value.num) > 20)
+    return 'the solution must be a whole number between -20 and 20';
   const norm = normalizeMathInput(equation).replace(/\s/g, '');
-  if (avoid.some((a) => normalizeMathInput(a).replace(/\s/g, '') === norm)) return 'it repeats an earlier problem';
+  if (avoid.some((a) => normalizeMathInput(a).replace(/\s/g, '') === norm))
+    return 'it repeats an earlier problem';
   if (errorType === 'DISTRIBUTION' && !eq.features.hasDistribution) {
     return 'it must contain a bracket with x multiplied by a number, e.g. 4(x - 3)';
   }
-  if ((errorType === 'SIGN_TRANSFER' || errorType === 'COMBINING_LIKE_TERMS') && !eq.features.variableOnBothSides) {
+  if (
+    (errorType === 'SIGN_TRANSFER' || errorType === 'COMBINING_LIKE_TERMS') &&
+    !eq.features.variableOnBothSides
+  ) {
     return 'x must appear on both sides of the equation';
   }
   return undefined;

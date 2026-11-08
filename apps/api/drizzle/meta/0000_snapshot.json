@@ -149,12 +149,8 @@
           "name": "attempts_user_id_users_id_fk",
           "tableFrom": "attempts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -162,12 +158,8 @@
           "name": "attempts_problem_id_problems_id_fk",
           "tableFrom": "attempts",
           "tableTo": "problems",
-          "columnsFrom": [
-            "problem_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["problem_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -175,12 +167,8 @@
           "name": "attempts_parent_attempt_id_attempts_id_fk",
           "tableFrom": "attempts",
           "tableTo": "attempts",
-          "columnsFrom": [
-            "parent_attempt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_attempt_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -295,12 +283,8 @@
           "name": "llm_calls_user_id_users_id_fk",
           "tableFrom": "llm_calls",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -396,12 +380,8 @@
           "name": "messages_attempt_id_attempts_id_fk",
           "tableFrom": "messages",
           "tableTo": "attempts",
-          "columnsFrom": [
-            "attempt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["attempt_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -529,12 +509,8 @@
           "name": "mistakes_user_id_users_id_fk",
           "tableFrom": "mistakes",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -542,12 +518,8 @@
           "name": "mistakes_attempt_id_attempts_id_fk",
           "tableFrom": "mistakes",
           "tableTo": "attempts",
-          "columnsFrom": [
-            "attempt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["attempt_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -665,12 +637,8 @@
           "name": "skill_stats_user_id_users_id_fk",
           "tableFrom": "skill_stats",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -678,10 +646,7 @@
       "compositePrimaryKeys": {
         "skill_stats_user_id_skill_pk": {
           "name": "skill_stats_user_id_skill_pk",
-          "columns": [
-            "user_id",
-            "skill"
-          ]
+          "columns": ["user_id", "skill"]
         }
       },
       "uniqueConstraints": {},
@@ -766,12 +731,8 @@
           "name": "steps_attempt_id_attempts_id_fk",
           "tableFrom": "steps",
           "tableTo": "attempts",
-          "columnsFrom": [
-            "attempt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["attempt_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -840,9 +801,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -854,11 +813,7 @@
     "public.attempt_status": {
       "name": "attempt_status",
       "schema": "public",
-      "values": [
-        "IN_PROGRESS",
-        "SOLVED",
-        "ABANDONED"
-      ]
+      "values": ["IN_PROGRESS", "SOLVED", "ABANDONED"]
     },
     "public.error_type": {
       "name": "error_type",
@@ -891,19 +846,12 @@
     "public.message_role": {
       "name": "message_role",
       "schema": "public",
-      "values": [
-        "STUDENT",
-        "TUTOR",
-        "SYSTEM"
-      ]
+      "values": ["STUDENT", "TUTOR", "SYSTEM"]
     },
     "public.tutor_mode": {
       "name": "tutor_mode",
       "schema": "public",
-      "values": [
-        "SOLVING",
-        "REMEDIATION"
-      ]
+      "values": ["SOLVING", "REMEDIATION"]
     }
   },
   "schemas": {},

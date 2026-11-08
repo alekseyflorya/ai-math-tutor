@@ -4,7 +4,12 @@ import { AppConfig } from '../config/config.service';
 import { and, count, eq, gte } from 'drizzle-orm';
 import { DB, type Db } from '../db/db.module';
 import { llmCalls } from '../db/schema';
-import { LLM_PROVIDER, LlmUnavailableError, type LlmJsonRequest, type LlmProvider } from './llm.types';
+import {
+  LLM_PROVIDER,
+  LlmUnavailableError,
+  type LlmJsonRequest,
+  type LlmProvider,
+} from './llm.types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_ATTEMPTS = 2;
@@ -42,7 +47,11 @@ export class LlmService {
       let errorText: string | null = null;
 
       try {
-        const raw = await this.provider.completeJson({ ...req, prompt }, jsonSchema, controller.signal);
+        const raw = await this.provider.completeJson(
+          { ...req, prompt },
+          jsonSchema,
+          controller.signal,
+        );
         const parsed = req.schema.safeParse(safeJson(raw));
         if (parsed.success) {
           await this.log(req.purpose, userId, true, Date.now() - started, null);
@@ -57,10 +66,16 @@ export class LlmService {
         if (controller.signal.aborted) {
           lastError = new LlmUnavailableError('timeout', 'The model did not answer in time');
         } else if (status === 429) {
-          lastError = new LlmUnavailableError('rate_limited', 'The model provider is rate limiting requests');
+          lastError = new LlmUnavailableError(
+            'rate_limited',
+            'The model provider is rate limiting requests',
+          );
           await sleep(1500);
         } else {
-          lastError = new LlmUnavailableError('provider_error', (err as Error)?.message ?? 'Provider error');
+          lastError = new LlmUnavailableError(
+            'provider_error',
+            (err as Error)?.message ?? 'Provider error',
+          );
         }
         errorText = lastError.message;
       } finally {
@@ -79,10 +94,17 @@ export class LlmService {
       const [row] = await this.db
         .select({ n: count() })
         .from(llmCalls)
-        .where(userFilter ? and(eq(llmCalls.userId, userFilter), gte(llmCalls.createdAt, since)) : gte(llmCalls.createdAt, since));
+        .where(
+          userFilter
+            ? and(eq(llmCalls.userId, userFilter), gte(llmCalls.createdAt, since))
+            : gte(llmCalls.createdAt, since),
+        );
       return row?.n ?? 0;
     };
-    const [global, perUser] = await Promise.all([countSince(), userId ? countSince(userId) : Promise.resolve(0)]);
+    const [global, perUser] = await Promise.all([
+      countSince(),
+      userId ? countSince(userId) : Promise.resolve(0),
+    ]);
     if (global >= this.config.get('LLM_DAILY_LIMIT_GLOBAL')) {
       throw new LlmUnavailableError('quota_global', 'Daily AI budget for the demo is used up');
     }
@@ -91,7 +113,13 @@ export class LlmService {
     }
   }
 
-  private async log(purpose: string, userId: string | null, ok: boolean, latencyMs: number, error: string | null) {
+  private async log(
+    purpose: string,
+    userId: string | null,
+    ok: boolean,
+    latencyMs: number,
+    error: string | null,
+  ) {
     await this.db
       .insert(llmCalls)
       .values({

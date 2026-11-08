@@ -40,7 +40,10 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [ctx.getHandler(), ctx.getClass()]);
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
+      ctx.getHandler(),
+      ctx.getClass(),
+    ]);
     const req = ctx.switchToHttp().getRequest<AuthedRequest>();
     const token: unknown = req.cookies?.[SESSION_COOKIE];
 
@@ -53,7 +56,8 @@ export class AuthGuard implements CanActivate {
       }
     }
     if (isPublic) return true;
-    if (!req.user) throw new UnauthorizedException({ code: 'UNAUTHORIZED', message: 'Please sign in' });
+    if (!req.user)
+      throw new UnauthorizedException({ code: 'UNAUTHORIZED', message: 'Please sign in' });
     return true;
   }
 }

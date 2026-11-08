@@ -20,20 +20,37 @@ export class AuthService {
   ) {}
 
   async register(input: RegisterInput): Promise<User> {
-    const [existing] = await this.db.select({ id: users.id }).from(users).where(eq(users.email, input.email));
-    if (existing) throw new ConflictException({ code: 'EMAIL_TAKEN', message: 'This email is already registered' });
+    const [existing] = await this.db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, input.email));
+    if (existing)
+      throw new ConflictException({
+        code: 'EMAIL_TAKEN',
+        message: 'This email is already registered',
+      });
     const [user] = await this.db
       .insert(users)
-      .values({ email: input.email, name: input.name, locale: input.locale, passwordHash: await hash(input.password) })
+      .values({
+        email: input.email,
+        name: input.name,
+        locale: input.locale,
+        passwordHash: await hash(input.password),
+      })
       .returning();
     return user!;
   }
 
   async login(input: LoginInput): Promise<User> {
     const [user] = await this.db.select().from(users).where(eq(users.email, input.email));
-    const ok = await verify(user?.passwordHash ?? (await this.dummyHash), input.password).catch(() => false);
+    const ok = await verify(user?.passwordHash ?? (await this.dummyHash), input.password).catch(
+      () => false,
+    );
     if (!user || !user.passwordHash || !ok) {
-      throw new UnauthorizedException({ code: 'INVALID_CREDENTIALS', message: 'Wrong email or password' });
+      throw new UnauthorizedException({
+        code: 'INVALID_CREDENTIALS',
+        message: 'Wrong email or password',
+      });
     }
     return user;
   }

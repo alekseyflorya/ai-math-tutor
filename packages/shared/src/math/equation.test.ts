@@ -99,7 +99,13 @@ describe('checkStep — the test scenario', () => {
 
   it('accepts any equivalent rearrangement, not one canonical path', () => {
     const prev = '3(x + 4) = 2x + 19';
-    for (const step of ['3x + 12 = 2x + 19', '3x - 2x = 19 - 12', 'x + 12 = 19', '12 + 3x = 19 + 2x', '6x + 24 = 4x + 38']) {
+    for (const step of [
+      '3x + 12 = 2x + 19',
+      '3x - 2x = 19 - 12',
+      'x + 12 = 19',
+      '12 + 3x = 19 + 2x',
+      '6x + 24 = 4x + 38',
+    ]) {
       expect(checkStep(prev, step).equivalent, step).toBe(true);
     }
     expect(checkStep(prev, 'x = 7').solved).toBe(true);

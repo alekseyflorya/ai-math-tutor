@@ -8,7 +8,12 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { checkStep } from '@tutor/shared';
-import { diagnosePrompt, followUpPrompt, systemPrompt, type TutorContext } from '../src/llm/prompts';
+import {
+  diagnosePrompt,
+  followUpPrompt,
+  systemPrompt,
+  type TutorContext,
+} from '../src/llm/prompts';
 import { DiagnosisSchema, FollowUpSchema } from '../src/llm/tutor-schemas';
 import { GeminiProvider } from '../src/llm/providers/gemini.provider';
 import { AnthropicProvider } from '../src/llm/providers/anthropic.provider';
@@ -25,8 +30,14 @@ if (existsSync(envFile)) {
 
 const provider: LlmProvider =
   process.env.LLM_PROVIDER === 'anthropic'
-    ? new AnthropicProvider(process.env.ANTHROPIC_API_KEY!, process.env.ANTHROPIC_MODEL ?? 'claude-haiku-5-5')
-    : new GeminiProvider(process.env.GEMINI_API_KEY!, process.env.GEMINI_MODEL ?? 'gemini-flash-latest');
+    ? new AnthropicProvider(
+        process.env.ANTHROPIC_API_KEY!,
+        process.env.ANTHROPIC_MODEL ?? 'claude-haiku-5-5',
+      )
+    : new GeminiProvider(
+        process.env.GEMINI_API_KEY!,
+        process.env.GEMINI_MODEL ?? 'gemini-flash-latest',
+      );
 
 async function run<T>(req: LlmJsonRequest<T>): Promise<T> {
   const schema = z.toJSONSchema(req.schema);
@@ -56,16 +67,28 @@ async function main() {
       recentDialogue: [],
       isFollowUp: false,
     };
-    await run({ purpose: 'diagnose', system: systemPrompt(locale), prompt: diagnosePrompt(ctx, step, check.facts), schema: DiagnosisSchema });
+    await run({
+      purpose: 'diagnose',
+      system: systemPrompt(locale),
+      prompt: diagnosePrompt(ctx, step, check.facts),
+      schema: DiagnosisSchema,
+    });
   }
   const fu = await run({
     purpose: 'follow_up',
     system: systemPrompt('en'),
-    prompt: followUpPrompt(problem, 'DISTRIBUTION', 'Multiplied only the first term in the bracket.', []),
+    prompt: followUpPrompt(
+      problem,
+      'DISTRIBUTION',
+      'Multiplied only the first term in the bracket.',
+      [],
+    ),
     schema: FollowUpSchema,
     temperature: 0.9,
   });
-  console.log(`\nMath engine verdict on follow-up: ${validateFollowUp(fu.equation, 'DISTRIBUTION', [problem]) ?? 'accepted'}`);
+  console.log(
+    `\nMath engine verdict on follow-up: ${validateFollowUp(fu.equation, 'DISTRIBUTION', [problem]) ?? 'accepted'}`,
+  );
 }
 
 main().catch((e) => {

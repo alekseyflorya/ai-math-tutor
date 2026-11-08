@@ -16,7 +16,10 @@ import { MockProvider } from './providers/mock.provider';
         const provider: LlmProvider = (() => {
           switch (config.get('LLM_PROVIDER')) {
             case 'anthropic':
-              return new AnthropicProvider(config.get('ANTHROPIC_API_KEY')!, config.get('ANTHROPIC_MODEL'));
+              return new AnthropicProvider(
+                config.get('ANTHROPIC_API_KEY')!,
+                config.get('ANTHROPIC_MODEL'),
+              );
             case 'mock':
               return new MockProvider();
             default:

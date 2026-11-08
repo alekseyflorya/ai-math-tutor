@@ -1,8 +1,6 @@
 import { z } from 'zod';
 
-const bool = z
-  .enum(['true', 'false', '1', '0'])
-  .transform((v) => v === 'true' || v === '1');
+const bool = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1');
 
 /** Environment is validated once at boot: a misconfigured deploy fails fast and loudly. */
 export const EnvSchema = z
@@ -27,14 +25,26 @@ export const EnvSchema = z
   })
   .superRefine((env, ctx) => {
     if (env.LLM_PROVIDER === 'gemini' && !env.GEMINI_API_KEY) {
-      ctx.addIssue({ code: 'custom', path: ['GEMINI_API_KEY'], message: 'Required when LLM_PROVIDER=gemini' });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['GEMINI_API_KEY'],
+        message: 'Required when LLM_PROVIDER=gemini',
+      });
     }
     if (env.LLM_PROVIDER === 'anthropic' && !env.ANTHROPIC_API_KEY) {
-      ctx.addIssue({ code: 'custom', path: ['ANTHROPIC_API_KEY'], message: 'Required when LLM_PROVIDER=anthropic' });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['ANTHROPIC_API_KEY'],
+        message: 'Required when LLM_PROVIDER=anthropic',
+      });
     }
     if (env.LLM_PROVIDER === 'mock' && env.NODE_ENV === 'production') {
       // The mock exists for automated tests only; production must use a real model.
-      ctx.addIssue({ code: 'custom', path: ['LLM_PROVIDER'], message: 'mock provider is not allowed in production' });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['LLM_PROVIDER'],
+        message: 'mock provider is not allowed in production',
+      });
     }
   });
 
@@ -43,7 +53,9 @@ export type Env = z.infer<typeof EnvSchema>;
 export function validateEnv(raw: Record<string, unknown>): Env {
   const parsed = EnvSchema.safeParse(raw);
   if (!parsed.success) {
-    const details = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
+    const details = parsed.error.issues
+      .map((i) => `  - ${i.path.join('.')}: ${i.message}`)
+      .join('\n');
     throw new Error(`Invalid environment configuration:\n${details}`);
   }
   return parsed.data;

@@ -13,7 +13,9 @@ export const DiagnosisSchema = z.object({
     .string()
     .min(5)
     .max(400)
-    .describe('Teacher-facing, one sentence: which transformation went wrong and the faulty belief behind it'),
+    .describe(
+      'Teacher-facing, one sentence: which transformation went wrong and the faulty belief behind it',
+    ),
   message,
 });
 export type Diagnosis = z.infer<typeof DiagnosisSchema>;

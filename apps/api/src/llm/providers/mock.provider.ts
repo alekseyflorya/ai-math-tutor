@@ -22,7 +22,8 @@ export class MockProvider implements LlmProvider {
             errorType === 'DISTRIBUTION'
               ? 'Multiplied only the first term inside the brackets by the coefficient.'
               : 'Moved a term across the equals sign without changing its sign.',
-          message: '[mock] Look at the brackets: what happens to every term inside when you multiply?',
+          message:
+            '[mock] Look at the brackets: what happens to every term inside when you multiply?',
         });
       }
       case 'chat': {
@@ -30,7 +31,9 @@ export class MockProvider implements LlmProvider {
           /<student_input>([\s\S]*)<\/student_input>/.exec(p)?.[1] ?? '',
         );
         return JSON.stringify({
-          message: understood ? '[mock] Exactly. Rewrite the step.' : '[mock] Here is the next hint.',
+          message: understood
+            ? '[mock] Exactly. Rewrite the step.'
+            : '[mock] Here is the next hint.',
           understood,
           escalate: !understood && p.includes('Mistake being worked on'),
         });
