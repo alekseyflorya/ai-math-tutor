@@ -15,6 +15,8 @@ import { ProgressService } from './progress/progress.service';
 import { SkillsService } from './progress/skills.service';
 import { FollowUpService } from './tutor/follow-up.service';
 import { TutorController } from './tutor/tutor.controller';
+import { AttemptLock } from './tutor/attempt-lock';
+import { TutorContextBuilder } from './tutor/tutor-context.builder';
 import { TutorService } from './tutor/tutor.service';
 
 @Module({
@@ -32,6 +34,8 @@ import { TutorService } from './tutor/tutor.service';
     SkillsService,
     ProgressService,
     FollowUpService,
+    AttemptLock,
+    TutorContextBuilder,
     TutorService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

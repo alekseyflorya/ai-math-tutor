@@ -5,7 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, count, desc, eq, isNull, ne, notInArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull } from 'drizzle-orm';
 import {
   checkStep,
   classifyInput,
@@ -35,7 +35,6 @@ import {
   users,
   type Attempt,
   type Mistake,
-  type Step,
 } from '../db/schema';
 import { LlmService } from '../llm/llm.service';
 import { LlmUnavailableError } from '../llm/llm.types';
@@ -46,26 +45,17 @@ import {
   hintPrompt,
   stepFeedbackPrompt,
   systemPrompt,
-  type TutorContext,
 } from '../llm/prompts';
 import { ChatReplySchema, DiagnosisSchema, FeedbackSchema } from '../llm/tutor-schemas';
 import { ProblemsService } from '../problems/problems.service';
 import { OUTCOME, SkillsService } from '../progress/skills.service';
 import { toAttemptView } from './attempt.mapper';
 import { AppConfig } from '../config/config.service';
+import { AttemptLock } from './attempt-lock';
 import { FollowUpService } from './follow-up.service';
 import { notices } from './notices';
-
-/** An attempt plus what a turn needs; mutated in memory as the turn progresses. */
-interface Turn {
-  attempt: Attempt;
-  steps: Step[];
-  mistakes: Mistake[];
-  problemSkills: Skill[];
-  locale: Locale;
-  /** Epoch ms: every model call of this turn, together, must finish by then. */
-  deadline: number;
-}
+import { TutorContextBuilder } from './tutor-context.builder';
+import { activeMistake, type Turn } from './turn';
 
 const MAX_HINT = 3;
 const MAX_FOLLOW_UP_DEPTH = 2;
@@ -84,9 +74,6 @@ const MAX_FOLLOW_UP_DEPTH = 2;
  */
 @Injectable()
 export class TutorService {
-  /** Rejects overlapping turns on one attempt (double clicks, two tabs). Single instance by design. */
-  private readonly busy = new Set<string>();
-
   constructor(
     @Inject(DB) private readonly db: Db,
     private readonly llm: LlmService,
@@ -94,6 +81,8 @@ export class TutorService {
     private readonly skills: SkillsService,
     private readonly problems: ProblemsService,
     private readonly config: AppConfig,
+    private readonly lock: AttemptLock,
+    private readonly contexts: TutorContextBuilder,
   ) {}
 
   // --- Queries ---------------------------------------------------------------
@@ -260,7 +249,7 @@ export class TutorService {
   }
 
   async submit(userId: string, attemptId: string, text: string): Promise<AttemptView> {
-    return this.exclusive(attemptId, async () => {
+    return this.lock.run(attemptId, async () => {
       const turn = await this.loadTurn(userId, attemptId);
       if (classifyInput(text) === 'step') await this.handleStep(turn, text);
       else await this.handleChat(turn, text);
@@ -269,10 +258,10 @@ export class TutorService {
   }
 
   async hint(userId: string, attemptId: string): Promise<AttemptView> {
-    return this.exclusive(attemptId, async () => {
+    return this.lock.run(attemptId, async () => {
       const turn = await this.loadTurn(userId, attemptId);
       const level = Math.min(MAX_HINT, turn.attempt.hintLevel + 1) as 1 | 2 | 3;
-      const ctx = await this.context(turn, { hintLevel: level });
+      const ctx = await this.contexts.build(turn, { hintLevel: level });
       try {
         const out = await this.llm.generate(
           {
@@ -347,7 +336,7 @@ export class TutorService {
 
   private async onCorrectStep(turn: Turn, text: string, check: StepCheckResult) {
     const { attempt, locale } = turn;
-    const fixed = attempt.mode === 'REMEDIATION' ? this.activeMistake(turn) : null;
+    const fixed = attempt.mode === 'REMEDIATION' ? activeMistake(turn) : null;
 
     if (fixed) {
       await this.db
@@ -366,7 +355,7 @@ export class TutorService {
 
     if (check.solved) return this.onSolved(turn, check);
 
-    const ctx = await this.context(turn);
+    const ctx = await this.contexts.build(turn);
     try {
       const out = await this.llm.generate(
         {
@@ -389,11 +378,11 @@ export class TutorService {
 
   private async onWrongStep(turn: Turn, text: string, check: StepCheckResult) {
     const { attempt, locale } = turn;
-    const active = this.activeMistake(turn);
+    const active = activeMistake(turn);
     // Still fixing a mistake and tried again unsuccessfully → climb the hint ladder.
     // Otherwise it is a new mistake → diagnose it and start at level 1.
     const level = (active ? Math.min(MAX_HINT, attempt.hintLevel + 1) : 1) as 1 | 2 | 3;
-    const ctx = await this.context(turn, { hintLevel: level });
+    const ctx = await this.contexts.build(turn, { hintLevel: level });
 
     let errorType: ErrorType = active?.errorType ?? 'OTHER';
     let tutorMessage: string | null = null;
@@ -472,7 +461,7 @@ export class TutorService {
     // Build the follow-up first so the celebration can point at the real problem.
     const followUp = target ? await this.createFollowUp(turn, target) : null;
 
-    const ctx = await this.context(turn);
+    const ctx = await this.contexts.build(turn);
     try {
       const out = await this.llm.generate(
         {
@@ -515,7 +504,7 @@ export class TutorService {
   private async handleChat(turn: Turn, text: string) {
     const { attempt, locale } = turn;
     await this.say(attempt.id, 'STUDENT', 'CHAT', text);
-    const ctx = await this.context(turn);
+    const ctx = await this.contexts.build(turn);
     try {
       const reply = await this.llm.generate(
         {
@@ -527,7 +516,7 @@ export class TutorService {
         },
         attempt.userId,
       );
-      if (attempt.mode === 'REMEDIATION' && this.activeMistake(turn) && reply.escalate) {
+      if (attempt.mode === 'REMEDIATION' && activeMistake(turn) && reply.escalate) {
         const level = Math.min(MAX_HINT, attempt.hintLevel + 1);
         await this.update(turn, { hintLevel: level });
         await this.say(attempt.id, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', reply.message, {
@@ -613,11 +602,6 @@ export class TutorService {
     return mistake!;
   }
 
-  private activeMistake(turn: Turn): Mistake | null {
-    const id = turn.attempt.activeMistakeId;
-    return id ? (turn.mistakes.find((m) => m.id === id) ?? null) : null;
-  }
-
   private async followUpDepth(attempt: Attempt): Promise<number> {
     let depth = 0;
     let parentId = attempt.parentAttemptId;
@@ -630,71 +614,6 @@ export class TutorService {
       parentId = parent?.parentAttemptId ?? null;
     }
     return depth;
-  }
-
-  private async context(turn: Turn, override: Partial<TutorContext> = {}): Promise<TutorContext> {
-    const { attempt } = turn;
-    const active = this.activeMistake(turn);
-    const recent = await this.db
-      .select({ role: messages.role, content: messages.content })
-      .from(messages)
-      .where(
-        and(
-          eq(messages.attemptId, attempt.id),
-          notInArray(messages.kind, ['GREETING', 'FOLLOW_UP']),
-        ),
-      )
-      .orderBy(desc(messages.seq))
-      .limit(8);
-    // Short profile of EARLIER work so explanations can connect to recurring patterns.
-    const [pastMistakes, [solved]] = await Promise.all([
-      this.db
-        .select({
-          errorType: mistakes.errorType,
-          total: count(),
-          verified: sql<number>`count(*) filter (where ${mistakes.verified})`.mapWith(Number),
-        })
-        .from(mistakes)
-        .where(and(eq(mistakes.userId, attempt.userId), ne(mistakes.attemptId, attempt.id)))
-        .groupBy(mistakes.errorType)
-        .orderBy(desc(count())),
-      this.db
-        .select({ n: count() })
-        .from(attempts)
-        .where(
-          and(
-            eq(attempts.userId, attempt.userId),
-            eq(attempts.status, 'SOLVED'),
-            ne(attempts.id, attempt.id),
-          ),
-        ),
-    ]);
-    return {
-      locale: turn.locale,
-      problem: attempt.equation,
-      currentLine: attempt.currentLine,
-      steps: turn.steps.map((s) => ({ input: s.input, isCorrect: s.isCorrect })),
-      mode: attempt.mode,
-      hintLevel: attempt.hintLevel,
-      activeMistake: active
-        ? {
-            errorType: active.errorType,
-            description: active.description,
-            stepInput: active.stepInput,
-            previousLine: active.previousLine,
-          }
-        : null,
-      recentDialogue: recent.reverse().map((m) => ({
-        role: m.role === 'STUDENT' ? 'Student' : 'Tutor',
-        content: m.content.slice(0, 400),
-      })),
-      isFollowUp: Boolean(attempt.targetErrorType),
-      history: {
-        solvedProblems: solved?.n ?? 0,
-        mistakes: pastMistakes.filter((m) => m.errorType !== 'OTHER'),
-      },
-      ...override,
-    };
   }
 
   private async update(turn: Turn, patch: Partial<typeof attempts.$inferInsert>) {
@@ -778,21 +697,6 @@ export class TutorService {
       .from(users)
       .where(eq(users.id, userId));
     return u?.locale === 'uk' ? 'uk' : 'en';
-  }
-
-  private async exclusive<T>(key: string, fn: () => Promise<T>): Promise<T> {
-    if (this.busy.has(key)) {
-      throw new ConflictException({
-        code: 'BUSY',
-        message: 'The tutor is still answering your previous message',
-      });
-    }
-    this.busy.add(key);
-    try {
-      return await fn();
-    } finally {
-      this.busy.delete(key);
-    }
   }
 }
 
