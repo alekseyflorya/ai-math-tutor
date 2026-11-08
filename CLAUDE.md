@@ -15,6 +15,8 @@ verifies understanding with an LLM-generated follow-up problem that the math eng
   Must be built (`pnpm --filter @tutor/shared build`) before the api/web typecheck or run.
 - `apps/api` — NestJS 11 + Drizzle/Postgres.
   - `src/tutor/tutor.service.ts` — the state machine (SOLVING / REMEDIATION / SOLVED / follow-up).
+    Helpers next to it: `tutor-context.builder.ts` (what the model is told), `attempt-lock.ts`
+    (409 BUSY on overlapping turns), `follow-up.service.ts` (generate + validate practice), `notices.ts`.
   - `src/llm/prompts.ts` — all pedagogy and prompts. `src/llm/llm.service.ts` — quotas, timeout, zod validation, retry.
   - `src/llm/providers/*` — Gemini, Anthropic, Mock (tests only; refused in production).
   - `src/db/schema.ts` — Drizzle schema; migrations in `drizzle/` (applied on boot).
@@ -27,7 +29,7 @@ verifies understanding with an LLM-generated follow-up problem that the math eng
 pnpm install
 pnpm db:up                                   # Postgres (tutor + tutor_test) on :5433
 pnpm dev                                     # shared (watch) + api :3100 + web :5173
-pnpm typecheck && pnpm test && pnpm format:check   # what CI runs
+pnpm typecheck && pnpm lint && pnpm test && pnpm format:check   # what CI runs
 pnpm --filter @tutor/api db:generate         # after changing src/db/schema.ts → new SQL migration
 pnpm smoke:llm                               # real-model check of the scenario prompts (uses .env)
 docker compose up --build                    # full stack on http://localhost:8080
@@ -44,6 +46,6 @@ docker compose up --build                    # full stack on http://localhost:80
 - Schema changes → `db:generate`, commit the SQL file. Never edit applied migrations.
 - Keep UI copy in both `en` and `uk` dictionaries.
 - Keep the e2e test (`apps/api/test/tutor.e2e-spec.ts`) green; extend it when the state machine changes.
-- Prettier formatting (single quotes, width 100). No CORS: the web app is same-origin by design.
+- ESLint (type-aware: no floating promises, react-hooks) and Prettier (single quotes, width 100). No CORS: the web app is same-origin by design.
 - Never commit `.env` or keys.
 - Commits and PRs carry no AI attribution (no `Co-Authored-By`, no “Generated with”): set in `.claude/settings.json` → `attribution`.

@@ -14,7 +14,7 @@ open the **test scenario** `3(x + 4) = 2x + 19` and type the classic wrong step 
 | Backend  | NestJS 11, PostgreSQL, Drizzle ORM (SQL migrations), zod                                        |
 | AI       | Google Gemini (default) or Anthropic Claude via a thin provider adapter, structured JSON output |
 | Infra    | Docker, Caddy (automatic HTTPS), GitHub Actions → GHCR → VPS                                    |
-| Tests    | Vitest (math engine), Jest + Supertest e2e on a real Postgres                                   |
+| Quality  | Vitest (math engine, React), Jest + Supertest e2e on a real Postgres, type-aware ESLint         |
 
 ---
 
@@ -144,7 +144,8 @@ pnpm smoke:llm                # check the key/model: runs the scenario prompts a
 
 ```bash
 pnpm db:up                    # the dev database also creates tutor_test
-pnpm test                     # math engine unit tests + API e2e
+pnpm test                     # math engine, React components, API unit + e2e
+pnpm lint                     # type-aware ESLint (floating promises, react-hooks)
 ```
 
 The e2e test drives the full scenario (wrong step → hint ladder → correction → solve →
@@ -184,9 +185,25 @@ unattended upgrades). The production stack fits a 2 GB VPS (memory limits per co
 - **Parents & teachers.** The progress data (typed mistakes, verified skills) is exactly what
   a parent dashboard needs; it is a read model on the same tables.
 
-## Limitations of the prototype
+## Limitations and next steps
 
-- Linear equations in one variable only (by design for the 3-day scope).
-- Replies are not streamed; the UI shows a typing indicator.
-- One API instance (the per-attempt lock is in memory).
+Deliberate scope cuts for a three-day prototype, and what I would do next:
+
+- **Linear equations in one variable only** — the engine is the extension point (see scaling).
+- **One API instance.** The per-attempt turn lock lives in memory. With replicas it becomes a
+  lease column `busy_until` acquired by one conditional `UPDATE … RETURNING`: no long
+  transactions, no pool connection held while the model thinks. Rate limits move to Redis.
+- **A turn is several writes, not one transaction.** The model call has to stay outside a
+  transaction; next step is to put all writes that follow it into one `db.transaction`.
+- **Re-typing the previous line** is not accepted as a correction; a line that only reorders it
+  (`3(x + 4) = 19 + 2x`) still is. Understanding is verified by the follow-up problem, which
+  this cannot game.
+- **Replies are not streamed** (typing indicator instead); SSE is the next step for UX.
+- **Housekeeping:** demo accounts are not cleaned up yet (a daily job deleting `is_demo` users
+  older than a week; deletes already cascade), `message.meta` is an untyped JSON object rather
+  than a discriminated union per message kind, and the deploy has no automatic rollback to the
+  previous image tag when the health check fails.
+- **Code structure:** `tutor.service.ts` still holds the state machine and its queries (~700
+  lines, sectioned; the prompt context and the turn lock are already separate). Next split: an
+  `AttemptRepository` for the queries, and Nest feature modules per domain.
 - The free Gemini tier has low rate limits; the app degrades gracefully when they are hit.
