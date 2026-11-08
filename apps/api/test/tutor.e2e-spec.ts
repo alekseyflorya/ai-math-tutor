@@ -94,6 +94,13 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     expect(a.hintLevel).toBe(2);
     expect(lastTutor(a).kind).toBe('HINT');
 
+    // Re-typing the line before the mistake is not a correction.
+    const stepsBefore = a.steps.length;
+    a = await say(a.id, '3(x+4) = 2x + 19');
+    expect(a.steps).toHaveLength(stepsBefore);
+    expect(a.mode).toBe('REMEDIATION');
+    expect(lastTutor(a)).toMatchObject({ kind: 'NOTICE', meta: { repeatedLine: true } });
+
     // 3. Corrected step.
     a = await say(a.id, '3x + 12 = 2x + 19');
     expect(a.steps.at(-1)!.isCorrect).toBe(true);

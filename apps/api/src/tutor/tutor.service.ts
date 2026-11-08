@@ -295,6 +295,19 @@ export class TutorService {
     const { attempt, locale } = turn;
     await this.say(attempt.id, 'STUDENT', 'STEP', text);
 
+    // Re-typing the last correct line is "equivalent" but proves nothing; after a mistake it
+    // would otherwise count as the correction.
+    if (sameText(text, attempt.currentLine)) {
+      await this.say(
+        attempt.id,
+        'TUTOR',
+        'NOTICE',
+        notices.sameLine(locale, attempt.mode === 'REMEDIATION'),
+        { repeatedLine: true },
+      );
+      return;
+    }
+
     let check: StepCheckResult;
     try {
       check = checkStep(attempt.currentLine, text, attempt.variable);

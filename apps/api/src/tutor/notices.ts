@@ -61,6 +61,21 @@ export const notices = {
     );
   },
 
+  /** The student re-typed the last correct line: no progress, and not a correction. */
+  sameLine: (locale: Locale, afterMistake: boolean) =>
+    t(
+      afterMistake
+        ? {
+            en: 'This is the line you had before the mistake. Rewriting it does not fix the step: transform it again, carefully this time.',
+            uk: 'Це рядок, який був до помилки. Якщо його переписати, крок не виправиться: перетвори його ще раз, цього разу уважно.',
+          }
+        : {
+            en: 'This is the same line as before. Write the next transformation.',
+            uk: 'Це той самий рядок, що й раніше. Запиши наступне перетворення.',
+          },
+      locale,
+    ),
+
   stepCorrectNoAi: (locale: Locale) =>
     t(
       {
