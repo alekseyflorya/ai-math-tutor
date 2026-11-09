@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Locale, UserView } from '@tutor/shared';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { useI18n } from '../i18n/i18n';
 import { api, ApiError } from './api';
 
@@ -49,13 +50,20 @@ export function useChangeLocale() {
   });
 }
 
+/**
+ * Logs out and opens the login page. "me" is set to null in place, not removed: `qc.clear()` would
+ * drop the query the app is subscribed to, and the app kept showing the page as logged in.
+ */
 export function useLogout() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   return useMutation({
     mutationFn: api.logout,
     onSuccess: () => {
-      qc.clear();
       qc.setQueryData(['me'], null);
+      // Everything else belonged to that user.
+      qc.removeQueries({ predicate: (q) => q.queryKey[0] !== 'me' });
+      void navigate('/login', { replace: true });
     },
   });
 }
