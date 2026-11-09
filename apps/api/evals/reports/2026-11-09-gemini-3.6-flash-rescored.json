@@ -161,7 +161,7 @@
         "total": 54
       },
       "level2OtherNumbers": {
-        "ok": 16,
+        "ok": 18,
         "total": 54
       },
       "language": {
@@ -348,8 +348,7 @@
             "revealsAnswer": false,
             "language": "uk",
             "level2StudentNumbers": [
-              "3",
-              "2"
+              "3"
             ],
             "latexIntact": true
           }
@@ -2104,8 +2103,6 @@
             "revealsAnswer": false,
             "language": "uk",
             "level2StudentNumbers": [
-              "6",
-              "4",
               "2"
             ],
             "latexIntact": true
@@ -2155,8 +2152,7 @@
             "revealsAnswer": false,
             "language": "en",
             "level2StudentNumbers": [
-              "12",
-              "19"
+              "12"
             ],
             "latexIntact": true
           }
@@ -2205,9 +2201,7 @@
             "revealsAnswer": false,
             "language": "uk",
             "level2StudentNumbers": [
-              "6",
-              "35",
-              "5"
+              "6"
             ],
             "latexIntact": true
           }
@@ -2256,8 +2250,7 @@
             "revealsAnswer": false,
             "language": "en",
             "level2StudentNumbers": [
-              "17",
-              "41"
+              "17"
             ],
             "latexIntact": true
           }
@@ -2305,10 +2298,7 @@
           "checks": {
             "revealsAnswer": false,
             "language": "uk",
-            "level2StudentNumbers": [
-              "27",
-              "9"
-            ],
+            "level2StudentNumbers": [],
             "latexIntact": true
           }
         },
@@ -2501,10 +2491,7 @@
           "checks": {
             "revealsAnswer": false,
             "language": "uk",
-            "level2StudentNumbers": [
-              "48",
-              "23"
-            ],
+            "level2StudentNumbers": [],
             "latexIntact": true
           }
         },
@@ -5263,7 +5250,7 @@
       "total": 12
     },
     "level2OtherNumbers": {
-      "ok": 0,
+      "ok": 1,
       "total": 12
     },
     "language": {
@@ -5461,12 +5448,7 @@
             "statedNumbers": [],
             "computedLines": [],
             "language": "uk",
-            "level2StudentNumbers": [
-              "3",
-              "4",
-              "2",
-              "6"
-            ],
+            "level2StudentNumbers": [],
             "latexIntact": true
           }
         },
@@ -5752,8 +5734,6 @@
             "computedLines": [],
             "language": "uk",
             "level2StudentNumbers": [
-              "2",
-              "4",
               "1"
             ],
             "latexIntact": true
@@ -5849,8 +5829,6 @@
             "computedLines": [],
             "language": "uk",
             "level2StudentNumbers": [
-              "4",
-              "2",
               "3",
               "11"
             ],
