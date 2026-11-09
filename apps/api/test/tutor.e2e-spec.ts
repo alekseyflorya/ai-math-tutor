@@ -22,6 +22,7 @@ import type {
   UserView,
 } from '@tutor/shared';
 import { LLM_PROVIDER, type LlmProvider } from '../src/llm/llm.types';
+import { DemoCleanupService } from '../src/auth/demo-cleanup.service';
 import { AttemptLock } from '../src/tutor/attempt-lock';
 import { AttemptRepository } from '../src/tutor/attempt.repository';
 
@@ -344,6 +345,38 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     const closed = await agent.post(`/api/attempts/${a.id}/messages`).send({ text: 'x = 3' });
     expect(closed.status).toBe(409);
     expect((closed.body as ApiErrorBody).code).toBe('ATTEMPT_CLOSED');
+  });
+
+  it('deletes demo accounts older than a week, with everything they own', async () => {
+    const pool = new Pool({ connectionString: DB_URL });
+    try {
+      const user = async (isDemo: boolean, daysOld: number) => {
+        const { rows } = await pool.query<{ id: string }>(
+          `INSERT INTO users (name, is_demo, created_at) VALUES ('t', $1, now() - $2 * interval '1 day') RETURNING id`,
+          [isDemo, daysOld],
+        );
+        return rows[0]!.id;
+      };
+      const oldDemo = await user(true, 8);
+      const newDemo = await user(true, 1);
+      const oldRegular = await user(false, 30);
+      await pool.query(
+        `INSERT INTO attempts (user_id, title, equation, current_line) VALUES ($1, 't', 'x = 1', 'x = 1')`,
+        [oldDemo],
+      );
+
+      // Older demo users from earlier tests (none) and this one: exactly one is due.
+      expect(await app.get(DemoCleanupService).deleteExpired()).toBe(1);
+
+      const left = await pool.query<{ id: string }>('SELECT id FROM users WHERE id = ANY($1)', [
+        [oldDemo, newDemo, oldRegular],
+      ]);
+      expect(left.rows.map((r) => r.id).sort()).toEqual([newDemo, oldRegular].sort());
+      const orphans = await pool.query('SELECT 1 FROM attempts WHERE user_id = $1', [oldDemo]);
+      expect(orphans.rowCount).toBe(0);
+    } finally {
+      await pool.end();
+    }
   });
 
   it('registers, logs out and logs in with email and password', async () => {

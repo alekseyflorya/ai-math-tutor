@@ -5,6 +5,7 @@ import { AppConfig } from '../config/config.service';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
+import { DemoCleanupService } from './demo-cleanup.service';
 import { DemoSeeder } from './demo.seeder';
 
 @Module({
@@ -18,7 +19,12 @@ import { DemoSeeder } from './demo.seeder';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, DemoSeeder, { provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [
+    AuthService,
+    DemoSeeder,
+    DemoCleanupService,
+    { provide: APP_GUARD, useClass: AuthGuard },
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

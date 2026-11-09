@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
 import { HttpExceptionFilter } from './common/http-exception.filter';
@@ -19,6 +20,8 @@ import { TutorModule } from './tutor/tutor.module';
     DbModule,
     // Per-IP request limit for every route; tighter limits are set per route with @Throttle.
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
+    // Daily housekeeping jobs (demo account cleanup).
+    ScheduleModule.forRoot(),
     LlmModule,
     AuthModule,
     ProblemsModule,
