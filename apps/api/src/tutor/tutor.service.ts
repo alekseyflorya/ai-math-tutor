@@ -18,7 +18,9 @@ import {
   type ErrorType,
   type ListAttemptsQuery,
   type MessageKind,
+  type MessageMeta,
   type MessageRole,
+  type NoticeMeta,
   type Skill,
   type StartAttemptInput,
   type StepCheckResult,
@@ -41,6 +43,7 @@ import { AppConfig } from '../config/config.service';
 import { AttemptLock } from './attempt-lock';
 import { AttemptRepository, type AttemptPatch } from './attempt.repository';
 import { FollowUpService } from './follow-up.service';
+import { meta } from './message-meta';
 import { notices } from './notices';
 import { TutorContextBuilder } from './tutor-context.builder';
 import { activeMistake, type Turn } from './turn';
@@ -184,10 +187,13 @@ export class TutorService {
         );
         // Raised only once the hint exists: an outage must not silently "spend" a level.
         this.update(turn, { hintLevel: level });
-        this.say(turn, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', out.message, {
-          hintLevel: level,
-          requested: true,
-        });
+        this.say(
+          turn,
+          'TUTOR',
+          level === 3 ? 'EXPLANATION' : 'HINT',
+          out.message,
+          meta.hint(level, { requested: true }),
+        );
       } catch (e) {
         this.sayUnavailable(turn, e, notices.aiUnavailable(turn.locale));
       }
@@ -205,9 +211,13 @@ export class TutorService {
     // Re-typing the last correct line is "equivalent" but proves nothing; after a mistake it
     // would otherwise count as the correction.
     if (sameText(text, attempt.currentLine)) {
-      this.say(turn, 'TUTOR', 'NOTICE', notices.sameLine(locale, attempt.mode === 'REMEDIATION'), {
-        repeatedLine: true,
-      });
+      this.say(
+        turn,
+        'TUTOR',
+        'NOTICE',
+        notices.sameLine(locale, attempt.mode === 'REMEDIATION'),
+        meta.notice({ repeatedLine: true }),
+      );
       return;
     }
 
@@ -216,9 +226,13 @@ export class TutorService {
       check = checkStep(attempt.currentLine, text, attempt.variable);
     } catch (e) {
       if (e instanceof MathInputError) {
-        this.say(turn, 'TUTOR', 'NOTICE', notices.parseError(locale, e.code), {
-          inputError: e.code,
-        });
+        this.say(
+          turn,
+          'TUTOR',
+          'NOTICE',
+          notices.parseError(locale, e.code),
+          meta.notice({ inputError: e.code }),
+        );
         return;
       }
       throw e;
@@ -266,10 +280,7 @@ export class TutorService {
         },
         attempt.userId,
       );
-      this.say(turn, 'TUTOR', 'FEEDBACK', out.message, {
-        correct: true,
-        fixedErrorType: fixed?.errorType ?? null,
-      });
+      this.say(turn, 'TUTOR', 'FEEDBACK', out.message, meta.feedback(fixed?.errorType ?? null));
     } catch (e) {
       this.sayUnavailable(turn, e, notices.stepCorrectNoAi(locale), { correct: true });
     }
@@ -311,11 +322,13 @@ export class TutorService {
     this.update(turn, { mode: 'REMEDIATION', hintLevel: level, activeMistakeId: mistakeId });
 
     if (tutorMessage) {
-      this.say(turn, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', tutorMessage, {
-        hintLevel: level,
-        errorType,
-        correct: false,
-      });
+      this.say(
+        turn,
+        'TUTOR',
+        level === 3 ? 'EXPLANATION' : 'HINT',
+        tutorMessage,
+        meta.hint(level, { errorType, correct: false }),
+      );
     } else {
       this.sayUnavailable(turn, unavailable, notices.stepWrongNoAi(locale), { correct: false });
     }
@@ -366,7 +379,7 @@ export class TutorService {
         },
         attempt.userId,
       );
-      this.say(turn, 'TUTOR', 'CELEBRATION', out.message, { solved: true });
+      this.say(turn, 'TUTOR', 'CELEBRATION', out.message, meta.celebration());
     } catch (e) {
       this.sayUnavailable(turn, e, notices.solvedNoAi(locale, solution), { solved: true });
     }
@@ -377,12 +390,12 @@ export class TutorService {
         'TUTOR',
         'FOLLOW_UP',
         notices.followUpReady(locale, followUp.latex, followUp.title),
-        {
+        meta.followUp({
           nextAttemptId: followUp.id,
           equation: followUp.equation,
           errorType: target.errorType,
           source: followUp.source,
-        },
+        }),
       );
     }
   }
@@ -403,19 +416,17 @@ export class TutorService {
         attempt.userId,
       );
       if (attempt.mode === 'REMEDIATION' && activeMistake(turn) && reply.escalate) {
-        const level = Math.min(MAX_HINT, attempt.hintLevel + 1);
+        const level = Math.min(MAX_HINT, attempt.hintLevel + 1) as 1 | 2 | 3;
         this.update(turn, { hintLevel: level });
-        this.say(turn, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', reply.message, {
-          hintLevel: level,
-        });
-      } else {
         this.say(
           turn,
           'TUTOR',
-          'CHAT',
+          level === 3 ? 'EXPLANATION' : 'HINT',
           reply.message,
-          reply.understood ? { understood: true } : null,
+          meta.hint(level),
         );
+      } else {
+        this.say(turn, 'TUTOR', 'CHAT', reply.message, reply.understood ? meta.understood() : null);
       }
     } catch (e) {
       this.sayUnavailable(turn, e, notices.aiUnavailable(locale));
@@ -514,20 +525,25 @@ export class TutorService {
     this.later(turn, (_r, tx) => this.skills.record(userId, skill, outcome, tx));
   }
 
-  private say(
+  private say<K extends MessageKind>(
     turn: Turn,
     role: MessageRole,
-    kind: MessageKind,
+    kind: K,
     content: string,
-    meta: Record<string, unknown> | null = null,
+    data: MessageMeta<K> | null = null,
   ) {
     const attemptId = turn.attempt.id;
-    this.later(turn, (r) => r.say(attemptId, role, kind, content, meta));
+    this.later(turn, (r) => r.say(attemptId, role, kind, content, data));
   }
 
-  private sayUnavailable(turn: Turn, e: unknown, text: string, meta: Record<string, unknown> = {}) {
+  private sayUnavailable(
+    turn: Turn,
+    e: unknown,
+    text: string,
+    extra: Omit<NoticeMeta, 'aiUnavailable'> = {},
+  ) {
     if (!(e instanceof LlmUnavailableError)) throw e;
-    this.say(turn, 'TUTOR', 'NOTICE', text, { ...meta, aiUnavailable: e.reason });
+    this.say(turn, 'TUTOR', 'NOTICE', text, meta.notice({ ...extra, aiUnavailable: e.reason }));
   }
 
   private async findOwned(userId: string, attemptId: string): Promise<Attempt> {

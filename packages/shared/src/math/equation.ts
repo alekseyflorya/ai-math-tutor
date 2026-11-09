@@ -18,7 +18,7 @@ export const MAX_INPUT_LENGTH = 120;
 const MAX_NODES = 200;
 const MAX_POWER = 6;
 
-export { MathInputError, type MathErrorCode } from './errors';
+export { MATH_ERROR_CODES, MathInputError, type MathErrorCode } from './errors';
 
 /** a·x + b */
 export interface Linear {

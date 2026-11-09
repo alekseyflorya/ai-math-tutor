@@ -7,6 +7,7 @@ import type {
   ListAttemptsQuery,
   Locale,
   MessageKind,
+  MessageMeta,
   MessageRole,
   Skill,
 } from '@tutor/shared';
@@ -242,14 +243,16 @@ export class AttemptRepository {
     return row!;
   }
 
-  async say(
+  async say<K extends MessageKind>(
     attemptId: string,
     role: MessageRole,
-    kind: MessageKind,
+    kind: K,
     content: string,
-    meta: Record<string, unknown> | null = null,
+    meta: MessageMeta<K> | null = null,
   ): Promise<void> {
-    await this.db.insert(messages).values({ attemptId, role, kind, content, meta });
+    await this.db
+      .insert(messages)
+      .values({ attemptId, role, kind, content, meta: meta as Record<string, unknown> | null });
   }
 
   async insertStep(values: NewStep): Promise<Step> {
