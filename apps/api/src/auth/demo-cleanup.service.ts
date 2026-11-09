@@ -14,11 +14,21 @@ export class DemoCleanupService {
 
   constructor(@Inject(DB) private readonly db: Db) {}
 
+  /**
+   * Never throws: a rejected promise from a cron job can become an unhandled rejection, which
+   * ends the Node process. A database hiccup at 03:00 must not take the API down; the next run
+   * catches up.
+   */
   @Cron('0 3 * * *', { name: 'demo-cleanup', timeZone: 'UTC' })
   async daily(): Promise<void> {
-    const deleted = await this.deleteExpired();
-    if (deleted)
-      this.logger.log(`Deleted ${deleted} demo accounts older than ${DEMO_TTL_DAYS} days`);
+    try {
+      const deleted = await this.deleteExpired();
+      if (deleted)
+        this.logger.log(`Deleted ${deleted} demo accounts older than ${DEMO_TTL_DAYS} days`);
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error(String(e));
+      this.logger.error(`Demo cleanup failed: ${err.message}`, err.stack);
+    }
   }
 
   /**
