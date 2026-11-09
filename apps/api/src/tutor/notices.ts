@@ -145,4 +145,42 @@ export const notices = {
   },
 
   customTitle: (locale: Locale) => t({ en: 'Your equation', uk: 'Твоє рівняння' }, locale),
+
+  // --- Checking the answer by substitution (fixed copy: the engine decides, no model call) ---
+
+  checkRequest: (locale: Locale, solutionLatex: string, equationLatex: string) =>
+    t(
+      {
+        en: `That's the answer: $${solutionLatex}$ ✓. Now check it, the way it is done in class: substitute it into the original equation $${equationLatex}$ and compute both sides.`,
+        uk: `Це відповідь: $${solutionLatex}$ ✓. Тепер зроби перевірку, як у школі: підстав її в початкове рівняння $${equationLatex}$ і обчисли обидві частини.`,
+      },
+      locale,
+    ),
+
+  checkStepOk: (locale: Locale) =>
+    t(
+      {
+        en: 'Right ✓ Keep computing until each side is a single number.',
+        uk: 'Правильно ✓ Обчислюй далі, доки в кожній частині не залишиться одне число.',
+      },
+      locale,
+    ),
+
+  checkNotNumeric: (locale: Locale, solutionLatex: string) =>
+    t(
+      {
+        en: `In the check there is no unknown any more: write the original equation with the number in place of the variable ($${solutionLatex}$), then compute.`,
+        uk: `У перевірці невідомого вже немає: запиши початкове рівняння, підставивши число замість змінної ($${solutionLatex}$), і обчисли.`,
+      },
+      locale,
+    ),
+
+  checkNotSubstitution: (locale: Locale, solutionLatex: string, equationLatex: string) =>
+    t(
+      {
+        en: `This doesn't look like $${solutionLatex}$ substituted into the original equation $${equationLatex}$. Start from that equation and replace every unknown with the number.`,
+        uk: `Це не схоже на підстановку $${solutionLatex}$ у початкове рівняння $${equationLatex}$. Почни з нього і заміни кожне невідоме числом.`,
+      },
+      locale,
+    ),
 };

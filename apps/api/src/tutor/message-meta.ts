@@ -13,8 +13,11 @@ export const meta = {
     hintLevel,
     ...extra,
   }),
-  feedback: (fixedErrorType: ErrorType | null): FeedbackMeta => ({ correct: true, fixedErrorType }),
-  celebration: (): MessageMeta<'CELEBRATION'> => ({ solved: true }),
+  feedback: (
+    fixedErrorType: ErrorType | null,
+    extra: Pick<FeedbackMeta, 'checkRequested' | 'checkStep'> = {},
+  ): FeedbackMeta => ({ correct: true, fixedErrorType, ...extra }),
+  celebration: (checked: boolean): MessageMeta<'CELEBRATION'> => ({ solved: true, checked }),
   followUp: (m: FollowUpMeta): FollowUpMeta => m,
   notice: (m: NoticeMeta): NoticeMeta => m,
   understood: (): MessageMeta<'CHAT'> => ({ understood: true }),
