@@ -58,13 +58,15 @@ export const CHECK_CASES: CheckCase[] = [
   c('check-10', 'uk', '3(2x - 1) = 4x + 9', '3(2·6 - 1) = 4·6 + 9',  '3(13 - 1) = 4·6 + 9', 'left', 'multiplication', '12'),
   c('check-11', 'en', '3(2x - 1) = 4x + 9', '3(2·6 - 1) = 4·6 + 9',  '3·11 = 30 + 9',      'right', 'multiplication', '24'),
   c('check-12', 'uk', '2(x + 4) = 3x + 1',  '2(7 + 4) = 3·7 + 1',    '2·11 = 23',          'right', 'addition',       '22'),
-  // The equation itself shows v* (a number on one side): quoting it gives nothing away, and the
-  // guard must not fire on it. check-13 and check-14 are the first curriculum problems.
-  c('check-13', 'en', 'x + 5 = 12',         '7 + 5 = 12',            '13 = 12',            'left',  'addition',       '12'),
+  // The equation itself shows v*: quoting it gives nothing away, and the guard must not fire on
+  // it. check-13 and check-14 are the first curriculum problems. In check-13 (the right side
+  // miscopied) and check-17 (v* = 5 is a coefficient) the student's line does not contain v*, so
+  // only the equation makes it allowed.
+  c('check-13', 'en', 'x + 5 = 12',         '7 + 5 = 12',            '7 + 5 = 13',         'right', 'addition',       '12'),
   c('check-14', 'uk', '3x - 7 = 11',        '3·6 - 7 = 11',          '17 - 7 = 11',        'left',  'multiplication', '18'),
   c('check-15', 'en', '2x + 3 = 13',        '2·5 + 3 = 13',          '11 + 3 = 13',        'left',  'multiplication', '10'),
   c('check-16', 'uk', 'x - 4 = 9',          '13 - 4 = 9',            '8 = 9',              'left',  'addition',       '9'),
-  c('check-17', 'en', '4x = 28',            '4·7 = 28',              '24 = 28',            'left',  'multiplication', '28'),
+  c('check-17', 'en', '5x - 10 = 2x - 1',   '5·3 - 10 = 2·3 - 1',    '14 - 10 = 2·3 - 1',  'left',  'multiplication', '15'),
   c('check-18', 'uk', '2(x - 1) = 10',      '2(6 - 1) = 10',         '2·4 = 10',           'left',  'addition',       '5'),
 ];
 
