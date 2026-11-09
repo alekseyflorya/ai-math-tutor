@@ -18,6 +18,8 @@ import { AnthropicProvider } from '../src/llm/providers/anthropic.provider';
 import type { LlmJsonRequest, LlmProvider } from '../src/llm/llm.types';
 import { callStructured } from '../src/llm/structured-call';
 import { validateFollowUp } from '../src/tutor/follow-up.service';
+import { DEFAULT_GEMINI_MODEL, DEFAULT_GEMINI_MODEL_DIAGNOSIS } from '../src/config/env';
+import { geminiRouting } from '../src/llm/llm.module';
 import { loadRootEnv } from './load-env';
 
 loadRootEnv();
@@ -30,7 +32,12 @@ const provider: LlmProvider =
       )
     : new GeminiProvider(
         process.env.GEMINI_API_KEY!,
-        process.env.GEMINI_MODEL ?? 'gemini-3.5-flash-lite,gemini-3.5-flash',
+        process.env.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL,
+        {
+          byPurpose: geminiRouting(
+            process.env.GEMINI_MODEL_DIAGNOSIS ?? DEFAULT_GEMINI_MODEL_DIAGNOSIS,
+          ),
+        },
       );
 
 async function run<T>(req: LlmJsonRequest<T>): Promise<T> {

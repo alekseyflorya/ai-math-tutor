@@ -8,6 +8,8 @@ import {
   withPropertyOrdering,
   type GenerateContentClient,
 } from './gemini.provider';
+import { geminiRouting } from '../llm.module';
+import type { LlmPurpose } from '../llm.types';
 
 const req = { purpose: 'hint' as const, system: 's', prompt: 'p', schema: z.object({}) };
 const signal = new AbortController().signal;
@@ -176,5 +178,47 @@ describe('field order', () => {
     };
     expect(ordered.propertyOrdering).toEqual(['understood', 'nested', 'message']);
     expect(ordered.properties.nested.propertyOrdering).toEqual(['b', 'a']);
+  });
+});
+
+describe('model by purpose', () => {
+  function routed(script: Record<string, (string | Error)[]>) {
+    const fake = fakeClient(script);
+    const p = new GeminiProvider('key', 'lite,flash', {
+      client: fake.client,
+      now: () => 1_000_000,
+      byPurpose: geminiRouting('flash,lite'),
+    });
+    return { p, calls: fake.calls };
+  }
+  const as = (purpose: LlmPurpose) => ({ ...req, purpose });
+
+  it('sends diagnosis and hints to the diagnosis models, everything else to GEMINI_MODEL', async () => {
+    const { p, calls } = routed({});
+    for (const purpose of ['diagnose', 'hint'] as const) {
+      await p.completeJson(as(purpose), {}, signal);
+    }
+    for (const purpose of ['step_feedback', 'chat', 'celebrate', 'follow_up'] as const) {
+      await p.completeJson(as(purpose), {}, signal);
+    }
+    expect(calls).toEqual(['flash', 'flash', 'lite', 'lite', 'lite', 'lite']);
+    expect(p.modelFor('hint')).toBe('flash,lite');
+    expect(p.modelFor('chat')).toBe('lite,flash');
+  });
+
+  it('a retry moves to the next model of the same list', async () => {
+    const { p, calls } = routed({});
+    await p.completeJson(as('diagnose'), {}, signal, 1);
+    expect(calls).toEqual(['lite']);
+  });
+
+  it('shares the cooldown of a model across purposes', async () => {
+    const { p, calls } = routed({ flash: [quota429({ retryDelay: '30s' })] });
+    await expect(p.completeJson(as('diagnose'), {}, signal)).resolves.toBe('{"from":"lite"}');
+    expect(calls).toEqual(['flash', 'lite']);
+
+    await p.completeJson(as('hint'), {}, signal); // flash is still cooling: not even asked
+    await p.completeJson(as('chat'), {}, signal, 1); // the chat's fallback is flash: skipped too
+    expect(calls.slice(2)).toEqual(['lite', 'lite']);
   });
 });

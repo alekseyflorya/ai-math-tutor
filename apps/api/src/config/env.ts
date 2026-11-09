@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+/** Replies, feedback, chat, celebration, follow-up: fast first. */
+export const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash-lite,gemini-3.6-flash';
+/**
+ * Diagnosis and hints, where the eval shows the gap (49/54 against 43/54): the stronger model
+ * first. Costs about a second only on a wrong step or a hint; the verdict is instant anyway.
+ */
+export const DEFAULT_GEMINI_MODEL_DIAGNOSIS = 'gemini-3.6-flash,gemini-3.5-flash-lite';
+
 const bool = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1');
 
 /** Environment is validated once at boot: a misconfigured deploy fails fast and loudly. */
@@ -16,7 +24,9 @@ export const EnvSchema = z
     LLM_PROVIDER: z.enum(['gemini', 'anthropic', 'mock']).default('gemini'),
     GEMINI_API_KEY: z.string().optional(),
     /** Comma-separated: the first is primary, the rest are fallbacks tried on retry. */
-    GEMINI_MODEL: z.string().default('gemini-3.5-flash-lite,gemini-3.5-flash'),
+    GEMINI_MODEL: z.string().default(DEFAULT_GEMINI_MODEL),
+    /** The same, for the calls with purpose "diagnose" and "hint". */
+    GEMINI_MODEL_DIAGNOSIS: z.string().default(DEFAULT_GEMINI_MODEL_DIAGNOSIS),
     ANTHROPIC_API_KEY: z.string().optional(),
     ANTHROPIC_MODEL: z.string().default('claude-haiku-5-5'),
     /** One model call (one try). */

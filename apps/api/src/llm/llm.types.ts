@@ -24,7 +24,10 @@ export interface LlmJsonRequest<T> {
  */
 export interface LlmProvider {
   readonly name: string;
+  /** The default model list (for logs). */
   readonly model: string;
+  /** The model list used for a purpose, when it differs by purpose (for logs). */
+  modelFor?(purpose: LlmPurpose): string;
   /**
    * Returns the raw JSON text produced by the model. `attempt` (0-based) lets a provider
    * fall back to another model when the previous attempt timed out or was rejected.
