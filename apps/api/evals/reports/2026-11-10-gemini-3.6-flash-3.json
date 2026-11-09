@@ -1,0 +1,2059 @@
+{
+  "info": {
+    "date": "2026-11-10",
+    "provider": "gemini",
+    "model": "gemini-3.6-flash",
+    "concurrency": 2,
+    "durationMs": 59579,
+    "filter": "CHECK",
+    "complete": true
+  },
+  "summary": {
+    "cases": 0,
+    "accuracy": {
+      "ok": 0,
+      "total": 0
+    },
+    "byType": {
+      "DISTRIBUTION": {
+        "ok": 0,
+        "total": 0
+      },
+      "SIGN_TRANSFER": {
+        "ok": 0,
+        "total": 0
+      },
+      "COMBINING_LIKE_TERMS": {
+        "ok": 0,
+        "total": 0
+      },
+      "INVERSE_OPERATION": {
+        "ok": 0,
+        "total": 0
+      },
+      "ONE_SIDE_ONLY": {
+        "ok": 0,
+        "total": 0
+      },
+      "ARITHMETIC": {
+        "ok": 0,
+        "total": 0
+      },
+      "OTHER": {
+        "ok": 0,
+        "total": 0
+      }
+    },
+    "byLocale": {
+      "en": {
+        "ok": 0,
+        "total": 0
+      },
+      "uk": {
+        "ok": 0,
+        "total": 0
+      }
+    },
+    "confusion": {
+      "DISTRIBUTION": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "SIGN_TRANSFER": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "COMBINING_LIKE_TERMS": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "INVERSE_OPERATION": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "ONE_SIDE_ONLY": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "ARITHMETIC": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "OTHER": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      }
+    },
+    "invalidJson": {
+      "ok": 0,
+      "total": 0
+    },
+    "failedCalls": {
+      "ok": 0,
+      "total": 0
+    },
+    "latency": {
+      "p50": 0,
+      "p95": 0,
+      "byPurpose": {
+        "diagnose": {
+          "p50": 0,
+          "p95": 0
+        },
+        "hint": {
+          "p50": 0,
+          "p95": 0
+        }
+      }
+    },
+    "rules": {
+      "level1Question": {
+        "ok": 0,
+        "total": 0
+      },
+      "noFinalAnswer": {
+        "ok": 0,
+        "total": 0
+      },
+      "level3CorrectedOnly": {
+        "ok": 0,
+        "total": 0
+      },
+      "level2OtherNumbers": {
+        "ok": 0,
+        "total": 0
+      },
+      "language": {
+        "ok": 0,
+        "total": 0
+      },
+      "latexIntact": {
+        "ok": 0,
+        "total": 0
+      }
+    }
+  },
+  "results": [],
+  "calls": [],
+  "checkSummary": {
+    "cases": 18,
+    "level1Question": {
+      "ok": 18,
+      "total": 18
+    },
+    "noValue": {
+      "ok": 52,
+      "total": 54
+    },
+    "noComputedLine": {
+      "ok": 54,
+      "total": 54
+    },
+    "level3OperationsOnly": {
+      "ok": 18,
+      "total": 18
+    },
+    "level2OtherNumbers": {
+      "ok": 12,
+      "total": 18
+    },
+    "language": {
+      "ok": 54,
+      "total": 54
+    },
+    "latexIntact": {
+      "ok": 54,
+      "total": 54
+    },
+    "invalidJson": {
+      "ok": 0,
+      "total": 57
+    },
+    "failedCalls": {
+      "ok": 0,
+      "total": 57
+    },
+    "latency": {
+      "p50": 1643,
+      "p95": 4251
+    },
+    "guard": {
+      "retried": 2,
+      "template": 1,
+      "hints": 54
+    },
+    "noLeakAfterGuard": {
+      "ok": 54,
+      "total": 54
+    },
+    "guardFalsePositives": {
+      "ok": 0,
+      "total": 3
+    }
+  },
+  "checkResults": [
+    {
+      "id": "check-1",
+      "locale": "en",
+      "side": "right",
+      "operation": "multiplication",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the right-hand side of your line. What is the value of $2 \\cdot 7$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "To evaluate an expression, follow the order of operations: compute multiplication before addition. For example, in $5 \\cdot 6 + 2$, you calculate $5 \\cdot 6 = 30$ first, then $30 + 2 = 32$. Apply this to evaluate $2 \\cdot 7$ on your right-hand side.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "level2StudentNumbers": [
+              "2"
+            ],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "On the right-hand side, first multiply $2 \\cdot 7$, and then add $19$ to that result. Please compute these operations in order and write your corrected check line.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student miscalculated the product $2 \\cdot 7$ on the right-hand side as 12 instead of 14."
+    },
+    {
+      "id": "check-2",
+      "locale": "uk",
+      "side": "right",
+      "operation": "addition",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Перевір ще раз обчислення в правій частині рівності: чому дорівнює $2 \\cdot 7 + 19$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Спочатку виконуємо множення, а потім додавання. Наприклад, для $5 \\cdot 6 + 8$ спочатку шукаємо $5 \\cdot 6 = 30$, а потім $30 + 8 = 38$. За цим правилом обчисли вираз $2 \\cdot 7 + 19$ ще раз.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Спочатку помнож $2 \\cdot 7$, а потім до одержаного добутку додай $19$. Обчисли ці дії по черзі та запиши виправлену рівність.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when evaluating the right side of the check line, calculating $2 \\cdot 7 + 19$ as 32 instead of 33."
+    },
+    {
+      "id": "check-3",
+      "locale": "en",
+      "side": "left",
+      "operation": "multiplication",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the left-hand side, $5(7 - 2)$. What do you get when you evaluate the subtraction inside the parentheses first?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "By the order of operations, evaluate expressions inside parentheses before multiplying. For example, to evaluate $6(9 - 8)$, calculate $9 - 8 = 1$ first, then multiply $6 \\times 1 = 6$. Apply this rule to evaluate the left-hand side, $5(7 - 2)$.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To evaluate the left-hand side, $5(7 - 2)$, first subtract $2$ from $7$, then multiply that result by $5$. Compute these steps and rewrite your check line.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student miscalculated the left-hand side $5(7 - 2)$, writing $30$ instead of $25$."
+    },
+    {
+      "id": "check-4",
+      "locale": "uk",
+      "side": "left",
+      "operation": "addition",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на ліву частину: як ти обчислив вираз у дужках $(7 + 3)$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Спочатку додаємо числа в дужках, а потім виконуємо множення. Наприклад, для $5(8 + 1)$ спочатку додаємо $8 + 1 = 9$, а потім множимо $5 \\cdot 9$. Переобчисли суму в дужках у своєму виразі $4(7 + 3)$.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "У лівій частині спочатку знайди суму чисел $7$ і $3$ у дужках, а потім помнож $4$ на отримане значення. Виконай ці дії послідовно та запиши оновлену рівність для перевірки.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an addition error inside the parentheses on the left side, adding 7 + 3 to get 11 instead of 10."
+    },
+    {
+      "id": "check-5",
+      "locale": "en",
+      "side": "right",
+      "operation": "multiplication",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Take a look at the right side: what is the value of $6 \\cdot 7$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "To find the product on the right side, recall your multiplication tables. For example, $5 \\cdot 9 = 45$. Please recalculate $6 \\cdot 7$.",
+          "latexIntact": true,
+          "guard": "retried",
+          "guardLeaked": [
+            "40"
+          ],
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "guardFalsePositive": false,
+            "computedLines": [],
+            "language": "en",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "On the right side, first multiply $6 \\cdot 7$, then subtract $2$. Please compute these operations and write the correct check line.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student miscalculated the multiplication $6 \\cdot 7$ on the right side as $48$ instead of $42$."
+    },
+    {
+      "id": "check-6",
+      "locale": "uk",
+      "side": "right",
+      "operation": "addition",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Перевір ще раз обчислення для правої частини рівності: чому дорівнює $4 \\cdot 6 - 2$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "За правилом порядку дій спочатку виконуємо множення, а потім віднімання. Наприклад: $3 \\cdot 7 - 8 = 21 - 8 = 13$. Спробуй ще раз обчислити значення правої частини $4 \\cdot 6 - 2$.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "level2StudentNumbers": [
+              "21"
+            ],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "У правій частині спочатку виконай множення $4 \\cdot 6$, а потім відніми $2$. Обчисли це значення та запиши оновлений рядок перевірки.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when evaluating the right side of the check ($4 \\cdot 6 - 2$)."
+    },
+    {
+      "id": "check-7",
+      "locale": "en",
+      "side": "left",
+      "operation": "multiplication",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Check your multiplication on the left side: what is $7 \\cdot 4$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "By the order of operations, evaluate multiplication before subtraction. For example, to simplify $5 \\cdot 6 - 2$, first compute $5 \\cdot 6 = 30$, then subtract: $30 - 2 = 28$. Now recalculate the product in $7 \\cdot 4 - 4$.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [
+              "28"
+            ],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "On the left side of your check, first multiply $7 \\cdot 4$, then subtract $4$. Please carry out these steps and write the corrected check line.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when evaluating $7 \\cdot 4$ on the left side of the check."
+    },
+    {
+      "id": "check-8",
+      "locale": "uk",
+      "side": "right",
+      "operation": "addition",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Перевір ще раз обчислення для правої частини рівності: чому дорівнює $3 \\cdot 4 + 12$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "За правилом порядку дій спочатку виконуємо множення, а потім додавання. Наприклад, для $5 \\cdot 2 + 6$ спочатку буде $5 \\cdot 2 = 10$, а потім $10 + 6 = 16$. Переобчисли $3 \\cdot 4 + 12$.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Спочатку виконай множення $3 \\cdot 4$, а потім до одержаного добутку додай $12$. Переобчисли праву частину та запиши правильну рівність.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when calculating the right side of the check ($3 \\cdot 4 + 12$), writing 22 instead of 24."
+    },
+    {
+      "id": "check-9",
+      "locale": "en",
+      "side": "left",
+      "operation": "addition",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the left side: how do you evaluate $\\frac{8}{2} + 3$ using the order of operations?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "By the order of operations, division is performed before addition. For example, in $\\frac{20}{5} + 9$, we first compute $\\frac{20}{5} = 4$, and then add $9$ to get $13$. What do you get on the left side when you perform the division first?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "On the left side, first divide $8$ by $2$, and then add $3$ to that result. Compute this left side step by step and rewrite the complete check line.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student incorrectly simplified the left-hand side of the check line, evaluating $\\frac{8}{2} + 3$ to $8$ instead of $7$."
+    },
+    {
+      "id": "check-10",
+      "locale": "uk",
+      "side": "left",
+      "operation": "multiplication",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на ліву частину: як ти обчислив добуток $2 \\cdot 6$ дужках?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Спочатку виконуємо множення всередині дужок, а потім віднімання. Наприклад: $5 \\cdot (7 \\cdot 8 - 2) = 5 \\cdot (56 - 2)$. Перевір обчислення добутку у своїх дужках.",
+          "latexIntact": true,
+          "guard": "retried",
+          "guardLeaked": [
+            "33"
+          ],
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "guardFalsePositive": false,
+            "computedLines": [],
+            "language": "uk",
+            "level2StudentNumbers": [
+              "2"
+            ],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "У лівій частині спочатку знайди добуток $2 \\cdot 6$, а потім відніми $1$ від одержаного числа. Перерахуй це значення та запиши рядок перевірки заново.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when evaluating the expression inside the parentheses on the left side, computing $2 \\cdot 6$ as $13$ instead of $12$."
+    },
+    {
+      "id": "check-11",
+      "locale": "en",
+      "side": "right",
+      "operation": "multiplication",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Take another look at the right-hand side of your line: how much is $4 \\cdot 6$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Recall the rules of basic multiplication facts, for example: $5 \\cdot 7 = 35$. Please recheck the product $4 \\cdot 6$ on the right-hand side.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "On the right side, first multiply $4 \\cdot 6$, then add $9$. Please compute these operations in order and write out the correct line.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student incorrectly calculated $4 \\cdot 6$ as $30$ instead of $24$ when evaluating the right side of the equation."
+    },
+    {
+      "id": "check-12",
+      "locale": "uk",
+      "side": "right",
+      "operation": "addition",
+      "equationShowsValue": false,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Перевір, будь ласка, обчислення для правої частини рівняння: чому дорівнює $3 \\cdot 7 + 1$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Згадай порядок дій: спочатку виконуємо множення, а потім додавання. Наприклад: $4 \\cdot 5 + 6 = 20 + 6 = 26$. Обчисли праву частину кроку за цим правилом.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "level2StudentNumbers": [
+              "4"
+            ],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Спочатку виконай множення $3 \\cdot 7$, а потім до отриманого добутку додай $1$. Обчисли праву частину та запиши правильно увесь рядок перевірки.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when calculating the right-hand side of the check ($3 \\cdot 7 + 1$), writing 23 instead of 22."
+    },
+    {
+      "id": "check-13",
+      "locale": "en",
+      "side": "right",
+      "operation": "addition",
+      "equationShowsValue": true,
+      "hints": [
+        {
+          "level": 1,
+          "message": "What is the exact sum of $7 + 5$ on the left-hand side?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When checking a solution, we use standard arithmetic addition to simplify the expression. For instance, $2 + 4 = 6$. Re-evaluate your sum for $7 + 5$ carefully.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Add $7$ and $5$ on the left-hand side without changing the right-hand side. Write the resulting simplified equality.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when evaluating the left-hand side of the substitution check."
+    },
+    {
+      "id": "check-14",
+      "locale": "uk",
+      "side": "left",
+      "operation": "multiplication",
+      "equationShowsValue": true,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на ліву частину: як ти обчислив множення $3 \\cdot 6$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Згадай таблицю множення: множення показує додавання одинакових доданків, наприклад, $4 \\cdot 5 = 5 + 5 + 5 + 5 = 20$. Обчисли добуток $3 \\cdot 6$ ще раз.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "У лівій частині спочатку виконай множення $3 \\cdot 6$, а потім віднімання $7$. Обчисли ці дії по порядку та запиши правильний рядок перевірки.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when calculating the first multiplication term $3 \\cdot 6$ on the left side, writing $17$ instead of $18$."
+    },
+    {
+      "id": "check-15",
+      "locale": "en",
+      "side": "left",
+      "operation": "multiplication",
+      "equationShowsValue": true,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Please re-evaluate the left side of your check step: what is $2 \\cdot 5$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When evaluating an expression, we follow the order of operations: perform multiplication before addition. For example, in $4 \\cdot 6 + 7$, we first calculate $4 \\cdot 6 = 24$, then add $7$ to get $31$. Now apply this rule to evaluate the product in your expression $2 \\cdot 5 + 3$.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "First, multiply $2 \\cdot 5$. Second, add $3$ to that result. Please carry out these steps to evaluate the left side and rewrite your check line.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when evaluating the multiplication $2 \\cdot 5$ on the left-hand side."
+    },
+    {
+      "id": "check-16",
+      "locale": "uk",
+      "side": "left",
+      "operation": "addition",
+      "equationShowsValue": true,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Перевір, будь ласка, обчислення в лівій частині рівності. Скільки буде $13 - 4$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Правило віднімання: щоб відняти число, зменшуємо зменшуване на відповідну кількість одиниць. Наприклад, для $15 - 7$ ми отримуємо $8$. Перерахуй значення виразу в лівій частині $13 - 4$ ще раз.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "level2StudentNumbers": [
+              "8"
+            ],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб перевірити рівність, обчисли віднімання в лівій частині: від $13$ відніми $4$. Запиши отриманий результат у ліву частину замість виразу та порівняй його з правою частиною.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when evaluating the left side $13 - 4$, incorrectly writing $8$ instead of $9$."
+    },
+    {
+      "id": "check-17",
+      "locale": "en",
+      "side": "left",
+      "operation": "multiplication",
+      "equationShowsValue": true,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the left-hand side: what is the exact product of $5 \\cdot 3$ before you subtract $10$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Compute in order: brackets first, then multiplication and division, then addition and subtraction. Redo the left side one operation at a time.",
+          "latexIntact": true,
+          "guard": "template",
+          "guardLeaked": [
+            "4"
+          ],
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "guardFalsePositive": false,
+            "computedLines": [],
+            "language": "en",
+            "level2StudentNumbers": [],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "On the left-hand side, first multiply $5 \\cdot 3$, then subtract $10$. Compute these operations in that exact order and write out the corrected check line.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student evaluated $5 \\cdot 3$ incorrectly as $14$ instead of $15$ when computing the left-hand side of the check."
+    },
+    {
+      "id": "check-18",
+      "locale": "uk",
+      "side": "left",
+      "operation": "addition",
+      "equationShowsValue": true,
+      "hints": [
+        {
+          "level": 1,
+          "message": "Перевір, будь ласка, обчислення в дужках у лівій частині: чому дорівнює $6 - 1$?",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Спочатку виконуємо дію віднімання в дужках. Наприклад, у виразі $7(9 - 4)$ спочатку обчислюємо дужки: $9 - 4 = 5$, і отримуємо $7 \\cdot 5$. Виконай віднімання в дужках $(6 - 1)$ ще раз.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [
+              "5"
+            ],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "level2StudentNumbers": [
+              "4"
+            ],
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Спочатку виконай віднімання всередині дужок, а потім помнож $2$ на отримане число. Напиши новий рядок перевірки.",
+          "latexIntact": true,
+          "guard": null,
+          "checks": {
+            "statedNumbers": [],
+            "guardLeaks": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when evaluating the expression inside the parentheses on the left side: $6 - 1 = 5$, but calculated $4$ instead."
+    }
+  ],
+  "checkCalls": [
+    {
+      "caseId": "check-2",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1402,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-1",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 2377,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1282,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1217,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1709,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1156,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-3",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 2173,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-4",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1281,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1421,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 3017,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1557,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1732,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1712,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-6",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1370,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1400,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 2300,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 3259,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1188,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 2101,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-7",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1438,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-8",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1290,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1635,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1157,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 5380,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-9",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1928,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1107,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-10",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1905,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-10",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1791,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-10",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1458,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-9",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 5679,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-10",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1312,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-9",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1643,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-11",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1896,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-12",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1739,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-12",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1549,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-12",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1889,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-11",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 3678,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-11",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1219,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-13",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1299,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-14",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1522,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-13",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 3640,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-14",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 4251,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-13",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 2702,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-15",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 2232,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-14",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 3633,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-15",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1478,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-16",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1493,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-15",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1248,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-16",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1286,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-17",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1284,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-16",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1545,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-18",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 2299,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-17",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 3468,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-18",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 3758,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-17",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 4227,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-18",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1561,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-17",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1880,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    }
+  ]
+}

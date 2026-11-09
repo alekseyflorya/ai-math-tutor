@@ -178,6 +178,33 @@ export const notices = {
       locale,
     ),
 
+  /**
+   * A hint on a slip in the check with no number in it, for when the model twice stated a value
+   * the student must compute. Level 1 asks, level 2 gives the rule, level 3 lists the order.
+   */
+  checkHintTemplate: (locale: Locale, level: 1 | 2 | 3, wrongSides: ('left' | 'right')[]) => {
+    const both = wrongSides.length > 1;
+    const side = {
+      en: both ? 'both sides' : `the ${wrongSides[0] ?? 'left'} side`,
+      uk: both ? 'обидві частини' : wrongSides[0] === 'right' ? 'праву частину' : 'ліву частину',
+    };
+    const text: Record<1 | 2 | 3, Dict> = {
+      1: {
+        en: `Look again at ${side.en} of your check line: which operation there did you compute differently?`,
+        uk: `Подивись ще раз на ${side.uk} рядка перевірки: яку дію там ти обчислив інакше?`,
+      },
+      2: {
+        en: `Compute in order: brackets first, then multiplication and division, then addition and subtraction. Redo ${side.en} one operation at a time.`,
+        uk: `Обчислюй по порядку: спершу дужки, потім множення й ділення, потім додавання й віднімання. Перерахуй ${side.uk} по одній дії.`,
+      },
+      3: {
+        en: `Go through ${side.en} operation by operation: brackets, then multiplication and division, then addition and subtraction. Write the result of each one, then rewrite the check line.`,
+        uk: `Пройди ${side.uk} дія за дією: дужки, потім множення й ділення, потім додавання й віднімання. Запиши результат кожної дії, а тоді перепиши рядок перевірки.`,
+      },
+    };
+    return t(text[level], locale);
+  },
+
   checkNotSubstitution: (locale: Locale, solutionLatex: string, equationLatex: string) =>
     t(
       {

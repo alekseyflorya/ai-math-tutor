@@ -4,8 +4,10 @@ import {
   MathInputError,
   parseEquation,
   solve,
+  type Fraction,
   type Locale,
 } from '@tutor/shared';
+import { valuesIn } from '../src/tutor/check-hint-guard';
 
 /**
  * Eval cases for the check by substitution: the student has the root, substituted it correctly,
@@ -56,7 +58,21 @@ export const CHECK_CASES: CheckCase[] = [
   c('check-10', 'uk', '3(2x - 1) = 4x + 9', '3(2·6 - 1) = 4·6 + 9',  '3(13 - 1) = 4·6 + 9', 'left', 'multiplication', '12'),
   c('check-11', 'en', '3(2x - 1) = 4x + 9', '3(2·6 - 1) = 4·6 + 9',  '3·11 = 30 + 9',      'right', 'multiplication', '24'),
   c('check-12', 'uk', '2(x + 4) = 3x + 1',  '2(7 + 4) = 3·7 + 1',    '2·11 = 23',          'right', 'addition',       '22'),
+  // The equation itself shows v*: quoting it gives nothing away, and the guard must not fire on
+  // it. check-13 and check-14 are the first curriculum problems. In check-13 (the right side
+  // miscopied) and check-17 (v* = 5 is a coefficient) the student's line does not contain v*, so
+  // only the equation makes it allowed.
+  c('check-13', 'en', 'x + 5 = 12',         '7 + 5 = 12',            '7 + 5 = 13',         'right', 'addition',       '12'),
+  c('check-14', 'uk', '3x - 7 = 11',        '3·6 - 7 = 11',          '17 - 7 = 11',        'left',  'multiplication', '18'),
+  c('check-15', 'en', '2x + 3 = 13',        '2·5 + 3 = 13',          '11 + 3 = 13',        'left',  'multiplication', '10'),
+  c('check-16', 'uk', 'x - 4 = 9',          '13 - 4 = 9',            '8 = 9',              'left',  'addition',       '9'),
+  c('check-17', 'en', '5x - 10 = 2x - 1',   '5·3 - 10 = 2·3 - 1',    '14 - 10 = 2·3 - 1',  'left',  'multiplication', '15'),
+  c('check-18', 'uk', '2(x - 1) = 10',      '2(6 - 1) = 10',         '2·4 = 10',           'left',  'addition',       '5'),
 ];
+
+/** The value of the sides at the root is a number written in the equation (x + 5 = 12 → 12). */
+export const equationShowsValue = (k: CheckCase): boolean =>
+  valuesIn(k.problem).some((v) => v.equals(solveSides(k)));
 
 /** The root and the value both sides take at it (the engine's numbers). */
 export function checkFacts(k: Pick<CheckCase, 'problem'>): { root: string; sideValue: string } {
@@ -66,13 +82,36 @@ export function checkFacts(k: Pick<CheckCase, 'problem'>): { root: string; sideV
   return { root: s.value.toString(), sideValue: evaluateSide(eq.left, s.value).toString() };
 }
 
-/** Numbers the tutor must not state: the value of the sides and the slipped operation's result. */
-export const hiddenNumbers = (k: CheckCase): string[] => [
-  ...new Set([checkFacts(k).sideValue, k.slippedResult]),
-];
+/**
+ * Values the tutor must not state: the value of the sides at the root and the right result of the
+ * operation that slipped, unless the equation already shows them (naming those gives nothing
+ * away). Wider than what the API's guard forbids (it does not know which operation slipped), so
+ * the eval also sees what the guard lets through.
+ */
+export function hiddenValues(k: CheckCase): Fraction[] {
+  const shown = valuesIn(k.problem);
+  const out: Fraction[] = [];
+  for (const v of [solveSides(k), valuesIn(k.slippedResult)[0]!]) {
+    if (!shown.some((s) => s.equals(v)) && !out.some((o) => o.equals(v))) out.push(v);
+  }
+  return out;
+}
 
-/** Every number written in a line (as text). */
-export const numbersIn = (text: string): string[] => text.match(/\d+(?:[.,]\d+)?/g) ?? [];
+function solveSides(k: CheckCase): Fraction {
+  const eq = parseEquation(k.problem);
+  const s = solve(eq);
+  if (s.kind !== 'unique') throw new InvalidCheckCaseError(`${k.problem} has no unique root`);
+  return evaluateSide(eq.left, s.value);
+}
+
+/** Every number the guard caught is already written in the equation or the student's lines. */
+export function guardFalsePositive(k: CheckCase, leaked: readonly string[]): boolean {
+  const written = [k.problem, k.substituted, k.slip].flatMap(valuesIn);
+  return (
+    leaked.length > 0 &&
+    leaked.every((n) => valuesIn(n).every((v) => written.some((w) => w.equals(v))))
+  );
+}
 
 export class InvalidCheckCaseError extends Error {}
 
@@ -95,9 +134,11 @@ export function validateCheckCase(k: CheckCase): void {
     else if (slip.wrongSides.join() !== k.side) {
       fail(`the slip is in ${slip.wrongSides.join(' and ')}, not ${k.side}`);
     }
-    const written = new Set([k.problem, k.substituted, k.slip].flatMap(numbersIn));
-    for (const n of hiddenNumbers(k)) {
-      if (written.has(n)) fail(`hidden number ${n} already appears in what the student wrote`);
+    const written = [k.problem, k.substituted, k.slip].flatMap(valuesIn);
+    for (const v of hiddenValues(k)) {
+      if (written.some((w) => w.equals(v))) {
+        fail(`hidden number ${v.toString()} already appears in what the student wrote`);
+      }
     }
   } catch (e) {
     if (e instanceof MathInputError) fail(`the engine cannot read it (${e.message})`);

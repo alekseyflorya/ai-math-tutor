@@ -23,7 +23,9 @@ verifies understanding with an LLM-generated follow-up problem that the math eng
     A turn reads, calls the model, then applies all its writes in ONE transaction (queued in
     `turn.writes`). Next to it: `attempt.repository.ts` (every query), `tutor-context.builder.ts`
     (what the model is told), `attempt-lock.ts` (409 BUSY: a lease in the attempt row),
-    `message-meta.ts` (typed meta constructors), `follow-up.service.ts`, `notices.ts`.
+    `message-meta.ts` (typed meta constructors), `follow-up.service.ts`, `notices.ts`,
+    `check-hint-guard.ts` (hints on a slip in the check must not state a value the student has to
+    compute: one retry, then a fixed hint; the eval uses the same detector).
   - `src/auth/demo-cleanup.service.ts` — daily deletion of demo accounts older than 7 days.
   - `src/llm/prompts.ts` — all pedagogy and prompts. `src/llm/structured-call.ts` — timeout, zod
     validation, one self-correcting retry (pure; shared with the eval). `src/llm/llm.service.ts` — quotas + logging around it.

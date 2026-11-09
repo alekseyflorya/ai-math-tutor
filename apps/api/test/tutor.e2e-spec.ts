@@ -27,6 +27,7 @@ import { LLM_PROVIDER, type LlmProvider } from '../src/llm/llm.types';
 import { DemoCleanupService } from '../src/auth/demo-cleanup.service';
 import { AttemptLock } from '../src/tutor/attempt-lock';
 import { AttemptRepository } from '../src/tutor/attempt.repository';
+import { notices } from '../src/tutor/notices';
 
 const DB_URL = process.env.DATABASE_URL_TEST ?? 'postgres://tutor:tutor@localhost:5433/tutor_test';
 
@@ -299,6 +300,71 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     const again = await agent.post(`/api/attempts/${a.id}/skip-check`).send({});
     expect(again.status).toBe(409);
     expect((again.body as ApiErrorBody).code).toBe('ATTEMPT_CLOSED');
+  });
+
+  describe('the guard on hints for a slip in the check', () => {
+    // Each problem has x = 4 and a slip on the right side. The student writes neither value of
+    // the sides, so that value (v*, the left side, the true right side) must not be stated.
+    const leaky = (v: number) => `[mock] The left side is right: ${v}. What about the right side?`;
+    const toSlip = async (equation: string, substituted: string) => {
+      let a = await startCustom(equation);
+      a = await say(a.id, 'x = 4');
+      a = await say(a.id, substituted);
+      return a;
+    };
+    const isCheckDiagnosis = (prompt: string) =>
+      prompt.includes('checking the answer by substitution');
+
+    it('asks the model once more when its hint states a value, and keeps the clean answer', async () => {
+      const real = provider.completeJson.bind(provider);
+      const spy = jest.spyOn(provider, 'completeJson').mockImplementation(async (req, ...rest) => {
+        if (req.purpose === 'diagnose' && isCheckDiagnosis(req.prompt)) {
+          return JSON.stringify({
+            misconception: 'Added 4 + 10 and got 15.',
+            message: req.prompt.includes('Your previous answer stated 14')
+              ? '[mock] Which side should you recompute?'
+              : leaky(14),
+          });
+        }
+        return real(req, ...rest);
+      });
+      let a = await toSlip('2(x + 3) = x + 10', '2(4 + 3) = 4 + 10'); // both sides 14
+      a = await say(a.id, '2·7 = 15');
+      expect(lastTutor(a)).toMatchObject({
+        kind: 'HINT',
+        content: '[mock] Which side should you recompute?',
+        meta: { hintLevel: 1, errorType: 'ARITHMETIC', guard: 'retried' },
+      });
+      expect(spy.mock.calls.filter(([req]) => isCheckDiagnosis(req.prompt))).toHaveLength(2);
+    });
+
+    it('shows the fixed hint when the model states the value twice, at every level', async () => {
+      const real = provider.completeJson.bind(provider);
+      jest.spyOn(provider, 'completeJson').mockImplementation(async (req, ...rest) => {
+        if (req.purpose === 'diagnose' && isCheckDiagnosis(req.prompt)) {
+          return JSON.stringify({ misconception: 'Added 4 + 14 and got 19.', message: leaky(18) });
+        }
+        if (req.purpose === 'hint') return JSON.stringify({ message: leaky(18) });
+        return real(req, ...rest);
+      });
+      let a = await toSlip('3(x + 2) = x + 14', '3(4 + 2) = 4 + 14'); // both sides 18
+      a = await say(a.id, '3·6 = 19');
+      expect(lastTutor(a)).toMatchObject({
+        kind: 'HINT',
+        content: notices.checkHintTemplate('en', 1, ['right']),
+        meta: { hintLevel: 1, guard: 'template' },
+      });
+      a = await hint(a.id);
+      expect(lastTutor(a)).toMatchObject({
+        kind: 'HINT',
+        content: notices.checkHintTemplate('en', 2, ['right']),
+        meta: { hintLevel: 2, requested: true, guard: 'template' },
+      });
+      expect(a.messages.some((m) => m.role === 'TUTOR' && m.content.includes('18'))).toBe(false);
+      // The slip is still recorded with the model's diagnosis, and the check goes on.
+      a = await say(a.id, '18 = 18');
+      expect(a.status).toBe('SOLVED');
+    });
   });
 
   it('a slip while checking the practice problem does not undo "understood"', async () => {

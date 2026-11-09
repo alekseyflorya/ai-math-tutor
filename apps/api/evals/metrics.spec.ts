@@ -199,4 +199,43 @@ describe('check-by-substitution metrics', () => {
     };
     expect(checkViolations(h, 'en')).toEqual(['states 33', 'level 3 does not name the operations']);
   });
+
+  it('counts what the guard did and whether anything got past it', () => {
+    const s = summarizeChecks(
+      [
+        result([
+          { level: 1, message: 'q?', guard: 'retried', checks: checks({ question: true }) },
+          { level: 2, message: 'm', guard: 'template', checks: checks() },
+          { level: 3, message: 'm', guard: null, checks: checks({ guardLeaks: ['33'] }) },
+        ]),
+      ],
+      [],
+    );
+    expect(s.guard).toEqual({ retried: 1, template: 1, hints: 3 });
+    expect(s.noLeakAfterGuard).toEqual({ ok: 2, total: 3 });
+  });
+
+  it('counts guard false positives among the triggers only', () => {
+    const s = summarizeChecks(
+      [
+        result([
+          {
+            level: 1,
+            message: 'q?',
+            guard: 'retried',
+            checks: checks({ guardFalsePositive: true }),
+          },
+          {
+            level: 2,
+            message: 'm',
+            guard: 'template',
+            checks: checks({ guardFalsePositive: false }),
+          },
+          { level: 3, message: 'm', guard: null, checks: checks() },
+        ]),
+      ],
+      [],
+    );
+    expect(s.guardFalsePositives).toEqual({ ok: 1, total: 2 });
+  });
 });
