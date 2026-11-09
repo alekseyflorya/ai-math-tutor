@@ -261,6 +261,46 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     expect(a.nextAttemptId).toBeNull();
   });
 
+  it('skips the check: solved without it, a pending slip stays uncorrected, practice still comes', async () => {
+    let a = await startCustom('4(x + 1) = 3x + 7'); // x = 3, both sides 16
+
+    // Only while checking.
+    const early = await agent.post(`/api/attempts/${a.id}/skip-check`).send({});
+    expect(early.status).toBe(409);
+    expect((early.body as ApiErrorBody).code).toBe('NOT_CHECKING');
+
+    a = await say(a.id, '4x + 1 = 3x + 7'); // DISTRIBUTION (mock)
+    a = await say(a.id, '4x + 4 = 3x + 7');
+    a = await say(a.id, 'x = 3');
+    a = await say(a.id, '16 = 17'); // a slip in the check, then the student gives up on it
+    expect(a.hintLevel).toBe(1);
+
+    a = (await agent.post(`/api/attempts/${a.id}/skip-check`).send({}).expect(200))
+      .body as AttemptView;
+    expect(a.status).toBe('SOLVED');
+    expect(a.check).toBe('SKIPPED');
+    expect(a.hintLevel).toBe(0);
+    expect(a.messages.some((m) => m.kind === 'NOTICE' && m.meta?.checkSkipped)).toBe(true);
+    expect(a.messages.find((m) => m.kind === 'CELEBRATION')!.meta).toMatchObject({
+      checked: false,
+    });
+    // The practice problem targets the solution's mistake, not the slip in the check.
+    expect(a.messages.find((m) => m.kind === 'FOLLOW_UP')!.meta).toMatchObject({
+      errorType: 'DISTRIBUTION',
+    });
+
+    const progress = (await agent.get('/api/progress').expect(200)).body as ProgressView;
+    expect(progress.recentMistakes.find((m) => m.stepInput === '16 = 17')).toMatchObject({
+      errorType: 'ARITHMETIC',
+      corrected: false,
+    });
+    expect(progress.checks.skipped).toBeGreaterThanOrEqual(1);
+
+    const again = await agent.post(`/api/attempts/${a.id}/skip-check`).send({});
+    expect(again.status).toBe(409);
+    expect((again.body as ApiErrorBody).code).toBe('ATTEMPT_CLOSED');
+  });
+
   it('a slip while checking the practice problem does not undo "understood"', async () => {
     // The model diagnoses the first mistake as ARITHMETIC (the practice will target it).
     const real = provider.completeJson.bind(provider);

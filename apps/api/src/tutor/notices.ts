@@ -157,6 +157,9 @@ export const notices = {
       locale,
     ),
 
+  checkSkipped: (locale: Locale) =>
+    t({ en: 'The check was skipped.', uk: 'Перевірку пропущено.' }, locale),
+
   checkStepOk: (locale: Locale) =>
     t(
       {

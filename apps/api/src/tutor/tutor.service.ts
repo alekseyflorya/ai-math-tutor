@@ -212,6 +212,32 @@ export class TutorService {
     });
   }
 
+  /**
+   * Closes the problem without the check (allowed only while CHECKING). A slip in the check that
+   * is being worked on stays uncorrected: it is recorded as it was.
+   */
+  async skipCheck(userId: string, attemptId: string): Promise<AttemptView> {
+    return this.lock.run(userId, attemptId, async () => {
+      const turn = await this.loadTurn(userId, attemptId);
+      if (turn.attempt.mode !== 'CHECKING') {
+        throw new ConflictException({
+          code: 'NOT_CHECKING',
+          message: 'There is no answer to check yet',
+        });
+      }
+      this.say(
+        turn,
+        'TUTOR',
+        'NOTICE',
+        notices.checkSkipped(turn.locale),
+        meta.notice({ checkSkipped: true }),
+      );
+      await this.onSolved(turn, { checked: false });
+      await this.commit(turn);
+      return this.getView(userId, attemptId);
+    });
+  }
+
   // --- Turn handlers ---------------------------------------------------------
 
   private async handleStep(turn: Turn, text: string) {
@@ -503,6 +529,7 @@ export class TutorService {
       status: 'SOLVED',
       solvedAt: new Date(),
       check: opts.checked ? 'DONE' : 'SKIPPED',
+      mode: 'SOLVING', // nothing left to check or remediate
       hintLevel: 0,
       // A slip in the check that was left when skipping stays uncorrected, honestly.
       activeMistakeId: null,
