@@ -10,6 +10,7 @@ import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { ThrottlerStorage, ThrottlerStorageService } from '@nestjs/throttler';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
 import request from 'supertest';
 import type { App } from 'supertest/types';
@@ -317,8 +318,13 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
 
   it('lets a turn through once a stuck lease has expired', async () => {
     const a = await startCustom('x + 6 = 8');
+    const lock = app.get(AttemptLock);
+    const me = ((await agent.get('/api/auth/me').expect(200)).body as UserView).id;
+    // Someone else cannot take the lock on this attempt (it does not exist for them).
+    expect(await lock.acquire(randomUUID(), a.id)).toBe('missing');
+
     // An instance took the lock and died without releasing it.
-    const held = await app.get(AttemptLock).acquire(a.id);
+    const held = await lock.acquire(me, a.id);
     expect(held).toHaveProperty('token');
 
     const blocked = await agent.post(`/api/attempts/${a.id}/messages`).send({ text: 'why?' });

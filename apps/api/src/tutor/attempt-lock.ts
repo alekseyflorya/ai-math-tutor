@@ -27,15 +27,16 @@ export class AttemptLock {
       config.get('TURN_LOCK_LEASE_MS') ?? config.get('LLM_TURN_BUDGET_MS') + LEASE_MARGIN_MS;
   }
 
-  async run<T>(attemptId: string, fn: () => Promise<T>): Promise<T> {
-    const lease = await this.acquire(attemptId);
+  /** Only the attempt's owner can take its lease: anyone else's request just gets its 404. */
+  async run<T>(userId: string, attemptId: string, fn: () => Promise<T>): Promise<T> {
+    const lease = await this.acquire(userId, attemptId);
     if (lease === 'busy') {
       throw new ConflictException({
         code: 'BUSY',
         message: 'The tutor is still answering your previous message',
       });
     }
-    // No such attempt: nothing to lock, and `fn` answers 404 as usual.
+    // No such attempt for this user: nothing to lock, and `fn` answers 404 as usual.
     if (lease === 'missing') return fn();
     try {
       return await fn();
@@ -46,8 +47,11 @@ export class AttemptLock {
     }
   }
 
-  /** Takes the lease if it is free or expired. */
-  async acquire(attemptId: string): Promise<{ token: string } | 'busy' | 'missing'> {
+  /** Takes the lease on the user's attempt if it is free or expired. */
+  async acquire(
+    userId: string,
+    attemptId: string,
+  ): Promise<{ token: string } | 'busy' | 'missing'> {
     if (!UUID.test(attemptId)) return 'missing';
     const token = randomUUID();
     const taken = await this.db
@@ -59,6 +63,7 @@ export class AttemptLock {
       .where(
         and(
           eq(attempts.id, attemptId),
+          eq(attempts.userId, userId),
           or(isNull(attempts.busyUntil), lt(attempts.busyUntil, sql`now()`)),
         ),
       )
@@ -67,7 +72,7 @@ export class AttemptLock {
     const [exists] = await this.db
       .select({ id: attempts.id })
       .from(attempts)
-      .where(eq(attempts.id, attemptId));
+      .where(and(eq(attempts.id, attemptId), eq(attempts.userId, userId)));
     return exists ? 'busy' : 'missing';
   }
 

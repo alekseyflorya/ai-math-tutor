@@ -157,7 +157,7 @@ export class TutorService {
   }
 
   async submit(userId: string, attemptId: string, text: string): Promise<AttemptView> {
-    return this.lock.run(attemptId, async () => {
+    return this.lock.run(userId, attemptId, async () => {
       const turn = await this.loadTurn(userId, attemptId);
       if (classifyInput(text) === 'step') await this.handleStep(turn, text);
       else await this.handleChat(turn, text);
@@ -167,7 +167,7 @@ export class TutorService {
   }
 
   async hint(userId: string, attemptId: string): Promise<AttemptView> {
-    return this.lock.run(attemptId, async () => {
+    return this.lock.run(userId, attemptId, async () => {
       const turn = await this.loadTurn(userId, attemptId);
       const level = Math.min(MAX_HINT, turn.attempt.hintLevel + 1) as 1 | 2 | 3;
       const ctx = await this.contexts.build(turn, { hintLevel: level });
