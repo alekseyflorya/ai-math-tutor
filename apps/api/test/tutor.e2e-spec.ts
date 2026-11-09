@@ -8,6 +8,7 @@
  */
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { ThrottlerStorage, ThrottlerStorageService } from '@nestjs/throttler';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Pool } from 'pg';
 import request from 'supertest';
@@ -21,6 +22,7 @@ import type {
   UserView,
 } from '@tutor/shared';
 import { LLM_PROVIDER, type LlmProvider } from '../src/llm/llm.types';
+import { AttemptLock } from '../src/tutor/attempt-lock';
 import { AttemptRepository } from '../src/tutor/attempt.repository';
 
 const DB_URL = process.env.DATABASE_URL_TEST ?? 'postgres://tutor:tutor@localhost:5433/tutor_test';
@@ -31,7 +33,25 @@ Object.assign(process.env, {
   LLM_PROVIDER: 'mock',
   JWT_SECRET: 'test-secret-test-secret-test-secret-123',
   COOKIE_SECURE: 'false',
+  // Short turn-lock lease, so the "expired lease" case runs in a second.
+  TURN_LOCK_LEASE_MS: '1500',
 });
+
+/** The real in-memory rate-limit store, replaced by a fresh one before each test. */
+class ResettableRateLimits {
+  private store = new ThrottlerStorageService();
+  increment(...args: Parameters<ThrottlerStorageService['increment']>) {
+    return this.store.increment(...args);
+  }
+  reset() {
+    this.store.onApplicationShutdown();
+    this.store = new ThrottlerStorageService();
+  }
+  onApplicationShutdown() {
+    this.store.onApplicationShutdown();
+  }
+}
+const rateLimits = new ResettableRateLimits();
 
 describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
   let app: INestApplication;
@@ -49,7 +69,10 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
 
     const { AppModule } = await import('../src/app.module');
     const { configureApp } = await import('../src/app.setup');
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(rateLimits)
+      .compile();
     app = moduleRef.createNestApplication<NestExpressApplication>();
     configureApp(app as NestExpressApplication);
     await app.init();
@@ -57,6 +80,10 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     agent = request.agent(server);
     provider = app.get<LlmProvider>(LLM_PROVIDER);
   });
+
+  // Every request here comes from one IP: start each test with fresh per-IP rate limits, so the
+  // number of turns earlier tests made does not matter.
+  beforeEach(() => rateLimits.reset());
 
   afterEach(() => jest.restoreAllMocks());
 
@@ -277,6 +304,28 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     // Exactly one greeting: the losing requests wrote nothing.
     const view = started[0]!.body as AttemptView;
     expect(view.messages.filter((m) => m.kind === 'GREETING')).toHaveLength(1);
+  });
+
+  it('releases the turn lock: consecutive turns on one attempt both go through', async () => {
+    const a = await startCustom('x + 4 = 9');
+    await say(a.id, 'why?');
+    await say(a.id, 'how?');
+    const next = await say(a.id, 'x = 5');
+    expect(next.status).toBe('SOLVED');
+  });
+
+  it('lets a turn through once a stuck lease has expired', async () => {
+    const a = await startCustom('x + 6 = 8');
+    // An instance took the lock and died without releasing it.
+    const held = await app.get(AttemptLock).acquire(a.id);
+    expect(held).toHaveProperty('token');
+
+    const blocked = await agent.post(`/api/attempts/${a.id}/messages`).send({ text: 'why?' });
+    expect(blocked.status).toBe(409);
+    expect((blocked.body as ApiErrorBody).code).toBe('BUSY');
+
+    await new Promise((r) => setTimeout(r, 1700)); // lease is 1.5 s in tests
+    await say(a.id, 'why?');
   });
 
   it('rejects overlapping turns and messages to a finished problem', async () => {

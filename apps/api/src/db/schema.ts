@@ -92,6 +92,10 @@ export const attempts = pgTable(
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     solvedAt: timestamp('solved_at', { withTimezone: true }),
+    /** Turn lock (lease): set while a turn runs; see AttemptLock. */
+    busyUntil: timestamp('busy_until', { withTimezone: true }),
+    /** Who holds the lease: released only by the holder's token. */
+    busyToken: uuid('busy_token'),
   },
   (t) => [
     index('attempts_user_updated_idx').on(t.userId, t.updatedAt),

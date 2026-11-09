@@ -12,6 +12,7 @@ export type Db = NodePgDatabase<typeof schema>;
 export type Executor = PgDatabase<NodePgQueryResultHKT, typeof schema>;
 export const DB = Symbol('DB');
 export const MIGRATIONS_DIR = join(__dirname, '..', '..', 'drizzle');
+const MIGRATION_LOCK = 'ai-math-tutor:migrations';
 
 @Injectable()
 class PoolCloser implements OnModuleDestroy {
@@ -36,8 +37,16 @@ class PoolCloser implements OnModuleDestroy {
       inject: [Pool],
       useFactory: async (pool: Pool): Promise<Db> => {
         const db = drizzle(pool, { schema });
-        // Migrations are plain SQL files in apps/api/drizzle, applied on boot (single instance).
-        await migrate(db, { migrationsFolder: MIGRATIONS_DIR });
+        // Migrations are plain SQL files in apps/api/drizzle, applied on boot. Several instances
+        // may boot at once: a session advisory lock lets one apply them while the others wait.
+        const client = await pool.connect();
+        try {
+          await client.query('SELECT pg_advisory_lock(hashtext($1))', [MIGRATION_LOCK]);
+          await migrate(db, { migrationsFolder: MIGRATIONS_DIR });
+        } finally {
+          await client.query('SELECT pg_advisory_unlock(hashtext($1))', [MIGRATION_LOCK]);
+          client.release();
+        }
         new Logger('Db').log('Migrations applied');
         return db;
       },
