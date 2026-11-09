@@ -25,7 +25,11 @@ vi.mock('./lib/api', async (importOriginal) => {
         loggedIn = false;
         return Promise.resolve();
       },
-      progress: () => new Promise(() => {}), // the page stays on its skeleton
+      // Pages stay on their skeletons: only the header (and its Log out) matters here.
+      progress: () => new Promise(() => {}),
+      problems: () => new Promise(() => {}),
+      customAttempts: () => new Promise(() => {}),
+      attempt: () => new Promise(() => {}),
     },
   };
 });
@@ -35,13 +39,15 @@ function Where() {
 }
 
 describe('logging out', () => {
-  it('opens the login page', async () => {
+  // Log out lives in the shared header, so it must work the same from every page.
+  it.each(['/learn', '/learn/a1', '/progress'])('opens the login page from %s', async (path) => {
+    loggedIn = true;
     render(
       <QueryClientProvider
         client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       >
         <I18nProvider>
-          <MemoryRouter initialEntries={['/progress']}>
+          <MemoryRouter initialEntries={[path]}>
             <App />
             <Where />
           </MemoryRouter>
