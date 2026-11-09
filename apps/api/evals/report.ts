@@ -52,6 +52,7 @@ export function headlineRow(info: RunInfo, s: Summary): string[] {
     pct(s.rules.level1Question),
     pct(s.rules.noFinalAnswer),
     pct(s.rules.level3CorrectedOnly),
+    pct(s.rules.level2OtherNumbers),
     pct(s.rules.language),
     pct(s.rules.latexIntact),
   ];
@@ -65,6 +66,7 @@ export const HEADLINE_HEADER = [
   'L1 is a question',
   'No final answer',
   'L3 = corrected step only',
+  'L2 on other numbers',
   'Language matches',
   'LaTeX intact',
 ];
@@ -76,6 +78,7 @@ export const CHECK_HEADER = [
   'No value of a side',
   'No computed line',
   'L3 = operations, no results',
+  'L2 on other numbers',
   'Language matches',
   'LaTeX intact',
   'Invalid JSON',
@@ -90,6 +93,7 @@ export function checkHeadlineRow(info: RunInfo, s: CheckSummary): string[] {
     pct(s.noValue),
     pct(s.noComputedLine),
     pct(s.level3OperationsOnly),
+    pct(s.level2OtherNumbers),
     pct(s.language),
     pct(s.latexIntact),
     pct(s.invalidJson),

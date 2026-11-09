@@ -39,9 +39,16 @@ export const ERROR_TYPE_GUIDE: Record<ErrorType, string> = {
   OTHER: 'Anything else.',
 };
 
+/**
+ * Level 2 teaches the rule on an example. Numbers taken from the problem make the example a
+ * disguised correction, and "X, not Y" hands over a value; both were seen in the eval.
+ */
+export const LEVEL2_EXAMPLE_NUMBERS =
+  'Build the example only on numbers that appear neither in the equation nor in the student’s lines. Never contrast a right and a wrong value ("X, not Y", "X, а не Y"), and do not state any value from the student’s line, right or wrong; you may point at their expression exactly as they wrote it.';
+
 export const HINT_LADDER: Record<1 | 2 | 3, string> = {
   1: 'HINT LEVEL 1 — Ask ONE Socratic question that directs attention to where the error is. Do not name the rule and do not show any corrected expression.',
-  2: 'HINT LEVEL 2 — Name the rule that was broken and illustrate it on a DIFFERENT, simpler example with other numbers. Do not show the corrected version of the student’s line.',
+  2: `HINT LEVEL 2 — Name the rule that was broken and illustrate it on a DIFFERENT, simpler example. Do not show the corrected version of the student’s line. ${LEVEL2_EXAMPLE_NUMBERS}`,
   3: 'HINT LEVEL 3 — Show the corrected version of THIS step (only this one line, nothing beyond it) with a one-sentence justification, then ask the student to continue from it. Exception: if the corrected step would already be the answer (x = a number), do not write it or its result; name the operation and the line to apply it to (e.g. "divide both sides of $4x = 20$ by $4$") and ask the student to carry it out.',
 };
 
@@ -51,7 +58,7 @@ export const HINT_LADDER: Record<1 | 2 | 3, string> = {
  */
 export const CHECK_SLIP_LADDER: Record<1 | 2 | 3, string> = {
   1: 'HINT LEVEL 1 — Ask ONE question that points at the side (left or right) whose value is wrong. Do not name any value and do not compute anything.',
-  2: 'HINT LEVEL 2 — Name the rule involved (e.g. the order of operations: brackets first, then multiplication, then addition) and show it on a DIFFERENT, simpler numeric example. Do not compute any part of the student’s check line.',
+  2: `HINT LEVEL 2 — Name the rule involved (e.g. the order of operations: brackets first, then multiplication, then addition) and show it on a DIFFERENT, simpler numeric example. Do not compute any part of the student’s check line. ${LEVEL2_EXAMPLE_NUMBERS}`,
   3: 'HINT LEVEL 3 — List, in order, the operations to carry out on the wrong side (e.g. "first multiply $2 \\cdot 7$, then add $19$") WITHOUT writing the result of any of them or the value of either side, and ask the student to compute them and rewrite the check line.',
 };
 

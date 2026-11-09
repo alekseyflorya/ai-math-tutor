@@ -287,3 +287,62 @@ export function computedCheckLines(
   }
   return [...out];
 }
+
+// --- Level 2: an example on other numbers ------------------------------------------------------
+
+const NUM = /\d+(?:[.,]\d+)?/g;
+const numbersOf = (text: string): string[] => text.match(NUM) ?? [];
+
+/** Every number of `part` is in `seq` (as many times): "19 - 12" quotes "x + 12 = 19". */
+function within(seq: readonly string[], part: readonly string[]): boolean {
+  const left = [...seq];
+  return part.every((n) => {
+    const i = left.indexOf(n);
+    if (i === -1) return false;
+    left.splice(i, 1);
+    return true;
+  });
+}
+
+/**
+ * Level 2 must illustrate the rule on numbers that appear neither in the equation nor in the
+ * student's lines, and must not state a value from their line. Returns the student's numbers
+ * the message uses outside a quote of their own work.
+ *
+ * A quote is a math piece with an operation or the variable whose numbers all appear in one of
+ * the lines ("$2(7) + 19$" for "… = 2·7 + 19", "$3x + 4$" for "3x + 4 = …"):
+ * pointing at what they wrote is allowed. A bare number ("not $28$", "$4$") or an example built on
+ * their numbers ("$6 \cdot 4 = 24$" when they wrote "·4") is not.
+ */
+export function studentNumbersUsed(message: string, lines: readonly string[]): string[] {
+  const sequences = lines.map((l) => numbersOf(l));
+  const squashed = lines.map(squash);
+  const own = new Set(sequences.flat());
+  const used = new Set<string>();
+  const flag = (numbers: string[]) => numbers.filter((n) => own.has(n)).forEach((n) => used.add(n));
+
+  /** An expression of theirs, or a signed term of theirs ("+12", "-7") pointed at in place. */
+  const isQuote = (text: string): boolean => {
+    const numbers = numbersOf(text);
+    const t = text.trim();
+    if (/^[+\-−]\s*\d+(?:[.,]\d+)?x?$|^[+\-−]?\s*\d*x$/.test(t)) {
+      return squashed.some((l) => l.includes(squash(t)));
+    }
+    const expression = /[x+\-−*/():=]/.test(t.replace(/^[-−]/, ''));
+    return (
+      expression &&
+      (numbers.length >= 2 || /x/.test(t)) &&
+      sequences.some((seq) => within(seq, numbers))
+    );
+  };
+
+  for (const m of message.matchAll(MATH)) {
+    const segment = latexToPlain(m[1] ?? m[2] ?? m[3] ?? '');
+    if (isQuote(segment)) continue; // the whole line or expression as they wrote it
+    for (const piece of segment.split(/;|=|,(?!\d)|(?<!\d),/)) {
+      if (numbersOf(piece).length && !isQuote(piece)) flag(numbersOf(piece));
+    }
+  }
+  flag(numbersOf(prose(message).replace(CYRILLIC_X, 'x')));
+  return [...used];
+}

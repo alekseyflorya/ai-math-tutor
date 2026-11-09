@@ -305,7 +305,35 @@ a timeout or a 429.
 - **What it costs.** About one second, only on a wrong step and on a hint. The verdict itself is
   instant: the browser shows it before the tutor answers.
 - **The level-2 leak is not fixed by the model.** Both models leaked a value once in 12 checks
-  ("X, not Y"), so it is a prompt question for the check's hint ladder.
+  ("X, not Y"), so it is a prompt question; it is fixed below.
+
+### Level 2 on other numbers
+
+Level 2 teaches the broken rule on an example. With numbers from the problem the example
+becomes a disguised correction, and "X, not Y" hands over a value. Both ladders now say: build
+the example only on numbers that appear neither in the equation nor in the student's lines;
+never contrast a right and a wrong value; state no value from the student's line, but point at
+their expression as written.
+
+The eval checks it at level 2 (step and check cases): no number of the equation or the student's
+lines outside a quote of their work. A quote is an expression of theirs (its numbers all come
+from one of their lines), or a signed term of theirs pointed at in place (`+12`). Both runs are
+scored with the same checks; production setup, `gemini-3.6-flash`:
+
+| Run                                                | Error type accuracy | Level 2 on other numbers (steps) | Level 2 on other numbers (check) | "X, not Y" at level 2 | No value of a side (check) | No final answer | L3 rule | Latency p50 / p95 |
+| -------------------------------------------------- | ------------------- | -------------------------------- | -------------------------------- | --------------------- | -------------------------- | --------------- | ------- | ----------------- |
+| Before (`2026-11-09-gemini-3.6-flash`, re-scored)  | 87.0% (47/54)       | 33.3% (18/54)                    | 8.3% (1/12)                      | 5                     | 97.2% (35/36)              | 99.4%           | 96.3%   | 1539 / 2761 ms    |
+| After (`2026-11-09-gemini-3.6-flash-2`, re-scored) | 88.9% (48/54)       | 70.4% (38/54)                    | 66.7% (8/12)                     | 0                     | 91.7% (33/36)              | 100%            | 98.1%   | 1606 / 3146 ms    |
+
+- **"X, not Y" is gone,** and level 2 keeps to other numbers twice as often. Diagnosis is
+  unchanged (47 → 48, noise): only level 2 changed.
+- **What is still flagged** is mostly an example whose small numbers or result happen to match
+  the problem (`8y − 5y = 3y` when the student wrote `5x` and the problem has `3`). Some flags are
+  the check being strict: the tutor naming the student's own coefficient as a bare number
+  ("the coefficient $4$") counts against it.
+- **A new leak, at level 1 of the check.** Three Ukrainian hints began with "the left side is
+  right: $3 \cdot 11 = 33$", computing the side for the student. The level-1 prompt did not change
+  in this fix, so this is run-to-run variance, but it is a real leak.
 
 `pnpm eval` is not part of CI: it needs an API key and spends quota (one run is about 200
 requests). By default it measures the primary model of `GEMINI_MODEL_DIAGNOSIS`, the one that

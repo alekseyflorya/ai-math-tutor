@@ -2,6 +2,7 @@ import { Fraction } from '@tutor/shared';
 import {
   computedCheckLines,
   statedNumbers,
+  studentNumbersUsed,
   correctedStep,
   detectLanguage,
   extractEquations,
@@ -179,5 +180,32 @@ describe('hints for a slip in the check', () => {
     expect(computedCheckLines('We substituted: $3(7 + 4) = 2 \\cdot 7 + 19$.', k)).toEqual([]);
     // A wrong numeric line is not "computed for them" (and an example with other numbers is fine).
     expect(computedCheckLines('For example, $2 \\cdot 3 + 5 = 11$.', k)).toEqual([]);
+  });
+});
+
+describe('level 2: an example on other numbers', () => {
+  const check = ['3(x + 4) = 2x + 19', '3(7 + 4) = 2·7 + 19', '3·11 = 12 + 19'];
+  const step = ['3(x + 4) = 2x + 19', '3x + 4 = 2x + 19'];
+
+  it('lets the tutor point at what the student wrote', () => {
+    expect(studentNumbersUsed('Apply it to $2(7) + 19$ on the right.', check)).toEqual([]);
+    expect(studentNumbersUsed('Look again at $3x + 4$.', step)).toEqual([]);
+    expect(studentNumbersUsed('Go back to $3x + 4 = 2x + 19$.', step)).toEqual([]);
+    expect(studentNumbersUsed('What happens to $+4$ and to $19$?', step)).toEqual(['19']);
+    expect(studentNumbersUsed('Recompute $11 : 3$.', ['33 = 11 : 3'])).toEqual([]);
+    expect(studentNumbersUsed('Re-check $19 - 12$.', ['x + 12 = 19', 'x = 8'])).toEqual([]);
+    expect(
+      studentNumbersUsed('Multiply first: in $5 \\cdot 6 + 8$ we get $30$, then $38$.', check),
+    ).toEqual([]);
+  });
+
+  it('flags a value from their line, a contrast and an example on their numbers', () => {
+    expect(studentNumbersUsed('For example, $2 \\cdot 6 = 12$, not $14$.', check)).toEqual([
+      '2',
+      '12',
+    ]);
+    expect(studentNumbersUsed('You got $12$ for this product.', check)).toEqual(['12']);
+    expect(studentNumbersUsed('E.g. $2(x + 5) = 2x + 10$.', step)).toEqual(['2']);
+    expect(studentNumbersUsed('Multiply each term by 3.', step)).toEqual(['3']);
   });
 });

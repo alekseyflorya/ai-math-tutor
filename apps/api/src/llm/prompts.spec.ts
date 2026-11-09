@@ -3,6 +3,7 @@ import {
   checkDiagnosePrompt,
   contextBlock,
   HINT_LADDER,
+  LEVEL2_EXAMPLE_NUMBERS,
   hintPrompt,
   historyLine,
   studentInput,
@@ -98,5 +99,14 @@ describe('a slip in the check has its own hint ladder', () => {
 
   it('keeps the usual ladder for a mistake in the solution', () => {
     expect(hintPrompt(slip('SOLUTION'), 3)).toContain(HINT_LADDER[3]);
+  });
+});
+
+describe('level 2 teaches on other numbers', () => {
+  it('both ladders forbid the student\'s numbers and "X, not Y" in the example', () => {
+    expect(LEVEL2_EXAMPLE_NUMBERS).toContain('X, not Y');
+    expect(HINT_LADDER[2]).toContain(LEVEL2_EXAMPLE_NUMBERS);
+    expect(CHECK_SLIP_LADDER[2]).toContain(LEVEL2_EXAMPLE_NUMBERS);
+    expect(HINT_LADDER[1]).not.toContain(LEVEL2_EXAMPLE_NUMBERS);
   });
 });
