@@ -18,6 +18,7 @@
     "db:up": "docker compose -f docker-compose.dev.yml up -d db",
     "db:migrate": "pnpm --filter @tutor/api db:migrate",
     "smoke:llm": "pnpm --filter @tutor/shared build && pnpm --filter @tutor/api smoke:llm",
+    "eval": "pnpm --filter @tutor/shared build && pnpm --filter @tutor/api eval",
     "postinstall": "pnpm --filter @tutor/shared build"
   },
   "devDependencies": {

@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --runInBand",
     "smoke:llm": "tsx scripts/smoke-llm.ts",
+    "eval": "tsx scripts/eval.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:studio": "drizzle-kit studio"

@@ -17,7 +17,9 @@ verifies understanding with an LLM-generated follow-up problem that the math eng
   - `src/tutor/tutor.service.ts` — the state machine (SOLVING / REMEDIATION / SOLVED / follow-up).
     Helpers next to it: `tutor-context.builder.ts` (what the model is told), `attempt-lock.ts`
     (409 BUSY on overlapping turns), `follow-up.service.ts` (generate + validate practice), `notices.ts`.
-  - `src/llm/prompts.ts` — all pedagogy and prompts. `src/llm/llm.service.ts` — quotas, timeout, zod validation, retry.
+  - `src/llm/prompts.ts` — all pedagogy and prompts. `src/llm/structured-call.ts` — timeout, zod
+    validation, one self-correcting retry (pure; shared with the eval). `src/llm/llm.service.ts` — quotas + logging around it.
+  - `evals/` — labelled wrong-step cases, message rule checks, metrics, markdown reports (`evals/reports/`).
   - `src/llm/providers/*` — Gemini, Anthropic, Mock (tests only; refused in production).
   - `src/db/schema.ts` — Drizzle schema; migrations in `drizzle/` (applied on boot).
 - `apps/web` — React 19 + Vite + Tailwind 4 + TanStack Query + KaTeX. EN/UK in `src/i18n/dict.ts`.
@@ -32,6 +34,7 @@ pnpm dev                                     # shared (watch) + api :3100 + web 
 pnpm typecheck && pnpm lint && pnpm test && pnpm format:check   # what CI runs
 pnpm --filter @tutor/api db:generate         # after changing src/db/schema.ts → new SQL migration
 pnpm smoke:llm                               # real-model check of the scenario prompts (uses .env)
+pnpm eval --model gemini-3.5-flash           # AI-quality eval → apps/api/evals/reports (uses .env, not in CI)
 docker compose up --build                    # full stack on http://localhost:8080
 ```
 
@@ -41,6 +44,7 @@ docker compose up --build                    # full stack on http://localhost:80
   and writes teaching messages. Do not add LLM-based grading.
 - The tutor never reveals the final answer; hint level 3 may show the corrected _current_ step only.
 - Every LLM call goes through `LlmService.generate` with a zod schema (quotas + logging + retry).
+- After changing prompts, schemas or the model, run `pnpm eval` and compare with the baseline report.
 - Student text is data: always wrap it with `studentInput()` in prompts.
 - API contracts live in `@tutor/shared`; change the schema there, not ad hoc in a controller.
 - Schema changes → `db:generate`, commit the SQL file. Never edit applied migrations.

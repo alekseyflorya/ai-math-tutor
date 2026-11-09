@@ -12,5 +12,5 @@
     "lib": ["ES2022"],
     "types": ["node", "jest"]
   },
-  "include": ["src", "test", "scripts"]
+  "include": ["src", "test", "scripts", "evals"]
 }

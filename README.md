@@ -159,6 +159,63 @@ The e2e test drives the full scenario (wrong step → hint ladder → correction
 follow-up → verified) through HTTP against a real database, with a deterministic mock model
 (allowed only outside production).
 
+## Evaluating the tutor
+
+The math engine decides correctness; the model diagnoses _why_ a step is wrong and writes the
+hints. `pnpm eval` measures that part against a real model, so a prompt or model change becomes a
+number instead of an impression.
+
+```bash
+pnpm eval --model gemini-3.5-flash-lite     # all 54 cases → apps/api/evals/reports/<date>-<model>.md
+pnpm eval --only SIGN_TRANSFER --limit 4    # a quick look at one category
+pnpm eval --resume apps/api/evals/reports/<file>.json   # finish a run cut short by the daily quota
+pnpm eval --rescore apps/api/evals/reports/<file>.json  # re-apply changed checks to saved answers, offline
+```
+
+- **Cases** (`apps/api/evals/cases.ts`): 54 wrong steps, 8 per error type (6 for `OTHER`), half EN
+  and half UK, each with the category a teacher would give it and the step a teacher would accept.
+  Before running, the engine must agree that every wrong step is wrong and every accepted step is
+  right. An invalid case stops the run.
+- **Calls**: per case, the diagnosis (which is also hint level 1) and hint levels 2 and 3. These use
+  the production prompt functions, zod schemas and `callStructured`, the same validation and retry
+  the API uses. There is no database and no server.
+- **Metrics**:
+  - error-type accuracy, with a breakdown per type and per locale and a confusion matrix;
+  - invalid JSON on the first try;
+  - latency p50 / p95;
+  - hint rules: level 1 is a question; no level gives away the final answer in any form; level 3
+    shows the corrected current step and nothing beyond it; the reply is in the student's language.
+- **How the hint rules are checked**: equations and expressions are extracted from the LaTeX and
+  compared by the math engine, not by string matching. The checks are heuristics with unit tests
+  (`apps/api/evals/*.spec.ts`). Reports keep the raw answers, so an improved check is re-applied
+  with `--rescore`.
+
+Baseline (2026-11-09):
+
+| Model                   | Error type accuracy                                                | Invalid JSON | Latency p50 / p95 | L1 is a question | No final answer | L3 = corrected step only | Language matches |
+| ----------------------- | ------------------------------------------------------------------ | ------------ | ----------------- | ---------------- | --------------- | ------------------------ | ---------------- |
+| `gemini-3.5-flash-lite` | 75.9% (41/54)                                                      | 0.0%         | 916 / 1408 ms     | 100%             | 100%            | 85.2%                    | 100%             |
+| `gemini-3.5-flash`      | _not measured: free tier allows 20 requests/day, a run needs ~160_ |              |                   |                  |                 |                          |                  |
+
+What the numbers say:
+
+- **The five rule-based categories are solid.** `DISTRIBUTION`, `SIGN_TRANSFER`,
+  `COMBINING_LIKE_TERMS` and `INVERSE_OPERATION` all score 8/8.
+- **The weak spots:**
+  - `ONE_SIDE_ONLY` (4/8) is read as combining or arithmetic.
+  - `ARITHMETIC` (5/8) is read as a sign or distribution error when the slip happens in that step.
+  - `OTHER` (0/6) is always forced into a named category. Some of those labels are arguable (for
+    example, `3x + 6 → 3x + 6x` does look like combining), so read the confusion matrix, not only
+    the total.
+- **Level 3 fails only when the corrected step is the final answer** (`4x = 20 → x = 5`). The
+  prompt says both "show the corrected step" and "never give the final answer", and the model
+  chooses the second. Whether level 3 may show `x = 5` is a product decision; the eval makes it
+  measurable either way.
+
+`pnpm eval` is not part of CI: it needs an API key and spends quota. The Gemini free tier allows
+about 20 requests per day for `gemini-3.5-flash`, and one run is about 160 requests. Run it by hand
+after changing prompts, schemas or the model, and commit the report next to the baseline.
+
 ## Deployment
 
 Push to `main` → GitHub Actions runs the tests, builds two images (`api`, `web` = Caddy with the
