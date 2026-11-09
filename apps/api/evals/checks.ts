@@ -1,4 +1,5 @@
 import {
+  checkSubstitution,
   formatEquation,
   formatLinear,
   isFinalForm,
@@ -244,4 +245,45 @@ export function detectLanguage(message: string): DetectedLanguage {
   if (share >= 0.85) return /[ыэъё]/i.test(words) ? 'ru' : 'uk';
   if (share <= 0.05) return 'en';
   return 'mixed';
+}
+
+// --- Check by substitution ---------------------------------------------------------------------
+
+/** The hidden numbers (value of a side, result of the slipped operation) the message states. */
+export function statedNumbers(message: string, hidden: readonly string[]): string[] {
+  const written = new Set(plainText(message).match(/\d+(?:[.,]\d+)?/g) ?? []);
+  return hidden.filter((n) => written.has(n));
+}
+
+const NUMERIC_RUN = /[0-9+\-−–*·×/(). ]*=[0-9+\-−–*·×/(). =]*/g;
+
+/**
+ * Right check lines the message shows that the student has not written: "3·11 = 14 + 19" or
+ * "33 = 33" computed for them. The engine decides what is right, as for the student's own lines.
+ */
+export function computedCheckLines(
+  message: string,
+  k: { problem: string; substituted: string; slip: string },
+): string[] {
+  const own = new Set([k.substituted, k.slip].map(squash));
+  const out = new Set<string>();
+  for (const segment of plainText(message).split(/;|,(?!\d)|(?<!\d),/)) {
+    for (const run of segment.match(NUMERIC_RUN) ?? []) {
+      const sides = run
+        .trim()
+        .replace(/^[.,:]+|[.,:]+$/g, '')
+        .split('=');
+      for (let i = 0; i + 1 < sides.length; i++) {
+        const line = `${sides[i]!.trim()} = ${sides[i + 1]!.trim()}`;
+        if (own.has(squash(line))) continue;
+        try {
+          const v = checkSubstitution(k.problem, line, { afterCheckLine: true }).verdict;
+          if (v.kind === 'correct') out.add(line);
+        } catch {
+          /* not a numeric line */
+        }
+      }
+    }
+  }
+  return [...out];
 }

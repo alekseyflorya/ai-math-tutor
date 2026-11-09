@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { judgeLine, type LineContext } from './verdict';
+import { judgeLine, lastCheckLine, lineContext, type LineContext } from './verdict';
 
 const solving: LineContext = {
   mode: 'SOLVING',
@@ -44,5 +44,32 @@ describe('judgeLine: one verdict for the server and the browser', () => {
     const after = { ...checking, lastCheckLine: '3(7 + 4) = 2*7 + 19' };
     expect(judgeLine('5 = 5', after)).toMatchObject({ kind: 'check', isCorrect: false });
     expect(judgeLine('3(7+4) = 2*7+19', after)).toEqual({ kind: 'repeated' });
+  });
+});
+
+describe('lineContext: built the same way on the server and in the browser', () => {
+  const attempt = { ...solving, mode: 'CHECKING' as const, currentLine: 'x = 7' };
+  const step = (input: string, isCorrect: boolean, phase: 'SOLUTION' | 'CHECK') => ({
+    input,
+    isCorrect,
+    phase,
+  });
+
+  it('takes the last RIGHT line of the check, ignoring slips and solution steps', () => {
+    const steps = [
+      step('x = 7', true, 'SOLUTION'),
+      step('3(7 + 4) = 2*7 + 19', true, 'CHECK'),
+      step('33 = 32', false, 'CHECK'),
+    ];
+    expect(lineContext(attempt, steps)).toEqual({
+      ...checking,
+      lastCheckLine: '3(7 + 4) = 2*7 + 19',
+    });
+    expect(lastCheckLine(steps)?.input).toBe('3(7 + 4) = 2*7 + 19');
+  });
+
+  it('has no check line before the check starts', () => {
+    expect(lineContext(attempt, [step('x = 7', true, 'SOLUTION')]).lastCheckLine).toBeNull();
+    expect(lineContext(solving, []).lastCheckLine).toBeNull();
   });
 });

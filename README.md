@@ -215,7 +215,7 @@ Results for `gemini-3.5-flash-lite` (reports in `apps/api/evals/reports/`):
 | Current prompts (`-2`, stopped by the daily quota) | 47    | 78.7% (37/47)       | 0.0%         | 1081 / 3058 ms    | 100%             | 100%            | 97.8%   | 100%             | 100%         |
 | `message` last + `propertyOrdering` (`-3`)         | 54    | 79.6% (43/54)       | 0.0%         | 912 / 1154 ms     | 100%             | 100%            | 96.3%   | 100%             | 100%         |
 
-`gemini-3.5-flash` is not measured: its free tier allows 20 requests a day, and a run needs about 160.
+`gemini-3.5-flash` is measured below, after phases 2–5.
 
 The `-3` run checks the field order (the model decides before it writes; Gemini also gets
 `propertyOrdering`). On the same 54 cases it scores 43 against the baseline's 41: four cases
@@ -247,6 +247,43 @@ What the numbers say:
   - The eval counts `x = 35 : 5` as giving the answer away, the same way it counts `x = 14/2`.
 - **LaTeX.** One answer in about 160 had `\times` broken by JSON escaping. The API now repairs
   it before use (`repairLatexEscapes`), and the eval reports how often the raw answer was broken.
+
+### After phases 2–5: lite vs flash
+
+Both models on the current code (`-4` for lite, `2026-11-09-gemini-3.5-flash` for flash), the same 54
+cases, against the baseline before phases 2–5 (its answers re-scored with the current checks):
+
+| Run                         | Error type accuracy | Invalid JSON | Latency p50 / p95 | L1 is a question | No final answer | L3 rule | Language matches | LaTeX intact |
+| --------------------------- | ------------------- | ------------ | ----------------- | ---------------- | --------------- | ------- | ---------------- | ------------ |
+| Baseline, lite (re-scored)  | 75.9% (41/54)       | 0.0%         | 916 / 1408 ms     | 100%             | 98.8%           | 96.3%   | 100%             | 99.4%        |
+| After phases 2–5, **lite**  | 79.6% (43/54)       | 0.0%         | 835 / 1154 ms     | 96.3%            | 100%            | 96.3%   | 100%             | 99.4%        |
+| After phases 2–5, **flash** | **90.7% (49/54)**   | 0.0%         | 1666 / 3560 ms    | 100%             | 99.4%           | 100%    | 100%             | 100%         |
+
+The check by substitution (12 slips while checking the answer, `evals/check-cases.ts`; new, so no
+baseline). Every level is counted for "no value" and "no computed line" (36 hints per model):
+
+| Model | L1 is a question | No value of a side | No computed line | L3 = operations, no results | Language | LaTeX intact | Latency p50 / p95 |
+| ----- | ---------------- | ------------------ | ---------------- | --------------------------- | -------- | ------------ | ----------------- |
+| lite  | 100%             | 97.2% (35/36)      | 100%             | 100% (12/12)                | 100%     | 100%         | 795 / 982 ms      |
+| flash | 100%             | 94.4% (34/36)      | 94.4% (34/36)    | 100% (12/12)                | 100%     | 100%         | 1541 / 2392 ms    |
+
+What the numbers say:
+
+- **Lite vs its baseline: within noise.** 43 against 41, after phases 2–5. No rule got worse beyond
+  one or two messages: two level-1 hints were statements, not questions (`dist-3`, `arith-6`).
+- **Flash diagnoses clearly better: 49 against 43.** Seven cases go up and one goes down, so the
+  gap is beyond the ±2 run-to-run noise. Flash gets `ONE_SIDE_ONLY` 8/8 (lite 5/8), `ARITHMETIC`
+  7/8 (6/8) and `OTHER` 2/6 (0/6). The other four categories are 8/8 for both.
+- **Hint rules are close.** Both models keep the ladder; flash is perfect on level 1 and level 3,
+  lite misses two of each. Flash's one "final answer" is indirect: an example `x = 10 : 2` on a
+  problem whose root is also 5.
+- **Hints for a slip in the check keep the rules.** Level 3 lists the operations without results
+  for every case and model. The flagged hints are all level 2, the "different example" level:
+  - lite, `check-7`: "6 × 4 is 24, not 28". This leaks 28, the result the student must compute.
+  - flash, `check-7` and `check-12`: examples on other numbers whose result happens to equal the
+    value of a side (`6 · 4 = 24`, `4 · 5 + 2 = 22`). They are arguable; the check cannot tell a
+    coincidence from a leak, so they stay counted.
+- **Flash is about twice as slow:** p50 1.7 s against 0.8 s, p95 3.6 s against 1.2 s.
 
 `pnpm eval` is not part of CI: it needs an API key and spends quota. The Gemini free tier allows
 about 20 requests per day for `gemini-3.5-flash`, and one run is about 160 requests. Run it by hand
@@ -352,8 +389,8 @@ Deliberate scope cuts for a three-day prototype, and what I would do next:
   the previous image still runs after an automatic rollback. A migration that removes or renames
   something must be split across two releases.
 - **Model choice and rate limits.** `GEMINI_MODEL=gemini-3.5-flash-lite,gemini-3.5-flash`: lite is
-  the primary model. It has a measured eval baseline (see above), answers in about 1 s, and its
-  free tier is far larger than flash's 20 requests per day (flash itself is not measured yet). A
+  the primary model and answers in about 1 s. Flash diagnoses better (49/54 against 43/54) but is
+  about twice as slow; see [lite vs flash](#after-phases-25-lite-vs-flash). A
   model that answers 429 is skipped until the time the API names ("retry in 41s", or the reset of
   a daily quota at midnight Pacific time), and the next model is tried at once. When all models
   are cooling down, the API is not called at that turn; the student gets the usual "AI

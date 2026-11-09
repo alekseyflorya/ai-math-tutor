@@ -15,6 +15,35 @@ export interface LineContext {
   lastCheckLine: string | null;
 }
 
+/** The parts of a step `lineContext` reads (a DB row or a StepView). */
+export interface StepLike {
+  input: string;
+  isCorrect: boolean;
+  phase: 'SOLUTION' | 'CHECK';
+}
+
+/** The last right line of the check, if the student has started it. */
+export function lastCheckLine<S extends StepLike>(steps: readonly S[]): S | undefined {
+  return steps.filter((s) => s.phase === 'CHECK' && s.isCorrect).at(-1);
+}
+
+/**
+ * The context for `judgeLine`, from an attempt and its steps (in order). The server builds it from
+ * its rows and the browser from AttemptView, with this one function.
+ */
+export function lineContext(
+  attempt: Pick<LineContext, 'mode' | 'equation' | 'currentLine' | 'variable'>,
+  steps: readonly StepLike[],
+): LineContext {
+  return {
+    mode: attempt.mode,
+    equation: attempt.equation,
+    currentLine: attempt.currentLine,
+    variable: attempt.variable,
+    lastCheckLine: lastCheckLine(steps)?.input ?? null,
+  };
+}
+
 /**
  * The engine's verdict on what the student sent, before any tutor reply. The server acts on it
  * and the browser shows it at once; both call this one function, so they cannot disagree.

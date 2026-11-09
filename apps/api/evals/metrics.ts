@@ -191,3 +191,101 @@ export function violations(h: HintResult, locale: Locale): string[] {
   if (!c.latexIntact) out.push('LaTeX broken by JSON escaping (repaired before use)');
   return out;
 }
+
+// --- Check by substitution ---------------------------------------------------------------------
+
+/** Rule checks on one hint for a slip in the check. */
+export interface CheckHintChecks {
+  /** Level 1 only. */
+  question?: boolean;
+  /** Hidden numbers stated (value of a side, result of the slipped operation). */
+  statedNumbers: string[];
+  /** Right check lines computed for the student. */
+  computedLines: string[];
+  /** Level 3: names the operations to carry out. */
+  namesOperation?: boolean;
+  language: DetectedLanguage;
+  latexIntact: boolean;
+}
+
+export interface CheckHintResult {
+  level: 1 | 2 | 3;
+  message: string | null;
+  latexIntact?: boolean;
+  error?: string;
+  checks?: CheckHintChecks;
+}
+
+export interface CheckCaseResult {
+  id: string;
+  locale: Locale;
+  side: 'left' | 'right';
+  operation: 'multiplication' | 'addition';
+  misconception?: string;
+  hints: CheckHintResult[];
+}
+
+export interface CheckSummary {
+  cases: number;
+  level1Question: Rate;
+  /** No level states the value of a side or the slipped operation's result. */
+  noValue: Rate;
+  /** No level shows a computed check line. */
+  noComputedLine: Rate;
+  /** Level 3 lists the operations, with no results. */
+  level3OperationsOnly: Rate;
+  language: Rate;
+  latexIntact: Rate;
+  invalidJson: Rate;
+  failedCalls: Rate;
+  latency: { p50: number; p95: number };
+}
+
+export const checkLevel3Passes = (c: CheckHintChecks) =>
+  Boolean(c.namesOperation) && c.statedNumbers.length === 0 && c.computedLines.length === 0;
+
+export function summarizeChecks(
+  results: readonly CheckCaseResult[],
+  calls: readonly CallRecord[],
+): CheckSummary {
+  const hints = results.flatMap((r) =>
+    r.hints
+      .filter((h) => h.checks)
+      .map((h) => ({ level: h.level, checks: h.checks!, locale: r.locale })),
+  );
+  const attempts = calls.flatMap((c) => c.attempts);
+  const answered = attempts.filter((a) => a.ok || a.reason === 'invalid_output');
+  const latencies = attempts.filter((a) => a.ok).map((a) => a.latencyMs);
+  return {
+    cases: results.length,
+    level1Question: count(
+      hints.filter((h) => h.level === 1),
+      (h) => h.checks.question === true,
+    ),
+    noValue: count(hints, (h) => h.checks.statedNumbers.length === 0),
+    noComputedLine: count(hints, (h) => h.checks.computedLines.length === 0),
+    level3OperationsOnly: count(
+      hints.filter((h) => h.level === 3),
+      (h) => checkLevel3Passes(h.checks),
+    ),
+    language: count(hints, (h) => h.checks.language === h.locale),
+    latexIntact: count(hints, (h) => h.checks.latexIntact),
+    invalidJson: count(answered, (a) => a.reason === 'invalid_output'),
+    failedCalls: count(calls, (c) => !c.ok),
+    latency: { p50: percentile(latencies, 50), p95: percentile(latencies, 95) },
+  };
+}
+
+/** Which rules a hint for a slip in the check broke. */
+export function checkViolations(h: CheckHintResult, locale: Locale): string[] {
+  if (!h.checks) return h.error ? [`call failed: ${h.error}`] : [];
+  const c = h.checks;
+  const out: string[] = [];
+  if (h.level === 1 && !c.question) out.push('level 1 is not a question');
+  if (c.statedNumbers.length) out.push(`states ${c.statedNumbers.join(', ')}`);
+  if (c.computedLines.length) out.push(`shows a computed line: ${c.computedLines.join('; ')}`);
+  if (h.level === 3 && !c.namesOperation) out.push('level 3 does not name the operations');
+  if (c.language !== locale) out.push(`language ${c.language}, expected ${locale}`);
+  if (!c.latexIntact) out.push('LaTeX broken by JSON escaping (repaired before use)');
+  return out;
+}

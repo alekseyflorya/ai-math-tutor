@@ -8,11 +8,12 @@ import {
 import {
   ERROR_TO_SKILL,
   judgeLine,
+  lastCheckLine,
+  lineContext,
   MathInputError,
   parseEquation,
   sameText,
   solve,
-  type LineContext,
   type LineVerdict,
   type AttemptSummary,
   type AttemptView,
@@ -170,7 +171,7 @@ export class TutorService {
     return this.lock.run(userId, attemptId, async () => {
       const turn = await this.loadTurn(userId, attemptId);
       // The browser computes the same verdict to show it at once (judgeLine in @tutor/shared).
-      const verdict = judgeLine(text, lineContext(turn));
+      const verdict = judgeLine(text, lineContext(turn.attempt, turn.steps));
       if (verdict.kind === 'message') await this.handleChat(turn, text);
       else await this.handleLine(turn, text, verdict);
       await this.commit(turn);
@@ -399,15 +400,14 @@ export class TutorService {
     );
   }
 
-  /** A line of the check by substitution. Right or wrong is the engine's call alone. */
-  /** A line of the check by substitution (CHECKING), right or with a slip. */
+  /** A line of the check by substitution (CHECKING), right or with a slip: the engine's call. */
   private async onCheckLine(
     turn: Turn,
     text: string,
     verdict: Extract<LineVerdict, { kind: 'check' }>,
   ) {
     const { attempt, locale } = turn;
-    const lastRight = lastCheckLine(turn);
+    const lastRight = lastCheckLine(turn.steps);
     const result = verdict.result;
     const step = {
       id: randomUUID(),
@@ -746,22 +746,6 @@ export class TutorService {
       writes: [],
     };
   }
-}
-
-/** The last right line of the check, if the student has started it. */
-const lastCheckLine = (turn: Turn) =>
-  turn.steps.filter((s) => s.phase === 'CHECK' && s.isCorrect).at(-1);
-
-/** What the engine needs from the turn to judge a line (the browser builds it from the view). */
-function lineContext(turn: Turn): LineContext {
-  const { attempt } = turn;
-  return {
-    mode: attempt.mode,
-    equation: attempt.equation,
-    currentLine: attempt.currentLine,
-    variable: attempt.variable,
-    lastCheckLine: lastCheckLine(turn)?.input ?? null,
-  };
 }
 
 /** The root and the original equation, as LaTeX (only shown once the root is reached). */
