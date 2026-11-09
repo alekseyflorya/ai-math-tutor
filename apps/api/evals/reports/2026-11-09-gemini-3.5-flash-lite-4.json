@@ -1,0 +1,6205 @@
+{
+  "info": {
+    "date": "2026-11-09",
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "concurrency": 2,
+    "durationMs": 85676,
+    "complete": true
+  },
+  "summary": {
+    "cases": 54,
+    "accuracy": {
+      "ok": 43,
+      "total": 54
+    },
+    "byType": {
+      "DISTRIBUTION": {
+        "ok": 8,
+        "total": 8
+      },
+      "SIGN_TRANSFER": {
+        "ok": 8,
+        "total": 8
+      },
+      "COMBINING_LIKE_TERMS": {
+        "ok": 8,
+        "total": 8
+      },
+      "INVERSE_OPERATION": {
+        "ok": 8,
+        "total": 8
+      },
+      "ONE_SIDE_ONLY": {
+        "ok": 5,
+        "total": 8
+      },
+      "ARITHMETIC": {
+        "ok": 6,
+        "total": 8
+      },
+      "OTHER": {
+        "ok": 0,
+        "total": 6
+      }
+    },
+    "byLocale": {
+      "en": {
+        "ok": 23,
+        "total": 27
+      },
+      "uk": {
+        "ok": 20,
+        "total": 27
+      }
+    },
+    "confusion": {
+      "DISTRIBUTION": {
+        "DISTRIBUTION": 8,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "SIGN_TRANSFER": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 8,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "COMBINING_LIKE_TERMS": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 8,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "INVERSE_OPERATION": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 8,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "ONE_SIDE_ONLY": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 1,
+        "INVERSE_OPERATION": 1,
+        "ONE_SIDE_ONLY": 5,
+        "ARITHMETIC": 1,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "ARITHMETIC": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 1,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 1,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 6,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "OTHER": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 1,
+        "COMBINING_LIKE_TERMS": 4,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 1,
+        "OTHER": 0,
+        "FAILED": 0
+      }
+    },
+    "invalidJson": {
+      "ok": 0,
+      "total": 162
+    },
+    "failedCalls": {
+      "ok": 0,
+      "total": 162
+    },
+    "latency": {
+      "p50": 835,
+      "p95": 1154,
+      "byPurpose": {
+        "diagnose": {
+          "p50": 890,
+          "p95": 1222
+        },
+        "hint": {
+          "p50": 809,
+          "p95": 990
+        }
+      }
+    },
+    "rules": {
+      "level1Question": {
+        "ok": 52,
+        "total": 54
+      },
+      "noFinalAnswer": {
+        "ok": 162,
+        "total": 162
+      },
+      "level3CorrectedOnly": {
+        "ok": 52,
+        "total": 54
+      },
+      "language": {
+        "ok": 162,
+        "total": 162
+      },
+      "latexIntact": {
+        "ok": 161,
+        "total": 162
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "dist-1",
+      "locale": "en",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the left side: $3(x + 4)$. When you multiply $3$ by the terms inside the parentheses, what happens to the $4$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We use the distributive property: $a(b + c) = ab + ac$. For example, $2(x + 5)$ becomes $2x + 10$. What does the $4$ become in $3(x + 4)$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the distributive property, $3(x + 4)$ becomes $3x + 12$. Now rewrite the full equation with this correction.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied only the first term inside the parentheses by 3 and left 4 unchanged, failing to apply the distributive property to all terms."
+    },
+    {
+      "id": "dist-2",
+      "locale": "uk",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Коли ти розкривав дужки в лівій частині $5(x - 2)$, чи помножив ти число $5$ на кожен член всередині дужок?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "тут порушено розподільну закон множення: $a(b + c) = ab + ac$. Наприклад, $2(x - 3)$ дорівнює $2 \\cdot x - 2 \\cdot 3$, тобто $2x - 6$. Що виходить, якщо $5$ помножити на кожен член у дужках $5(x - 2)$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "За розподільним законом, $5(x - 2)$ перетворюється на $5x - 10$. Запиши цей правильний рядок і подумай, як перенести доданки з $x$ в одну частину.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied only the first term inside the parenthesis by 5, forgetting to multiply the second term -2, which violates the distributive law a(b + c) = ab + ac."
+    },
+    {
+      "id": "dist-3",
+      "locale": "en",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at how the negative sign outside $-2(x - 3)$ affects the $-3$ when you expand the brackets.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": false,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When distributing a negative number, the distributive law states that $-a(b - c) = -ab + ac$. For example, $-2(5 - 3) = -2(5) - 2(-3)$. What is $-2(-3)$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "When we multiply $-2$ by $-3$, the negative signs cancel to give $+6$, so $-2(x - 3)$ expands to $-2x + 6 = 4x$. Can you continue from this corrected line?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied the first term inside the bracket by -2 but failed to correctly apply the negative sign to the second term, resulting in -6 instead of +6."
+    },
+    {
+      "id": "dist-4",
+      "locale": "uk",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на ліву частину: коли ми розкриваємо дужки в $4(2x + 1)$, на що саме треба помножити число $4$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "тут спрацьовує розподільна властивість множення: $a(b + c) = ab + ac$. Спробуй застосувати її на прикладі $2(3x + 5)$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "За правилом розподільної властивості треба помножити $4$ на кожен доданок у дужках: $4 \\cdot 2x + 4 \\cdot 1$. Запиши правильний рядок.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied only the first term inside the parentheses by 4, resulting in 8x + 1 instead of 8x + 4, due to incomplete application of the distributive property."
+    },
+    {
+      "id": "dist-5",
+      "locale": "en",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at how the $-3$ outside the brackets multiplies each term inside $3(x + 2)$. What happens to the $+2$ when you multiply it by $-3$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When a negative number multiplies a sum inside parentheses, the distributive law states that every term inside must be multiplied by it. For example, $-2(x + 5) = -2x - 10$. What does $-3$ times $+2$ give?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the distributive law, $-3$ times $+2$ is $-6$, so the line should be $7 - 3x - 6 = 4$. Can you write this correctly and combine the like terms $7$ and $-6$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied the term x inside the parenthesis by -3, but incorrectly treated the +2, resulting in +6 instead of distributing the -3 to both terms."
+    },
+    {
+      "id": "dist-6",
+      "locale": "uk",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на ліву частину: як ти розкрив дужки в $2(3x - 5)$? Чи помножив ти двійку на обидва доданки всередині?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "тут порушено розподільний закон множення: $a(b + c) = ab + ac$. Наприклад, $3(x - 2)$ дає $3x - 6$, а не $3x - 2$. Спробуй застосувати це до $2(3x - 5)$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "За розподільним законом $2(3x - 5)$ перетворюється на $6x - 10$. Запиши правильне рівняння і продовж розв'язання.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied only the first term inside the parentheses by 2 and forgot to multiply the second term, reflecting an incomplete application of the distributive law."
+    },
+    {
+      "id": "dist-7",
+      "locale": "en",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the right side of your equation, $2(x + 5)$. When you multiply the $2$ through the brackets, did it affect both terms inside?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "This is the distributive property: $a(b + c) = ab + ac$. For example, $3(x + 4) = 3x + 12$, multiplying $3$ by both terms. What does the $2$ multiply on the right side?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "On the right side, distributing the $2$ gives $2(x) + 2(5)$, which makes $2x + 10$. Can you rewrite the equation as $3x + 6 = 2x + 10$ and continue from there?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student applied the distributive property correctly to the left side but failed to multiply the constant term on the right side, changing 2(x + 5) to 2x + 5."
+    },
+    {
+      "id": "dist-8",
+      "locale": "uk",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Зверни увагу на ліву частину рівняння: $-(x + 4)$. Що відбувається зі знаком числа $4$, коли ми розкриваємо дужки з мінусом перед ними?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "тут спрацьовує правило знаків при розкритті дужок: мінус перед дужками змінює знак кожного доданка всередині. Наприклад, $-(5 + 3) = -5 - 3$. Застосуй це до свого виразу $-(x + 4)$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Коли ми розкриваємо дужки з мінусом, знак кожного доданка всередині змінюється на протилежний, тому правильний запис цього кроку: $-x - 4 = 2x - 1$. Запиши його і подумай, що робити далі зі змінними.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student forgot to distribute the negative sign to the second term inside the parentheses, resulting in +4 instead of -4."
+    },
+    {
+      "id": "sign-1",
+      "locale": "en",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "When you moved $+12$ to the right side of the equation $3x + 12 = 2x + 19$, what rule governs the sign change when crossing the equals sign?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "By the transposition rule, terms change sign when crossing the equals sign. For example, if $x + 5 = 8$, what does $x$ equal when $+5$ moves?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the transposition rule, moving $+12$ across the equals sign gives $3x - 2x = 19 - 12$. Can you simplify both sides now?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the positive number 12 across the equals sign to the right side without changing its sign to negative."
+    },
+    {
+      "id": "sign-2",
+      "locale": "uk",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Зверни увагу на число $-7$ у лівій частині. Що відбувається зі знаком члена при переході через знак рівності?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Коли ми переносимо доданок через знак рівності, використовуємо правило протилежних знаків. Наприклад, у рівнянні $x - 3 = 5$ при перенесенні $-3$ отримуємо $x = 5 + 3$. Яким має бути знак числа $7$ у твоєму рівнянні?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "При перенесенні $-7$ у праву частину знак змінюється на протилежний, тому правильний рядок: $5x - 2x = 8 + 7$. Запиши цей рядок і продовж розв'язання.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the constant -7 to the right side without changing its sign to +7, reflecting a sign transfer error."
+    },
+    {
+      "id": "sign-3",
+      "locale": "en",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check the term $x$ as it crossed from the right side to the left. What rule governs the sign of a term when it is transposed across the equals sign?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When transposing a term across the equals sign, its sign must change. For example, if we have $x + 5 = 2$, moving $5$ to the right gives $x = 2 - 5$. What should happen to the $x$ on the right side of your equation?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "When transposing $x$ to the left, its sign changes to negative, giving $4x - x = 3 - 9$. Can you apply the same transposition rule to the $+9$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the positive term $x$ from the right side to the left side without changing its sign to negative, and similarly moved $+9$ without changing its sign."
+    },
+    {
+      "id": "sign-4",
+      "locale": "uk",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Ти переніс доданок $3x$ у ліву частину, але що змінилося з його знаком за правилом перенесення через знак рівності?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "При перенесенні доданка через знак рівності діє правило зміни знака на протилежний. Наприклад, якщо $x + 5 = 12$, то при перенесенні п'ятірки отримуємо $x = 12 - 5$. Що станеться зі знаком $3x$, коли ти перенесеш його вліво?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "При перенесенні $3x$ ліворуч змінюємо знак на протилежний: $7x - 3x = 20$. Запиши цей рядок і спрости ліву частину.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the term 3x to the left side without changing its sign, treating it as positive addition instead of subtraction."
+    },
+    {
+      "id": "sign-5",
+      "locale": "en",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at how the term $-5$ moved from the left side to the right side. When you transpose a term across the equals sign, what must happen to its sign?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When moving a term across the equals sign, we apply the rule of opposites. For example, if we have $x - 3 = 7$, adding $3$ to both sides gives $x = 7 + 3$. What should happen to the $-5$ in $2x - 5 = 11$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "When $-5$ crosses the equals sign, it becomes $+5$, so the correct line is $2x = 11 + 5$. What does the right side simplify to?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the constant term -5 to the right side of the equation without changing its sign, treating it as subtraction instead of adding 5 to both sides."
+    },
+    {
+      "id": "sign-6",
+      "locale": "uk",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на те, як ти переніс числа та доданки з $x$ через знак дорівнює. Що відбувається зі знаком члена під час його перенесення?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Коли ми переносимо доданок через знак дорівнює, його знак змінюється на протилежний. Наприклад, якщо $5 + x = 10$, то перенісши п'ятірку, отримуємо $x = 10 - 5$. Яким буде знак для $15$ та $-x$ у твоєму рівнянні?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Коли ми переносимо $-x$ у праву частину, він стає $+x$, а $15$ у ліву — як $-15$. Правильний запис: $6 - 15 = 2x + x$. Продовж обчислення.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved terms across the equals sign without changing their signs, transferring -x and 15 incorrectly."
+    },
+    {
+      "id": "sign-7",
+      "locale": "en",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the number $8$ when it moved to the right side of the equation. What should happen to its sign?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When we transpose a term across the equals sign, we must apply the rule of inverse operations. For example, if $x + 3 = 7$, moving $3$ gives $x = 7 - 3$. What happens to the $+8$ in your equation?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "When $8$ crosses the equals sign, it becomes $-8$, so the correct line is $3x - 5x = -6 - 8$. Can you simplify both sides now?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the positive number 8 to the right side without changing its sign to negative."
+    },
+    {
+      "id": "sign-8",
+      "locale": "uk",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися уважно на число $-2$ у лівій частині: що відбувається з його знаком, коли ми переносимо його у праву частину?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Коли ми переносимо доданок через знак рівності, використовуємо правило протилежних знаків: у прикладі $x - 3 = 5$ при перенесенні $-3$ отримуємо $x = 5 + 3$. Яким стане знак $-2$ у твоєму рівнянні?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "При перенесенні $-2$ у праву частину його знак змінюється на протилежний, тому правильно писати $2x - x = 6 + 2$. Запиши цей рядок і виконай зведення подібних доданків.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the constant term -2 across the equals sign without changing its sign to +2."
+    },
+    {
+      "id": "comb-1",
+      "locale": "en",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the left side, $3x - 2x$. What does combining these like terms give you instead of $5x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When combining like terms by addition or subtraction, we operate on the coefficients using the distributive law, just as $5y - 3y = 2y$. Look at $3x - 2x$ again.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Subtracting $2x$ from $3x$ gives $1x$, or simply $x$, by the distributive law. Now simplify the right side of $x = 19 - 12$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student added the coefficients of x on the left side instead of subtracting them, treating 3x - 2x as 3x + 2x."
+    },
+    {
+      "id": "comb-2",
+      "locale": "uk",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "У тебе написано $5x + 3 = 12$, але звідки взялося $5x$? Подивись уважно на доданки з $x$ у лівій частині: $4x$ та $-x$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут застосовується закон зведення подібних доданків: щоб їх об'єднати, треба додати їхні коефіцієнти. Наприклад, для $7y - 2y$ ми віднімаємо числа біля $y$, бо мінус стосується другого доданка.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Пам'ятай, що перед $x$ стоїть одиниця, тобто $-x = -1x$. Заміни $5x$ на правильний результат зведення подібних доданків $4x - 1x$ у рівнянні $4x + 3 - x = 12$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student combined 4x and -x as 5x instead of subtracting their coefficients (4 - 1 = 3)."
+    },
+    {
+      "id": "comb-3",
+      "locale": "en",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the left side: $2x + 5 + x$. How many $x$ terms are there, and how do we combine them with the constant term $5$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We can only combine terms that are of the same kind, using the distributive law. For example, in $3x + 2 + x$, we group $3x$ and $x$ together, but we cannot add the constant $2$ to them.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By collecting the like terms $2x$ and $x$, the left side becomes $3x + 5 = 14$ using the distributive law. Can you write this corrected line?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student combined $2x$, $5$, and $x$ into $8x$, likely multiplying the coefficients and constants instead of combining like terms."
+    },
+    {
+      "id": "comb-4",
+      "locale": "uk",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися уважно на вираз $6x - 2x$ у лівій частині. Що виходить, якщо від шести ікс відняти два ікс?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут спрацювало правило зведення подібних доданкив. Наприклад, якщо маємо $5a - 3a$, то віднімаємо коефіцієнти: $5 - 3 = 2$, отже буде $2a$. Спробуй так само для $6x - 2x$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Ми повинні віднімати коефіцієнти, тому $6x - 2x = 4x$, а рівняння набуває вигляду $4x + 4 = 20$. Що робитимемо з доданоком $+4$ в лівій частині?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student incorrectly added the coefficients 6 and 2 instead of subtracting them when combining like terms $6x - 2x$."
+    },
+    {
+      "id": "comb-5",
+      "locale": "en",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the coefficients on the left side: $5 - 8$. What is $5$ minus $8$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When combining like terms $a x - b x$, the coefficient is $a - b$. For example, $2x - 5x$ gives $-3x$. What is $5 - 8$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Since $5 - 8 = -3$, the correct combination of $5x - 8x$ is $-3x = 9$. Can you rewrite your equation with this correction?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 5 from 8 instead of 8 from 5 when combining like terms, ignoring the sign of the larger coefficient."
+    },
+    {
+      "id": "comb-6",
+      "locale": "uk",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Порівняй ліву частину свого рівняння $x + 6 = 20$ із попереднім рядком: куди подівся другий ікс?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Згадай правило зведення подібних доданка: щоб додати $x + x$, ми додаємо їхні коефіцієнти. Наприклад, $3a + 3a$ це $6a$, а не $3a$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Сума $x + x$ дорівнює $2x$, тому рядок має виглядати як $2x + 6 = 20$. Запиши цей правильний рядок і подумай, що робити далі з додаником $6$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student dropped one of the x terms when attempting to combine like terms $x + x$, reducing $2x$ to $x$."
+    },
+    {
+      "id": "comb-7",
+      "locale": "en",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the terms $-2x$ and $+5x$ on the left side. What do you get when you combine $-2$ and $5$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When combining like terms, we add their coefficients according to the rules of signed numbers. For example, $-3 + 5$ equals $2$, not $-8$. What is $-2 + 5$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Combining $-2x$ and $+5x$ gives $3x$, because $-2 + 5 = 3$. Can you rewrite the equation as $9 + 3x = 21$ and continue?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student combined $-2x$ and $5x$ to get $-7x$ instead of $3x$, likely confusing addition of negative numbers with subtraction."
+    },
+    {
+      "id": "comb-8",
+      "locale": "uk",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися уважно на ліву частину: у тебе є $8x$ і $-3x$. Що буде, якщо їх звести, враховуючи знак мінус перед трійкою?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут спрацювало правило об'єднання подібних доганків із урахуванням знаків. Наприклад, якщо маємо $7y - 2y$, то що залишається?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Зверни увагу на знак біля $3x$: у тебе $8x - 3x$, що дає $5x$, а не $11x$. Запиши правильний рядок $5x - 3 = 12$ і продовж розв'язання.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student added 8x and 3x instead of subtracting them, treating the expression as 8x + 3x."
+    },
+    {
+      "id": "inv-1",
+      "locale": "en",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at $4x = 20$. You subtracted $4$ from $20$, but how is $4$ attached to $x$? What operation undoes multiplication by $4$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "To undo multiplication, we use division, not subtraction. For example, if $2x = 6$, we divide both sides by $2$ to get $x = 3$. What operation undoes multiplication in $4x = 20$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Divide both sides of $4x = 20$ by $4$. What is $20 \\div 4$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 4 from 20 instead of dividing by 4, likely confusing multiplication cancellation with subtraction."
+    },
+    {
+      "id": "inv-2",
+      "locale": "uk",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "У нас є рівняння $\\frac{x}{3} = 4$. Яку дію треба виконати з обома частинами рівняння, щоб ізолювати $x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Щоб скасувати ділення на $3$, треба застосувати обернену дію — множення. Наприклад, якщо $\\frac{y}{2} = 5$, то щоб знайти $ย$, ми множимо обидві частини на $2$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб скасувати ділення на $3$, помнож обидві частини рівняння на $3$. Який результат ти отримаєш у лівій і правій частинах?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student divided by 3 instead of multiplying by 3 to undo division."
+    },
+    {
+      "id": "inv-3",
+      "locale": "en",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at $3x = 15$. If $3$ is multiplied by $x$, what is the inverse operation needed to isolate $x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Multiplying both sides by the same number changes the value incorrectly; we need the division property of equality. If $2x = 6$, what operation isolates $x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Divide both sides of $3x = 15$ by $3$. What do you get for $x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student applied multiplication instead of division by the coefficient 3 to isolate x."
+    },
+    {
+      "id": "inv-4",
+      "locale": "uk",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "У нас є рівняння $2x = 12$. Яку дію треба виконати з обома частинами рівняння, щоб отримати сам $x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Щоб ізолювати змінну, яка множится на число, використовують дію, обернену до множення. Наприклад, у рівнянні $3x = 6$ ми ділимо обидві частини на $3$. Яка дія обернена до множення на $2$ у нашому рівнянні?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб позбутися множення на $2$ у рівнянні $2x = 12$, застосуй обернену дію: поділи обидві частини на $2$. Запиши цей результат.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 2 instead of dividing by 2 to isolate x from $2x = 12$."
+    },
+    {
+      "id": "inv-5",
+      "locale": "en",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the equation $\\frac{x}{4} = 3$. What operation is currently being applied to $x$, and what is the inverse operation needed to isolate it?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When $x$ is divided by a number, we use the multiplication property of equality to isolate $x$, not division. For example, if $\\frac{y}{2} = 5$, we multiply both sides by $2$, so $y = 5 \\times 2$. Apply this rule to $\\frac{x}{4} = 3$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To isolate $x$ from $\\frac{x}{4} = 3$, apply the multiplication property of equality by multiplying both sides by $4$. What does the equation become?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student divided instead of multiplied by 4, likely confusing the division in x/4 with multiplying the right side by 4 incorrectly or misapplying the inverse operation of division."
+    },
+    {
+      "id": "inv-6",
+      "locale": "uk",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися на рівняння $-3x = 12$. Яка дія пов'язує множник $-3$ із невідомою $x$ і яку операцію треба застосувати, щоб залишити лише $x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут порушено правило ізоляції невідомого через обернену дію. Наприклад, у рівнянні $2x = 6$ ми ділимо обидві частини на $2$, а не віднімаємо чи додаємо.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб ізолювати $x$ у рівнянні $-3x = 12$, поділися обидві частини на $-3$. Яким буде результат?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student added 3 to 12 instead of dividing both sides by -3 to isolate x."
+    },
+    {
+      "id": "inv-7",
+      "locale": "en",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "You had $4x = 24$. What operation connects $4$ and $x$, and what is the inverse operation needed to isolate $x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "To isolate $x$, we use the division property of equality, not subtraction. For example, if $3x = 12$, we divide both sides by $3$, giving $x = 4$. What operation should you apply to $4x = 24$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Divide both sides of $4x = 24$ by $4$ using the division property of equality. What does $x$ equal now?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 4 from 24 instead of dividing by 4, likely confusing the inverse operation for isolating x."
+    },
+    {
+      "id": "inv-8",
+      "locale": "uk",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись на рівняння $7x = 35$: що саме робить сімка з іксом і яку дію треба застосувати, щоб залишити $x$ самого?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут спрацювало правило протилежних дій: щоб позбутися множника, треба використати ділення. Наприклад, якщо $2x = 6$, то ми ділимо обиומ частини на 2, а не множимо.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб знайти $x$, поділи обидві частини рівняння $7x = 35$ на $7$. Який буде результат?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied 35 by 7 instead of dividing by 7, likely confusing multiplication and division when isolating x."
+    },
+    {
+      "id": "one-1",
+      "locale": "en",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ONE_SIDE_ONLY",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at what you did to the left side: you divided $2x$ by $2$ to get $x$. Did you do the exact same operation to the right side?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "To keep an equation balanced, whatever operation you perform on one side must be applied to the other side as well. For example, if $4 = 4$ and you divide the left side by $2$, what must you do to the right side?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "When we divide the left side by $2$, we must also divide the right side by $2$, giving $x + 3 = 5$. Can you write this correct line and continue from there?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student divided the coefficient of x by 2 on the left side but left the right side 10 unchanged, violating the rule of maintaining equality."
+    },
+    {
+      "id": "one-2",
+      "locale": "uk",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись на рядок $x + 12 = 19$. Куди поділося число $12$ з лівої частини?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут порушено правило рівняння: щоб позбутися доданка в лівій частині, треба відняти його від обох частин. Наприклад, у рівнянні $x + 5 = 8$ ми віднімаємо $5$ від обох частин, а не просто прибираємо його.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб ізолювати $x$ у рівнянні $x + 12 = 19$, відніми $12$ від обох частин. Запиши, що вийде.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student dropped the number 12 from the left side without applying the inverse operation of subtraction."
+    },
+    {
+      "id": "one-3",
+      "locale": "en",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ONE_SIDE_ONLY",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the right side of your equation $2x + 20$. What happened to the $2x$ term in your next step?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We must follow the subtraction property of equality to keep both sides balanced. If you subtract $2$ from one side, like in $5 + 2 = 3 + 2$, you must subtract $2$ from both sides.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To remove $2x$ from the right side, we must subtract $2x$ from both sides, giving $4x - 2x + 8 = 20$. Can you simplify $4x - 2x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student dropped the 2x term from the right-hand side, likely because they focused only on collecting x terms or removing the term without applying the subtraction property of equality to both sides."
+    },
+    {
+      "id": "one-4",
+      "locale": "uk",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ONE_SIDE_ONLY",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на своє рівняння $2x - 9 = 5$. Що саме ти зробив із кожним членом попереднього рівняння $6x - 9 = 15$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Пам'ятай золоте правило рівнянь: рівність подібна до вагів, і все, що ми робимо з однією частиною, обов'язково треба робити з усією частиною, а не з окремими доданками. Якщо ми ділимо $6x$ на $3$, то чи маємо ми поділити $9$ на $3$ у виразі $6x - 9$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Якщо ми ділимо ліву частину на $3$, то треба поділити кожен її член, включно з $9$: $(6x - 9) : 3 = 15 : 3$. Запиши правильний результат цього ділення.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student divided only the left side term 6x and the right side number 15 by 3, leaving 9 unchanged, demonstrating a failure to apply operations to all terms."
+    },
+    {
+      "id": "one-5",
+      "locale": "en",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ONE_SIDE_ONLY",
+      "hints": [
+        {
+          "level": 1,
+          "message": "You multiplied the right side by $2$ to get $14$. What happened to the term $\\frac{x}{2}$ and the $+3$ on the left side?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When we apply an operation like multiplying by $2$, we must use the balance rule: whatever we do to one side of the equation, we must do to the entire other side. For example, in $y + 1 = 5$, if we multiply the left side by $2$, we get $2(y + 1)$, not just $y + 1$. How does this apply to $\\frac{x}{2} + 3$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To clear the denominator properly, we must multiply the entire left side $\\frac{x}{2} + 3$ by $2$, giving $x + 6 = 14$. Can you rewrite the equation this way and continue?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied the left side term x/2 by 2 to get x, but multiplied the right side 7 by 2 to get 14 while leaving the + 3 term on the left side unchanged."
+    },
+    {
+      "id": "one-6",
+      "locale": "uk",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ONE_SIDE_ONLY",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися уважно на ліву частину: куди поділося число $10$? Що треба зробити з обома частинами рівняння, щоб його позбутися?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Пам'ятай про правило збереження рівності: якщо віднімаємо число від однієї частини, обов'язково віднімаємо його і від іншої. Наприклад, у рівності $4 + 3 = 7$, якщо ми приберемо $3$ зліва, то і справа маємо відняти $3$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб правильно перенести $10$ у праву частину, треба відняти $10$ від обох частин, і тоді вийде $5x + 10 - 10 = 3x + 20 - 10$, тобто $5x = 3x + 10$. Запиши цей правильний рядок.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student dropped the constant term +10 from the left side without applying the inverse operation to both sides."
+    },
+    {
+      "id": "one-7",
+      "locale": "en",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check the left side of your equation. If you subtract $x$ from $3x$, what should the new coefficient be?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We use the distributive law: $5x - 2x = (5 - 2)x$. Apply this same rule to the $3x$ on your left side.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the distributive law, subtracting $x$ (which is $1x$) from $3x$ gives $(3 - 1)x = 2x$. Wait, let us re-examine: $3x - x = 2x$. Let us rewrite the left side correctly as $2x = 12 + x$. Now, what should you do to collect all terms with $x$ on one side?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 1x from 3x incorrectly, resulting in 2x, likely due to a confusion about the coefficient of x on the left side."
+    },
+    {
+      "id": "one-8",
+      "locale": "uk",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Зліва ти перейшов від $4x - 4$ до $2x - 2$. Яку дію ти застосував до кожного члена цього виразу?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Рівняння зберігає рівність, якщо додавати або віднімати від обох частин, чи ділити обидві частини на одне й те саме число. Якщо ми ділимо вираз $6x - 6$ на $2$, то ділимо кожен член, отримуючи $3x - 3$, а не просто зменшуємо все вдвічі без збереження рівності.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Замість ділення всього на два, давай перенесемо члени з $x$ в одну сторону. Відніми $2x$ від обох частин рівняння $4x - 4 = 2x + 6$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student halved both the coefficients and the constants on the left side, perhaps confusing the addition of like terms or attempting an improper division."
+    },
+    {
+      "id": "arith-1",
+      "locale": "en",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check the subtraction on the right side. What is $19 - 12$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When isolating $x$, we apply the inverse operation of addition, which is subtraction. For example, if $x + 3 = 5$, we subtract $3$ from both sides to find $x = 5 - 3$. Check your subtraction of $19 - 12$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Subtract $12$ from both sides of $x + 12 = 19$ to find the correct value for $x$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made a basic arithmetic subtraction error when finding 19 - 12, calculating it as 8 instead of 7."
+    },
+    {
+      "id": "arith-2",
+      "locale": "uk",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "У тебе рівняння $5x = 35$. Яку дію треба виконати з обома частинами, щоб ізолювати $x$, і скільки буде $35 \\div 5$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "При діленні ми використовуємо обернену дію. Наприклад, якщо $2x = 10$, то щоб знайти $x$, треба $10$ поділити на $2$, що дорівнює $5$. Скільки буде $35 \\times \\frac{1}{5}$?",
+          "latexIntact": false,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": false
+          }
+        },
+        {
+          "level": 3,
+          "message": "Поділи обидві частини рівняння $5x = 35$ на $5$, щоб знайти правильне значення $x$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when dividing 35 by 5, calculating it as 6 instead of 7."
+    },
+    {
+      "id": "arith-3",
+      "locale": "en",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check the subtraction on the right side. What is $41 - 17$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We must follow the subtraction property of equality: if $a = b$, then $a - c = b - c$. For example, if $10 + 5 = 15$, then $15 - 5 = 10$. Let us re-calculate $41 - 17$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Subtracting $17$ from $41$ gives $24$, so the correct equation is $2x = 24$. What should you do next to isolate $x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 17 from 41 and incorrectly calculated the result as 34 instead of 24."
+    },
+    {
+      "id": "arith-4",
+      "locale": "uk",
+      "expected": "ARITHMETIC",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на те, що сталося з числом $-9$, коли воно перейшло у праву частину рівняння. Яке правило зміни знаків при цьому діє?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "При перенесенні доданка через знак дорівнює його знак змінюється на протилежний. Наприклад, якщо $x - 3 = 5$, то $x = 5 + 3$. Яким має стати $-9$ у твоєму рівнянні?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "При перенесенні $-9$ у праву частину знак змінюється на плюс, тому правильний рядок: $4x = 27 + 9$. Обчисли суму праворуч.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the constant $-9$ to the right side without changing its sign, resulting in $27 + 9 = 38$ due to an arithmetic slip."
+    },
+    {
+      "id": "arith-5",
+      "locale": "en",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Check your distribution on the left side: when you multiply $6$ by $-2$, what do you get?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We use the distributive law: $a(b - c) = ab - ac$. For example, $2(3 - 1) = 2(3) - 2(1)$. What is $6 \\times (-2)$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "When we distribute $6$ across $(x - 2)$, we get $6x - 12 = 30$ because $6 \\times (-2) = -12$. Can you now add $12$ to both sides?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when multiplying 6 by -2 during distribution, getting -14 instead of -12."
+    },
+    {
+      "id": "arith-6",
+      "locale": "uk",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися уважно на рівняння $28 = 4x$ і перевір, як ти поділив 28 на 4.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": false,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут застосовується правило поділу обидвох частин рівняння на одне й те саме число. Наприклад, якщо $12 = 3x$, скільки буде $12 \\div 3$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Поділися обидві частини рівняння $28 = 4x$ на $4$. Скільки буде $28 \\div 4$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student incorrectly divided 28 by 4, getting 8 instead of 7."
+    },
+    {
+      "id": "arith-7",
+      "locale": "en",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let's check $9x = 54$. What number multiplied by $9$ gives $54$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "To isolate $x$, we divide both sides by $9$, using the division property of equality. For example, if $3x = 12$, we divide $12$ by $3$. What does $54$ divided by $9$ give?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "We need to divide both sides of $9x = 54$ by $9$. What does $54$ divided by $9$ give?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic division error, likely confusing the multiplication table fact 9 times 6 with 7."
+    },
+    {
+      "id": "arith-8",
+      "locale": "uk",
+      "expected": "ARITHMETIC",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на рівняння $x - 23 = 48$. Яку дію треба виконати з обома частинами рівняння, щоб ізолювати $x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Щоб ізолювати змінну при відніманні, використовують правило протилежної дії: додавання. Наприклад, якщо $x - 2 = 5$, то до обох частин додаємо $2$. Яку дію треба застосувати тут?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб ізолювати $x$ у рівнянні $x - 23 = 48$, застосуй правило: додай $23$ до обох частин. Запиши цей новий рядок.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student likely subtracted 23 instead of adding it, or made an arithmetic error when applying the inverse operation to isolate x."
+    },
+    {
+      "id": "other-1",
+      "locale": "en",
+      "expected": "OTHER",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Check the number on the far right of your equation. How did $19$ become $91$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Copying numbers correctly is part of the law of identity. If you have $15$ written down, you cannot change it to $51$ on the next line.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Let us maintain the law of identity and copy the right side correctly as $2x + 19$. What is the equation properly written on your paper now?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student mistranscribed the constant term 19 as 91 on the right side of the equation."
+    },
+    {
+      "id": "other-2",
+      "locale": "uk",
+      "expected": "OTHER",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Звідки взявся вираз $7x$ у лівій частині? Подивись на доданки $4x$ та $7$: чи можна їх додавати?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Додавати можна лише подібні доданки, які містят однакову буквену частину. Наприклад, у виразі $3x + 5$ ми не можемо отримати $8x$, бо числа різні.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Ми не можемо додати $4x$ та $7$, бо вони не подібні. Повернися до початкового рівняння $4x + 7 = 31$ і подумай, як ізолювати доданок з $x$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student combined the coefficient 4 and the constant 7 into 7x, treating unlike terms as like terms."
+    },
+    {
+      "id": "other-3",
+      "locale": "en",
+      "expected": "OTHER",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "In $3x + 4 = 19$, can we add $3x$ and $4$ when they are not like terms?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We can only combine terms that have the exact same variable part. For example, $2x$ and $3$ are not like terms, just like $3x$ and $4$.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "We cannot combine $3x$ and $4$ because they are not like terms, so the equation remains $3x + 4 = 19$. What inverse operation should we apply to isolate the term with $x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student incorrectly combined the variable term 3x and the constant 4 into 7, treating them as like terms."
+    },
+    {
+      "id": "other-4",
+      "locale": "uk",
+      "expected": "OTHER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися уважно на знак перед числом $3$ у правій частині рівняння: у попередньому рядку було $-3$, а стало $+3$. Що відбувається зі знаком числа при перенесенні через знак рівності?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "При перенесенні доданка через знак рівності його знак змінюється на протилежний, як у прикладі: якщо $5 - 2 = 3$, то $5 = 3 + 2$. Який знак повинен бути перед трійкою?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Ми не переносили $-3$ через знак рівності, а просто змінили його знак у правій частині. Запиши правильний рядок $x + 9 = 4x - 3$ і продовж розв'язання.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student changed the minus sign of the constant term -3 to a plus sign on the right side without transferring it across the equals sign."
+    },
+    {
+      "id": "other-5",
+      "locale": "en",
+      "expected": "OTHER",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the right side of your equation, $3x + 6$. Can you combine an $x$-term with a plain number?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We can only combine like terms, which means terms with the exact same variable part. For example, $2 + 3$ makes $5$, but we cannot simplify $2x + 3$ into a single term because one has an $x$ and the other does not.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "The right side is simply $3x + 6$ because we cannot add terms with variables to constants. Please rewrite the equation correctly as $5x - 2 = 3x + 6$ and continue from there.",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student combined unlike terms $3x$ and $6$ on the right side into $6x$ believing that terms containing variables can be combined by adding their coefficients to a constant."
+    },
+    {
+      "id": "other-6",
+      "locale": "uk",
+      "expected": "OTHER",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Звідки взялося рівняння $2 + 9 = 5$? Що сталося зі змінною $x$ біля двійки та п'ятірки?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Змінна $x$ позначає невідоме число, і ми не можемо її просто так відкинути. Наприклад, у виразі $3x + 4 = 7x$ не можна записати $3 + 4 = 7$. Що означає запис $2x$?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Змінна $x$ залишається незмінною. Правильно переписати рівняння як $9 = 5x - 2x$, оскільки ми перенесли $2x$ у праву частину за правилом переносу доданків. Що вийде у правій частині?",
+          "latexIntact": true,
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student tried to combine terms with $x$ and constants, or dropped the variable $x$ entirely from $2x$ and $5x$."
+    }
+  ],
+  "calls": [
+    {
+      "caseId": "dist-1",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1218,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-2",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1375,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 717,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 893,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 699,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 693,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-3",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 987,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-4",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 852,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 712,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 755,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 775,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 906,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1004,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-6",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 890,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 907,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 901,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 799,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 820,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-7",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 947,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-8",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 846,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 745,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 880,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 791,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "dist-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 801,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-1",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 836,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-2",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 908,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 801,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 834,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 761,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 821,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-3",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 810,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-4",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 854,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 835,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 863,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 802,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 868,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 983,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-6",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 952,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 829,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 762,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1187,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-7",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1154,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 975,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 875,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-8",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 873,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 717,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 917,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-1",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 841,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "sign-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 810,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 772,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-2",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 867,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 812,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 969,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-3",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 899,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 865,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 924,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-4",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 816,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 781,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 729,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 917,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 867,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 795,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-6",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1021,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 728,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 878,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-7",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 981,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 843,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 745,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-8",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 881,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 928,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 768,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-1",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 797,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "comb-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1089,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 756,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 651,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-2",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 933,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-3",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 880,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 797,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 899,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 770,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 714,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-4",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 944,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 779,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 935,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 796,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 735,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1147,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-7",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 820,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-6",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 854,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 677,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 778,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 793,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 751,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-1",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 781,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-8",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 824,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 835,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 857,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 827,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "inv-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 838,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-3",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 911,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-2",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 920,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 797,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 889,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 672,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 798,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-4",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 936,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 866,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 869,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 984,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 861,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 781,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-6",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 899,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-7",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 815,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 818,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 809,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1276,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1186,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-1",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 705,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-8",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 802,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 826,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 906,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 635,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "one-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 752,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-2",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 913,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-3",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 785,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 772,
+          "reason": null,
+          "error": null,
+          "latexIntact": false
+        }
+      ]
+    },
+    {
+      "caseId": "arith-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 763,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 774,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 792,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 716,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-4",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 887,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 878,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 881,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 891,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 903,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-6",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 959,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-7",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 955,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 829,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 850,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 752,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 735,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-8",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1222,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-1",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1218,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 919,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 990,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "arith-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 686,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 832,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-2",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 799,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-3",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 825,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 733,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 668,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 780,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 859,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-4",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 980,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1466,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 735,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 749,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 760,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 734,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-6",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 926,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 859,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "other-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 886,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    }
+  ],
+  "checkSummary": {
+    "cases": 12,
+    "level1Question": {
+      "ok": 12,
+      "total": 12
+    },
+    "noValue": {
+      "ok": 35,
+      "total": 36
+    },
+    "noComputedLine": {
+      "ok": 36,
+      "total": 36
+    },
+    "level3OperationsOnly": {
+      "ok": 12,
+      "total": 12
+    },
+    "language": {
+      "ok": 36,
+      "total": 36
+    },
+    "latexIntact": {
+      "ok": 36,
+      "total": 36
+    },
+    "invalidJson": {
+      "ok": 0,
+      "total": 36
+    },
+    "failedCalls": {
+      "ok": 0,
+      "total": 36
+    },
+    "latency": {
+      "p50": 795,
+      "p95": 982
+    }
+  },
+  "checkResults": [
+    {
+      "id": "check-1",
+      "locale": "en",
+      "side": "right",
+      "operation": "multiplication",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check the right side of your equation: what is $2 \\times 7$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "By the order of operations, multiplication must be done before addition. For example, in $2 \\times 3 + 5$, we multiply first to get $6 + 5$. Apply this to the term $2 \\times 7$ on the right side.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "On the right side, first multiply $2 \\cdot 7$, then add $19$. Please compute these operations and rewrite the check line.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student computed the right side as 12 + 19 instead of 2 \\times 7 + 19."
+    },
+    {
+      "id": "check-2",
+      "locale": "uk",
+      "side": "right",
+      "operation": "addition",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Перевір ще раз обчислення правої частини: скільки буде $2 \\cdot 7 + 19$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Пам'ятай про порядок дій: спершу множення, а потім додавання. Наприклад, для виразу $2 \\cdot 3 + 5$ спершу множимо $2 \\cdot 3 = 6$, а потім додаємо $5$. Застосуй це до правої частини.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Спершу виконай множення $2 \\cdot 7$, а потім додай $19$. Обчисли праву частину заново.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student incorrectly computed the right side of the equation as 32 instead of 33."
+    },
+    {
+      "id": "check-3",
+      "locale": "en",
+      "side": "left",
+      "operation": "multiplication",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us re-evaluate the left side of your check equation, $5(7 - 2)$. What is $7 - 2$ multiplied by $5$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "By the order of operations, we evaluate the expression inside the parentheses first. For example, in $4(3 - 1)$, we first find $3 - 1 = 2$, then multiply by $4$ to get $8$.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "First subtract $2$ from $7$, then multiply that difference by $5$. Compute this and rewrite the left side of your check line.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student computed the left side of the check equation as 30 instead of 25."
+    },
+    {
+      "id": "check-4",
+      "locale": "uk",
+      "side": "left",
+      "operation": "addition",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на ліву частину: скільки буде $7 + 3$ у дужках?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Згадай порядок дій: спершу завжди обчислюємо те, що в дужках. Наприклад, у виразі $2(3 + 1)$ спочатку додаємо числа в дужках, а не множимо.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "У лівій частині спочатку виконай доконування в дужках $7 + 3$, а потім помнож результат на $4$. Перепиши рядок перевірки з цим виправленням.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student incorrectly evaluated the addition inside the parentheses as 7 + 3 = 11 instead of 10."
+    },
+    {
+      "id": "check-5",
+      "locale": "en",
+      "side": "right",
+      "operation": "multiplication",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check the right side of your equation: what is $6 \\cdot 7$ before subtracting $2$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Multiplication comes before subtraction according to the order of operations. For example, in $3 \\cdot 4 - 1$, we multiply first to get $12$, then subtract. What is $6 \\cdot 7$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "On the right side, first multiply $6 \\cdot 7$, then subtract $2$. Please compute these operations step by step and rewrite your check line.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student evaluated the right-hand side $6\\cdot 7 - 2$ as $48 - 2$ instead of $42 - 2$."
+    },
+    {
+      "id": "check-6",
+      "locale": "uk",
+      "side": "right",
+      "operation": "addition",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Перевір ще раз обчислення у правій частині рівняння: скільки буде $4 \\cdot 6 - 2$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Пам'ятай про порядок дій: спочатку виконується множення, а потім віднімання. Наприклад, у виразі $3 \\cdot 5 - 1$ ми спершу множимо, а вже потім віднімаємо.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "У правій частині $4 \\cdot 6 - 2$ спочатку виконай множення $4 \\cdot 6$, а потім відніми $2$. Перепиши рядок перевірки з цим обчисленням.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error calculating the right side of the equation during substitution."
+    },
+    {
+      "id": "check-7",
+      "locale": "en",
+      "side": "left",
+      "operation": "multiplication",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check the left side of your equation: what is $7 \\times 4$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "By the multiplication table, $6 \\times 4$ is $24$, not $28$. What is $7 \\times 4$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [
+              "24",
+              "28"
+            ],
+            "computedLines": [],
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Let us re-evaluate the left side: first multiply $7 \\times 4$, then subtract $4$. Please compute this and rewrite the check line.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error calculating 7 times 4 on the left side of the equation during substitution."
+    },
+    {
+      "id": "check-8",
+      "locale": "uk",
+      "side": "right",
+      "operation": "addition",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Перевір ще раз обчислення у правій частині рівняння: скільки буде $3 \\cdot 4 + 12$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Пам'ятай про порядок дій: спочатку виконуємо множення, а вже потім додавання. Наприклад, у виразі $2 \\cdot 3 + 5$ спершу множимо $2 \\cdot 3 = 6$, а потім додаємо $5$.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "У правій частині $3 \\cdot 4 + 12$ спочатку виконай множення $3 \\cdot 4$, а потім додай $12$. Обчисли це і перепиши рядок перевірки.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when evaluating the right side of the equation during substitution."
+    },
+    {
+      "id": "check-9",
+      "locale": "en",
+      "side": "left",
+      "operation": "addition",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us look at the left side of your check: $\\frac{8}{2} + 3$. Does that simplify to $8$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Remember the order of operations: division and multiplication come before addition. For example, in $\\frac{6}{2} + 3$, we first compute $\\frac{6}{2}$ to get $3$, and then add $3$ to get $6$. What do you get when you apply this to $\\frac{8}{2} + 3$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Let us look at the left side $\\frac{8}{2} + 3$. First perform the division $\\frac{8}{2}$, and then add $3$. What do you get for the left side when you follow this order?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student incorrectly evaluated the left side of the equation during substitution, simplifying $8/2 + 3$ to $8$ instead of $7$."
+    },
+    {
+      "id": "check-10",
+      "locale": "uk",
+      "side": "left",
+      "operation": "multiplication",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на ліву частину: скільки буде $2 \\cdot 6$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "За правилом порядку дій спочатку виконуємо множення, а потім віднімання в дужках. Наприклад, у виразі $2(3 \\cdot 4 - 1)$ спершу множимо $3 \\cdot 4$. Скільки буде $2 \\cdot 6$ у твоєму виразі?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "У лівій частині спочатку помнож $2 \\cdot 6$, а потім виконай віднімання в дужках. Обчисли це та перепиши рядок перевірки.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student incorrectly evaluated the multiplication inside the left side's parenthesis as 13 instead of 12."
+    },
+    {
+      "id": "check-11",
+      "locale": "en",
+      "side": "right",
+      "operation": "multiplication",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check the right side of your equation $4 \\cdot 6 + 9$. What is $4 \\cdot 6$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Remember the order of operations: multiplication before addition. For example, in $2 \\cdot 3 + 5$, we multiply first to get $6$, then add $5$.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "On the right-hand side $4 \\cdot 6 + 9$, first multiply $4 \\cdot 6$, then add $9$. Please compute these operations in order and rewrite the check line.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "en",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student incorrectly evaluated the right-hand side of the equation during substitution."
+    },
+    {
+      "id": "check-12",
+      "locale": "uk",
+      "side": "right",
+      "operation": "addition",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Перевір ще раз обчислення у правій частині рівняння: скільки буде $3 \\cdot 7 + 1$?",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Пам'ятай про порядок дій: спочатку множення, а потім додавання. Наприклад, у виразі $2 \\cdot 3 + 1$ спершу множимо $2 \\cdot 3 = 6$, а потім додаємо $1$. Застосуй це правило до правої частини.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "У правій частині $3 \\cdot 7 + 1$ спочатку виконай множення $3 \\cdot 7$, а потім додай $1$. Обчисли і запиши перевірку заново.",
+          "latexIntact": true,
+          "checks": {
+            "statedNumbers": [],
+            "computedLines": [],
+            "language": "uk",
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "Student made an arithmetic error calculating the right side of the equation during substitution."
+    }
+  ],
+  "checkCalls": [
+    {
+      "caseId": "check-2",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 712,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-1",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 928,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 841,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 765,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-2",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 627,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-1",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 656,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-3",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 889,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-4",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 955,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 661,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 733,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-3",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 777,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-4",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 743,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 844,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-6",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 818,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 715,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 884,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1004,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-6",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 832,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-7",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 752,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-8",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 725,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 688,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 965,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-7",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 839,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-8",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 917,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-9",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 793,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-10",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 877,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-9",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 795,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-10",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 955,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-9",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 823,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-10",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 676,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-11",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 785,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-11",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 619,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-12",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 869,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-12",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 845,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-11",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 982,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    },
+    {
+      "caseId": "check-12",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 682,
+          "reason": null,
+          "error": null,
+          "latexIntact": true
+        }
+      ]
+    }
+  ]
+}
