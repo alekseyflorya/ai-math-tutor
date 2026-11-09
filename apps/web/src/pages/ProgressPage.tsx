@@ -14,7 +14,7 @@ export function ProgressPage() {
   if (isLoading || !data) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {Array.from({ length: 4 }, (_, i) => (
+        {Array.from({ length: 5 }, (_, i) => (
           <div key={i} className="h-24 animate-pulse rounded-xl bg-paper-2" />
         ))}
       </div>
@@ -27,7 +27,7 @@ export function ProgressPage() {
     <div className="space-y-6">
       <h1 className="font-serif text-2xl font-bold text-text">{t.progress}</h1>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Stat
           label={t.statSolved}
           value={String(totals.solved)}

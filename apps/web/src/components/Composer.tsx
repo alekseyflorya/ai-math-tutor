@@ -57,7 +57,7 @@ export function Composer({
   }, [text, mode]);
   const checking = mode === 'CHECKING';
   const placeholder =
-    checking && solutionLatex ? t.checkPlaceholder(solutionLatex) : t.inputPlaceholder;
+    checking && solutionLatex ? t.checkPlaceholder(plainRoot(solutionLatex)) : t.inputPlaceholder;
 
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
@@ -157,4 +157,9 @@ export function Composer({
       </div>
     </form>
   );
+}
+
+/** The placeholder is plain text: "x = -\\frac{3}{2}" → "x = -3/2". */
+function plainRoot(latex: string): string {
+  return latex.replace(/\\frac\{(\d+)\}\{(\d+)\}/g, '$1/$2');
 }
