@@ -5222,6 +5222,19 @@
     "latency": {
       "p50": 1617,
       "p95": 3940
+    },
+    "guard": {
+      "retried": 0,
+      "template": 0,
+      "hints": 36
+    },
+    "noLeakAfterGuard": {
+      "ok": 33,
+      "total": 36
+    },
+    "guardFalsePositives": {
+      "ok": 0,
+      "total": 0
     }
   },
   "checkResults": [
@@ -5237,6 +5250,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "question": true,
@@ -5249,6 +5263,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "level2StudentNumbers": [],
@@ -5261,6 +5276,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "namesOperation": true,
@@ -5284,6 +5300,9 @@
             "statedNumbers": [
               "33"
             ],
+            "guardLeaks": [
+              "33"
+            ],
             "computedLines": [
               "3 * 11 = 33"
             ],
@@ -5298,6 +5317,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "level2StudentNumbers": [],
@@ -5310,6 +5330,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "namesOperation": true,
@@ -5331,6 +5352,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "question": true,
@@ -5343,6 +5365,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "level2StudentNumbers": [],
@@ -5355,6 +5378,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "namesOperation": true,
@@ -5376,6 +5400,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "question": true,
@@ -5388,6 +5413,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "level2StudentNumbers": [],
@@ -5400,6 +5426,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "namesOperation": true,
@@ -5421,6 +5448,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "question": true,
@@ -5433,6 +5461,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "level2StudentNumbers": [],
@@ -5445,6 +5474,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "namesOperation": true,
@@ -5468,6 +5498,9 @@
             "statedNumbers": [
               "22"
             ],
+            "guardLeaks": [
+              "22"
+            ],
             "computedLines": [
               "2* 11 = 22"
             ],
@@ -5482,6 +5515,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "level2StudentNumbers": [
@@ -5497,6 +5531,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "namesOperation": true,
@@ -5518,6 +5553,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "question": true,
@@ -5530,6 +5566,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "level2StudentNumbers": [],
@@ -5542,6 +5579,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "namesOperation": true,
@@ -5563,6 +5601,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "question": true,
@@ -5575,6 +5614,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "level2StudentNumbers": [],
@@ -5587,6 +5627,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "namesOperation": true,
@@ -5608,6 +5649,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "question": true,
@@ -5620,6 +5662,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "level2StudentNumbers": [
@@ -5635,6 +5678,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "namesOperation": true,
@@ -5656,6 +5700,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "question": true,
@@ -5668,6 +5713,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "level2StudentNumbers": [
@@ -5682,6 +5728,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "namesOperation": true,
@@ -5703,6 +5750,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "question": true,
@@ -5715,6 +5763,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "level2StudentNumbers": [
@@ -5729,6 +5778,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "en",
             "namesOperation": true,
@@ -5752,6 +5802,9 @@
             "statedNumbers": [
               "22"
             ],
+            "guardLeaks": [
+              "22"
+            ],
             "computedLines": [
               "2* 11 = 22"
             ],
@@ -5766,6 +5819,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "level2StudentNumbers": [],
@@ -5778,6 +5832,7 @@
           "latexIntact": true,
           "checks": {
             "statedNumbers": [],
+            "guardLeaks": [],
             "computedLines": [],
             "language": "uk",
             "namesOperation": true,
