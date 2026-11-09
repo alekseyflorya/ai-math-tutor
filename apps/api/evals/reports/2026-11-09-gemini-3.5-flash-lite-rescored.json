@@ -1,0 +1,5557 @@
+{
+  "info": {
+    "date": "2026-11-09",
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "concurrency": 2,
+    "durationMs": 547490,
+    "complete": true
+  },
+  "summary": {
+    "cases": 54,
+    "accuracy": {
+      "ok": 41,
+      "total": 54
+    },
+    "byType": {
+      "DISTRIBUTION": {
+        "ok": 8,
+        "total": 8
+      },
+      "SIGN_TRANSFER": {
+        "ok": 8,
+        "total": 8
+      },
+      "COMBINING_LIKE_TERMS": {
+        "ok": 8,
+        "total": 8
+      },
+      "INVERSE_OPERATION": {
+        "ok": 8,
+        "total": 8
+      },
+      "ONE_SIDE_ONLY": {
+        "ok": 4,
+        "total": 8
+      },
+      "ARITHMETIC": {
+        "ok": 5,
+        "total": 8
+      },
+      "OTHER": {
+        "ok": 0,
+        "total": 6
+      }
+    },
+    "byLocale": {
+      "en": {
+        "ok": 21,
+        "total": 27
+      },
+      "uk": {
+        "ok": 20,
+        "total": 27
+      }
+    },
+    "confusion": {
+      "DISTRIBUTION": {
+        "DISTRIBUTION": 8,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "SIGN_TRANSFER": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 8,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "COMBINING_LIKE_TERMS": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 8,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "INVERSE_OPERATION": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 8,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 0,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "ONE_SIDE_ONLY": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 0,
+        "COMBINING_LIKE_TERMS": 2,
+        "INVERSE_OPERATION": 1,
+        "ONE_SIDE_ONLY": 4,
+        "ARITHMETIC": 1,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "ARITHMETIC": {
+        "DISTRIBUTION": 1,
+        "SIGN_TRANSFER": 2,
+        "COMBINING_LIKE_TERMS": 0,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 5,
+        "OTHER": 0,
+        "FAILED": 0
+      },
+      "OTHER": {
+        "DISTRIBUTION": 0,
+        "SIGN_TRANSFER": 1,
+        "COMBINING_LIKE_TERMS": 4,
+        "INVERSE_OPERATION": 0,
+        "ONE_SIDE_ONLY": 0,
+        "ARITHMETIC": 1,
+        "OTHER": 0,
+        "FAILED": 0
+      }
+    },
+    "invalidJson": {
+      "ok": 0,
+      "total": 166
+    },
+    "failedCalls": {
+      "ok": 2,
+      "total": 168
+    },
+    "latency": {
+      "p50": 916,
+      "p95": 1408,
+      "byPurpose": {
+        "diagnose": {
+          "p50": 956,
+          "p95": 1579
+        },
+        "hint": {
+          "p50": 866,
+          "p95": 1293
+        }
+      }
+    },
+    "rules": {
+      "level1Question": {
+        "ok": 54,
+        "total": 54
+      },
+      "noFinalAnswer": {
+        "ok": 160,
+        "total": 162
+      },
+      "level3CorrectedOnly": {
+        "ok": 52,
+        "total": 54
+      },
+      "language": {
+        "ok": 162,
+        "total": 162
+      },
+      "latexIntact": {
+        "ok": 161,
+        "total": 162
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "dist-1",
+      "locale": "en",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "When you expanded $3(x + 4)$, did you multiply every term inside the parentheses by $3$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We need to use the distributive property, $a(b+c) = ab + ac$. For example, $2(x + 5) = 2x + 10$. How does that apply to $3(x + 4)$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the distributive property, $3(x + 4)$ becomes $3x + 12$. Now rewrite the full equation with this correction.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied only the first term inside the parenthesis by 3, leaving the +4 unchanged, which violates the distributive property $a(b+c) = ab + ac$."
+    },
+    {
+      "id": "dist-2",
+      "locale": "uk",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися уважно на ліву частину: як ти розкрив дужки $5(x - 2)$? На що потрібно помножити число $5$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "тут застосовується розподільна властивість множення: $a(b - c) = ab - ac$. Наприклад, $2(x - 3) = 2x - 6$. Спробуй застосувати це до $5(x - 2)$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "За розподільною властивістю множення $5(x - 2) = 5x - 10$, тому рівняння має вигляд $5x - 10 = 3x + 4$. Запиши правильний рядок і подумай, що робити далі з доданками з $x$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied only the first term inside the parentheses by 5, forgetting to multiply the second term $-2$ as well."
+    },
+    {
+      "id": "dist-3",
+      "locale": "en",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the term $-3$ inside the parentheses when you expand $-2(x - 3)$. What is $-2$ multiplied by $-3$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "This is a sign error during distribution. When we multiply a negative number by a negative number, the product is positive, as in $-2(-5) = 10$. Apply this to $-2(-3)$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Expanding $-2(x - 3)$ gives $-2x + 6$ because the product of two negatives is positive. Please rewrite the equation with this correct expansion and continue.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied the first term inside the parentheses by -2 correctly, but multiplied the second term -3 by -2 and obtained -6 instead of +6, showing a sign error during distribution."
+    },
+    {
+      "id": "dist-4",
+      "locale": "uk",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Поглянь на ліву частину рівняння: $4(2x + 1)$. Чи помножино число $4$ на кожен доданок у дужках?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "тут порушено розподільну властивість множення: $a(b + c) = ab + ac$. Наприклад, для $2(3 + x)$ це буде $2\\cdot3 + 2\\cdotx$. Спробуй застосувати це правило до свого рівняння.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "За розподільним законом отримуємо $8x + 4 = 3x + 14$. Запиши цей правильний рядок і подумай, що робити з доданками з $x$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied only the first term inside the parentheses by 4, resulting in 8x + 1 instead of 8x + 4."
+    },
+    {
+      "id": "dist-5",
+      "locale": "en",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at how the $-3$ outside the brackets multiplies the terms inside $7 - 3(x + 2) = 4$. When you expand $-3(x + 2)$, what happens to the $+2$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We use the distributive law: $a(b + c) = ab + ac$. For example, $-2(x + 5)$ expands to $-2x - 10$. Apply this to $-3(x + 2)$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the distributive law, $-3(x + 2)$ expands to $-3x - 6$, giving $7 - 3x - 6 = 4$. Can you rewrite the equation correctly?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied the term x by -3, but forgot to multiply the constant +2 by -3, leading to +6 instead of -6."
+    },
+    {
+      "id": "dist-6",
+      "locale": "uk",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Коли ти розкрив дужки в лівій частині $2(3x - 5)$, на що саме потрібно помножити число $-5$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут порушено розподільну властивість множення: $a(b - c) = ab - ac$. Наприклад, для $3(2x - 4)$ трійку треба помножити на кожен член у дужках. Спробуй ще раз.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "За розподільним законом треба помножити $2$ на кожен член у дужках: $2 \\cdot 3x - 2 \\cdot 5 = 6x - 10$. Запиши правильне рівняння і продовж розв'язання.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied only the first term inside the parentheses by 2 and left the second term unchanged, showing a misunderstanding of the distributive property."
+    },
+    {
+      "id": "dist-7",
+      "locale": "en",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check the right side of your equation: $2(x + 5)$. When you distribute the $2$, what do you get for both terms inside?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We use the distributive law: $a(b + c) = ab + ac$. For example, $3(x + 4)$ becomes $3x + 12$. What do you get when you apply this to $2(x + 5)$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the distributive law, $2(x + 5)$ expands to $2x + 10$, not $2x + 5$. Please correct your equation and write the next line.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student correctly expanded the left side but failed to multiply the outer factor 2 by the second term inside the right-hand parenthesis, writing 5 instead of 10."
+    },
+    {
+      "id": "dist-8",
+      "locale": "uk",
+      "expected": "DISTRIBUTION",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися уважно на ліву частину: $-(x + 4)$. Що відбувається з додатком $4$, коли ми розкриваємо дужки зі знаком мінус перед ними?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "При розкритті дужок зі знаком мінус перед ними, як у прикладі $-(5 + 3)$, кожен доданок змінює знак на протилежний. Що станеться з четвіркою в $- (x + 4)$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Згідно з правилом розкриття дужок зі знаком мінус, обидва доданки змінюють знаки, тому правильний запис: $-x - 4 = 2x - 1$. Продовж розв'язання від цього кроку.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student forgot to apply the negative sign to the second term inside the parentheses, writing -x + 4 instead of -x - 4."
+    },
+    {
+      "id": "sign-1",
+      "locale": "en",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the number $12$ when it moved to the right side of the equation. What should happen to its sign?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When transferring a term across the equals sign, we must apply the inverse operation. For example, if we have $x + 5 = 8$, moving $5$ to the other side gives $x = 8 - 5$. What happens to the $+12$ in your equation?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "When moving $+12$ across the equals sign, its sign changes to $-12$, giving $3x - 2x = 19 - 12$. What is $3x - 2x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the positive term +12 to the right side without changing its sign to negative."
+    },
+    {
+      "id": "sign-2",
+      "locale": "uk",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на те, що сталося з числом $-7$, коли ти переніс його у правої частини. Яке правило зміни знаків тут застосовується?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Коли ми переносимо доданок через знак рівності, діє правило протилежного знака: якщо зліва було $-3$, то справа стане $+3$. Який знак матиме $-7$ у твоїй рівності після перенесення?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Коли ми переносимо $-7$ праворуч, знак змінюється на протилежний, тому маємо $+7$. Виправ цей рядок: $5x - 2x = 8 + 7$, і продовж розв'язання.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the constant -7 to the right side without changing its sign to +7."
+    },
+    {
+      "id": "sign-3",
+      "locale": "en",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the $x$ term that moved from the right side to the left side. What rule governs its sign when crossing the equals sign?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When terms cross the equals sign, we apply the transposition rule by changing their signs. For example, if we have $2x + 5 = 7$, moving $2x$ gives $-2x$. What should happen to the $x$ on the right side of your equation?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the transposition rule, moving $x$ across the equals sign changes its sign to $-x$, giving $4x - x + 9 = 3$. Can you rewrite the equation properly with this correction?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the x term from the right to the left and the number 9 from the left to the right, but kept the sign of x positive instead of changing it to negative."
+    },
+    {
+      "id": "sign-4",
+      "locale": "uk",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Ти переніс $3x$ у ліву частину, але що має статися зі знаком члена при переході через знак рівності?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "При перенесенні члена з однієї частини рівняння в іншу діє закон зміни знака на протилежний. Наприклад, якщо $5 = 2 + 3$, то перенісши $3$ вліво, отримуємо $5 - 3 = 2$. Яким має стати знак $3x$ у твоєму рівнянні?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Коли ми переносимо $3x$ у ліву частину, його знак змінюється на протилежний, тому отримуємо $7x - 3x = 20$. Запиши це правильно і виконай віднімання в лівій частині.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the term 3x from the right side to the left side without changing its sign from positive to negative, likely following a flawed transposition rule."
+    },
+    {
+      "id": "sign-5",
+      "locale": "en",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at how the $-5$ on the left side moved to the right side. What rule governs the sign of a term when you transpose it across the equals sign?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When you transpose a term across the equals sign, its sign must change. For example, if $x - 3 = 7$, moving $-3$ gives $x = 7 + 3$. Apply this rule to $-5$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "When $-5$ crosses the equals sign, it becomes $+5$, so the correct step is $2x = 11 + 5$. What does the right side simplify to?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the constant term -5 to the right side without changing its sign from negative to positive."
+    },
+    {
+      "id": "sign-6",
+      "locale": "uk",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на те, як ти переніс $-x$ праворуч та $15$ ліворуч. Що має статися зі знаком члена при переході через знак рівності?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Коли ми переносимо член через знак рівності, діє правило протилежного знака: його знак змінюється на протилежний. Наприклад, у рівнянні $5 - x = 3$ після перенесення матимемо $5 - 3 = x$. Спробуй застосувати це до свого рівняння.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Коли ми переносимо $-x$ у праву частину, його знак змінюється на плюс, тому отримуємо $6 - 15 = 2x + x$. Запиши це правильно і продовж розв'язання.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved terms across the equals sign without changing their signs, leading to an incorrect rearrangement."
+    },
+    {
+      "id": "sign-7",
+      "locale": "en",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check what happened to the constant $8$ when it moved to the right side of the equation $3x + 8 = 5x - 6$. What should its sign be?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When terms cross the equals sign, we apply the transposition rule by changing their signs. For example, in $x + 3 = 7$, moving $3$ gives $x = 7 - 3$. What happens to the $+8$ in your equation?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "When moving $+8$ to the right side, its sign changes to $-8$, giving $3x - 5x = -6 - 8$ by the transposition rule. Can you simplify both sides now?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the positive number 8 to the right side without changing its sign to negative."
+    },
+    {
+      "id": "sign-8",
+      "locale": "uk",
+      "expected": "SIGN_TRANSFER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися уважно на те, що сталося з числом $-2$ під час його перенесення в праву частину рівняння $2x - 2 = x + 6$. Яке правило перенесення членів через знак рівності ми тут застосовуємо?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Коли переносимо доданок через знак рівності, його знак змінюється на протилежний. Наприклад, якщо в рівнянні $x - 3 = 5$ перенести $-3$ направо, буде $x = 5 + 3$. Яким має стати $-2$ у твоєму рівнянні?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Коли ми переносимо $-2$ у праву частину, за правилом перенесення знаків воно змінюється на $+2$, тому отримуємо $2x - x = 6 + 2$. Запиши це правильно і продовж розв'язання.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student transferred the constant term -2 to the right side without changing its sign to +2."
+    },
+    {
+      "id": "comb-1",
+      "locale": "en",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the left side, $3x - 2x$. What operation does the negative sign require between $3x$ and $2x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When combining like terms, you must follow the operation shown in front of the term. For example, $5a - 3a$ means subtraction, giving $2a$, not $8a$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Subtracting the coefficients $3 - 2$ gives $1x$, or simply $x$, because of the subtraction sign between the terms. What does $19 - 12$ simplify to on the right side?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student added the coefficients of $3x$ and $-2x$ to get $5x$ instead of subtracting them."
+    },
+    {
+      "id": "comb-2",
+      "locale": "uk",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на члени з іксом у лівій частині: $4x$ та $-x$. Як правильно їх звести?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Пам'ятай про правило зведення подібних доданців: знак перед числом чи змінною належить їй. Наприклад, у виразі $5x - 2x$ ми віднімаємо коефіцієнти і отримуємо $3x$, а не додаємо їх. Що буде, якщо у твоєму рівнянні об'єднати $4x$ та $-x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Пам'ятай, що $-x$ це те саме, що $-1x$. Якщо об'єднати $4x$ та $-1x$ за правилом зведення подібних доданців, отримаємо $4x - 1x = 3x$. Запиши правильне рівняння замість попереднього.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student added 4x and -x to get 5x instead of subtracting their coefficients, likely treating -x as +x."
+    },
+    {
+      "id": "comb-3",
+      "locale": "en",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the left side of your equation: $2x + 5 + x$. Can we add a number term and terms with $x$ together?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We can only combine like terms that share the exact same variable part. For example, in $3 + 4y + 2$, we can combine $3$ and $2$, but we cannot add them to $4y$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "We combine the like terms $2x$ and $x$ to get $3x$, while $+5$ remains separate, giving $3x + 5 = 14$. Can you write this corrected step?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student combined $2x$, $5$, and $x$ into $8x$, treating all terms on the left side as like terms."
+    },
+    {
+      "id": "comb-4",
+      "locale": "uk",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивися на перші два доданки в лівій частині: $6x - 2x$. Що вийде, якщо їх звести?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут спрацювало правило знаків для подібних доданків: коли перед коефіцієнтом мінус, треба віднімати, а не додавати. Наприклад, у виразі $5x - 3x$ ми віднімаємо 3 від 5, що дасть $2x$. Що тоді буде для $6x - 2x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Оскільки ми віднімаємо $2x$ від $6x$, правильний результат буде $4x$, тому рівняння набуває вигляду $4x + 4 = 20$. Запиши цей крок і подумай, що робити далі з вільними членами.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student added 6 and 2 instead of subtracting them when combining like terms $6x - 2x$."
+    },
+    {
+      "id": "comb-5",
+      "locale": "en",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Check the left side of your equation: what is $5 - 8$ when combining the coefficients of $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When combining like terms, pay attention to the signs. For example, $3x - 7x$ equals $-4x$, not $4x$. What is $5 - 8$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "When we combine $5x - 8x$, we get $-3x$ because the coefficient of the larger term is negative. Can you rewrite the equation with $-3x$ on the left side and solve for $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 5 from 8 instead of 8 from 5, or ignored the sign of the larger coefficient when combining like terms $5x - 8x$."
+    },
+    {
+      "id": "comb-6",
+      "locale": "uk",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись на ліву частину рівняння: скільки у тебе доданків $x$ на початку і що з ними сталося у ттрому переході?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Пам'ятай про правило зведення подібних доганків: $x + x$ — це два доданки, тобто $1x + 1x = 2x$. Порівняй це з прикладом: $a + a + 3 = 7$ дає $2a + 3 = 7$, куди подівся один доданок у тебе?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Правильний запис додавання двох $x$ — це $2x + 6 = 20$, згідно з правилом зведення подібних доданків $x + x = 2x$. Запиши цей рядок і продовж розв'язання.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student dropped one of the x terms when attempting to combine like terms x + x into 2x."
+    },
+    {
+      "id": "comb-7",
+      "locale": "en",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at $-2x + 5x$ on the left side. What do you get when you combine those two terms?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When combining terms with different signs like $-2 + 5$, we subtract the smaller absolute value from the larger and keep the sign of the larger number. For example, $-3 + 5 = 2$. What is $-2x + 5x$ using this rule?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Combining $-2x$ and $+5x$ gives $+3x$, so the correct equation is $9 + 3x = 21$. Can you apply the subtraction property of equality to isolate the term with $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student combined -2x and +5x to get -7x instead of +3x, likely misunderstanding how to add terms with different signs."
+    },
+    {
+      "id": "comb-8",
+      "locale": "uk",
+      "expected": "COMBINING_LIKE_TERMS",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Поглянь уважно на члени з $x$ у лівій частині: $8x$ та $-3x$. Чи правильно ти їх з'єднав?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Згадай правило зведення подібних добічних членів: знак перед числом належить цьому числу. Наприклад, у виразі $7y - 2y$ ми віднімаємо, а не додаємо.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Знак перед $3x$ — це мінус, тому маємо обчислити $8x - 3x$, що дорівнює $5x$. Запиши правильне рівняння і продовж розв'язання.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student added 8x and 3x instead of subtracting them, likely treating the subtraction sign before 3x as an addition or misapplying combining like terms."
+    },
+    {
+      "id": "inv-1",
+      "locale": "en",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at $4x = 20$. If $4$ is multiplied by $x$, what is the inverse operation needed to isolate $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When we have $2x = 6$, we divide both sides by $2$, because division is the inverse operation of multiplication. What does that mean for $4x = 20$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To isolate $x$ in $4x = 20$, we divide both sides by the coefficient $4$ using the division property of equality. What does $x$ equal now?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 4 from 20 instead of dividing by the coefficient 4, treating the multiplication as addition."
+    },
+    {
+      "id": "inv-2",
+      "locale": "uk",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "У нас є рівняння $\\frac{x}{3} = 4$. Яку дію треба застосувати до обох частин, щоб залишити сам $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Щоб позбутися ділення, використовують обернену дію — множення. Наприклад, якщо $\\frac{y}{2} = 5$, то на скільки треба помножити обидві частини, щоб знайти $y$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб скасувати ділення на $3$, помнож обидві частини рівняння на $3$, використовуючи правило множення обох частин на одне й те саме число. Запиши, що вийде.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student divided by 3 instead of multiplying by 3 to undo division by 3, likely confusing the operation needed to isolate x."
+    },
+    {
+      "id": "inv-3",
+      "locale": "en",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at your equation $3x = 15$. If $3$ is multiplied by $x$, what inverse operation should you apply to both sides to isolate $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When isolating $x$, we use the division property of equality, not multiplication. For example, if $2x = 6$, we divide both sides by $2$, giving $x = 3$. What should you do to $3x = 15$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the division property of equality, we divide both sides by $3$ to isolate $x$. What does $15$ divided by $3$ give?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied 15 by 3 instead of dividing both sides by the coefficient of x, likely confusing multiplication with division when isolating the variable."
+    },
+    {
+      "id": "inv-4",
+      "locale": "uk",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Поглянь на рівняння $2x = 12$. Яка дія пов'язує множник $2$ і змінну $x$, і якою оберненою дією треба скористатися, щоб знайти $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут спрацювало хибне правило: замість ділення на коефіцієнт ти виконав віднімання. Подумай на простішому прикладі: якщо $3x = 6$, то якою дією знайти $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб позбутися множника $2$ біля $x$, треба поділити обидві частини рівняння на $2$, використовуючи правило оберненої дії. Запиши правильний результат ділення $12$ на $2$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 2 from 12 instead of dividing by the coefficient 2, likely confusing multiplication with addition."
+    },
+    {
+      "id": "inv-5",
+      "locale": "en",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at your equation $\\frac{x}{4} = 3$. If $x$ is divided by $4$, what inverse operation should you apply to both sides to isolate $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "You broke the rule of inverse operations. If we have $\\frac{y}{2} = 5$, what operation undoes dividing by $2$ to isolate $y$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To undo division by $4$, we must multiply both sides by $4$, giving $x = 3 \\cdot 4$. What does $x$ equal now?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student applied division or used the reciprocal incorrectly, thinking dividing by 4 or moving it means dividing the right side by 4."
+    },
+    {
+      "id": "inv-6",
+      "locale": "uk",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Ти додав числа, але як пов'язані між собою $-3$ та $x$ у рівнянні $-3x = 12$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут діє правило оберненої дії: щоб позбутися множника біля невідомого, треба ділити, а не додавати. Наприклад, у рівнянні $2x = 6$ ми ділимо обидві частини на $2$. Що треба зробити з рівнянням $-3x = 12$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб ізолювати $x$, поділимо обидві частини рівняння на $-3$, оскільки ділення є оберненою дією до множення. Запиши правильно перетворене рівняння.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student added 3 to 12 instead of dividing both sides by -3, treating the coefficient as a term to be subtracted or added."
+    },
+    {
+      "id": "inv-7",
+      "locale": "en",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "You subtracted $4$ from $24$ to get $20$. By what operation do we isolate $x$ when it is multiplied by $4$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "To undo multiplication by $4$, we must use the inverse operation of division, not subtraction. For example, if $2y = 6$, we divide both sides by $2$ to get $y = 3$. What operation should you apply to $4x = 24$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To isolate $x$ in $4x = 24$, we divide both sides by $4$ using the division property of equality. What does $x$ equal when you divide $24$ by $4$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 4 from 24 instead of dividing by 4 to isolate x."
+    },
+    {
+      "id": "inv-8",
+      "locale": "uk",
+      "expected": "INVERSE_OPERATION",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "У тебе рівняння $7x = 35$. Що треба зробити з обома частинами рівняння, щоб отримати сам $x$, а не $245$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут спрацювало правило оберненої дії: щоб позбутися множника, треба ділити, а не множити. Наприклад, у рівнянні $2x = 6$ ми ділимо обидві частини на $2$. Що треба зробити з рівнянням $7x = 35$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб знайти $x$, треба обидві частини рівняння поділити на коефіцієнт біля $x$, тобто на $7$. Запиши правильну дію для рівняння $7x = 35$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied the coefficient 7 by 35 instead of dividing by 7, treating the coefficient as a multiplier to move to the other side."
+    },
+    {
+      "id": "one-1",
+      "locale": "en",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ONE_SIDE_ONLY",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at what happened to each term on both sides when you went from $2x + 6 = 10$ to $x + 6 = 5$. Did you divide every term on the left side by $2$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When we divide an equation by a number, we must apply the division to every term on both sides, following the division property of equality. For example, if we divide $4 + 8 = 12$ by $2$, every single term becomes $2 + 4 = 6$. What does this mean for $2x + 6 = 10$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the division property of equality, dividing every term by $2$ gives $\\frac{2x}{2} + \\frac{6}{2} = \\frac{10}{2}$, which simplifies to $x + 3 = 5$. Can you continue from this correct equation?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student halved the term 2x to x and the constant 10 to 5, but forgot to apply the division by 2 to the constant 6."
+    },
+    {
+      "id": "one-2",
+      "locale": "uk",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "INVERSE_OPERATION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Що сталося з числом $12$ у лівій частині рівняння $x + 12 = 19$? Яку дію треба виконати з обома частинами, щоб залишити $$x$$ самостійно?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Рівняння — це рівність, і якщо ми прибираємо число з одного боку, то маємо виконати обернену дію з обома частинами за законом збереження рівності. Наприклад, у рівності $a + 5 = 8$ ми віднімаємо $5$ від обох частин, а не просто стираємо її. Що треба зробити з числом $12$ у нашому рівнянні?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб позбутися $12$ у лівій частині, треба відняти $12$ від обох частин за законом збереження рівності: $x + 12 - 12 = 19 - 12$. Запиши правильний рядок.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student dropped the constant 12 from the left side without applying the inverse operation to both sides."
+    },
+    {
+      "id": "one-3",
+      "locale": "en",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ONE_SIDE_ONLY",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the right side of your original equation, $2x + 20$. What happened to the $2x$ term in your new line?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "An equation must remain balanced like a scale. If you remove a term like $2x$ from the right side of $5 + 2 = 2 + 5$, what must you do to the left side to keep it equal?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To remove $2x$ from the right side, we must subtract $2x$ from both sides, giving $4x - 2x + 8 = 20$. Can you simplify $4x - 2x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student dropped the term 2x from the right side of the equation without performing a balancing operation on the left side."
+    },
+    {
+      "id": "one-4",
+      "locale": "uk",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Ти поділив обидві частини рівняння на $3$, але що сталося з числом $9$ у лівій частині?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут порушено закон рівності: застосовуючи дію до однієї частини рівняння, ми зобов'язані поділити кожен складник. Наприклад, у виразі $4x + 8 = 12$ при діленні на $2$ ми ділимо і $4x$, і $8$, і $12$. Що станеться з дев'яткою в нашому рівнянні?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Якщо поділити кожен складник рівняння $6x - 9 = 15$ на $3$, отримаємо правильний запис: $2x - 3 = 5$. Запиши цей крок і подумай, що робити далі.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student divided both sides of the equation by 3 but made a calculation error, dividing 6x by 3 to get 2x, 9 by 3 to get 9 (failing to divide), and 15 by 3 to get 5."
+    },
+    {
+      "id": "one-5",
+      "locale": "en",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ONE_SIDE_ONLY",
+      "hints": [
+        {
+          "level": 1,
+          "message": "You multiplied the right side by $2$ to get $14$, but what happened to the $+ 3$ on the left side?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When we apply the multiplication property of equality, every term on both sides must be multiplied by $2$. For example, if $x/2 + 1 = 3$, multiplying both sides by $2$ gives $x + 2 = 6$. Can you apply this to every term in your equation?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Multiplying every term by $2$ gives $\\frac{x}{2} \\cdot 2 + 3 \\cdot 2 = 7 \\cdot 2$, which simplifies to $x + 6 = 14$. Can you solve this new equation for $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied the left side by 2 to clear the fraction but forgot to multiply the constant term 3 by 2, while correctly multiplying the right side 7 by 2."
+    },
+    {
+      "id": "one-6",
+      "locale": "uk",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "ONE_SIDE_ONLY",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Порівняй ліву частину рівняння $5x + 10 = 3x + 20$ із твоїм новим рядком: куди поділося число $10$ з лівого боку і чи зробив ти ту саму дію з правим боком?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Рівняння — це рівність, як терези. За правилом збереження рівності, якщо віднімаєш число від однієї частини, мусиш відняти його і від іншої. Наприклад, якщо з $7 = 7$ прибрати $2$ зліва, вийде $5 = 7$, що невірно — треба і справа відняти $2$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб зберегти рівність, треба відняти $10$ від обох частин: $5x + 10 - 10 = 3x + 20 - 10$. Запиши правильний рядок після спрощення.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 10 from the left side to eliminate it, but failed to subtract 10 from the right side as well."
+    },
+    {
+      "id": "one-7",
+      "locale": "en",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the left side where you went from $3x$ to $2x$, while the right side kept $x$. What happens if you subtract $x$ from both sides of $3x = 12 + x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We need to maintain equality using the addition property of equality. For example, if $5x = 10 + 2x$, what must we subtract from both sides to keep the equation balanced?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To isolate the variable terms, we subtract $x$ from both sides of $3x = 12 + x$, which gives $2x = 12$. Now, what value of $x$ satisfies this new equation?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 1x from 3x incorrectly, resulting in 2x instead of evaluating the change on both sides using the inverse operation."
+    },
+    {
+      "id": "one-8",
+      "locale": "uk",
+      "expected": "ONE_SIDE_ONLY",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Дивіться на ліву частину: $4x - 4$. Чи можна об'єднати член із $х$ та звичайне число в один вираз?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Доданки $4x$ і $-4$ є різними типами, тому ми не можемо їх об'єднати. Подібно до того, як у виразі $5x - 3$ ми не можемо відняти $3$ від $5x$, бо вони не подібні. Що можна зробити з доданком із $x$, щоб зібрати всі $x$ в одному боці?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Перенесемо $2x$ у ліву частину за правилом перенесення доданків із протилежним знаком: $4x - 2x - 4 = 6$. Запиши цей крок і спрости.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student attempted to combine terms within the left side incorrectly, reducing 4x - 4 to 2x - 2 by subtracting 2x from 4x and 2 from 4."
+    },
+    {
+      "id": "arith-1",
+      "locale": "en",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check the arithmetic when isolating $x$ in $x + 12 = 19$. What is $19 - 12$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When isolating a variable using the inverse operation of addition, we must subtract the same value from both sides. If we have $y + 3 = 5$, what do we subtract from $5$ to find $y$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Subtracting $12$ from both sides gives $x = 19 - 12$, because subtraction undoes addition. What is $19 - 12$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when subtracting 12 from 19, calculating 19 minus 12 as 8 instead of 7."
+    },
+    {
+      "id": "arith-2",
+      "locale": "uk",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на рівняння $5x = 35$. Яку операцію треба застосувати до обох частин, щоб знайти $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Щоб знайти невідомий множник, треба добуток поділити на відомий множник. Наприклад, якщо $2x = 10$, то $x = 10 : 2$. Застосуй це правило до свого рівняння.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Поділи $35$ на $5$ за правилом знаходження невідомого множника: $x = 35 : 5$. Запиши правильне значення $x$.",
+          "checks": {
+            "revealsAnswer": true,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when dividing 35 by 5, or confused multiplication with subtraction."
+    },
+    {
+      "id": "arith-3",
+      "locale": "en",
+      "expected": "ARITHMETIC",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at what happened to the $+ 17$ on the left side when moving to the next line. What does the balance of the equation require you to do to both sides?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When we apply the addition or subtraction property of equality, whatever we do to one side, we must do to the other. For example, if $x + 3 = 7$, subtracting $3$ gives $x = 7 - 3$. How does this apply to $2x + 17 = 41$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To isolate the term with $x$, we subtract $17$ from both sides using the subtraction property of equality, giving $2x = 41 - 17$. What is $41 - 17$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student subtracted 17 from the right side to get 34, but forgot to subtract 17 from the left side, or incorrectly transferred 17 without properly balancing the equation."
+    },
+    {
+      "id": "arith-4",
+      "locale": "uk",
+      "expected": "ARITHMETIC",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Ти переніс $-9$ у праву частину, але що сталося з його знаком? Перевір цю дію.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Коли переносимо доданки через знак рівності, діє правило знаків: при переході через « дорівнює» знак міняється на протилежний. Наприклад, у рівнянні $x - 3 = 5$ при перенесенні $-3$ отримуємо $x = 5 + 3$. Яким має бути знак дев'ятки у твоєму рівнянні?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Коли переносимо $-9$ у праву частину, воно стає додатним, тому маємо $4x = 27 + 9$. Знайди тепер суму у правій частині.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student moved the term -9 to the right side without changing its sign from negative to positive."
+    },
+    {
+      "id": "arith-5",
+      "locale": "en",
+      "expected": "ARITHMETIC",
+      "predicted": "DISTRIBUTION",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Check how you expanded the left side of $6(x - 2) = 30$. What is $6 \\times (-2)$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When we remove parentheses using the distributive law, we multiply the outside factor by every term inside. For example, $3(x - 4) = 3x - 12$. What should $-2$ multiplied by $6$ be?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "By the distributive law, multiplying $6$ by $-2$ gives $-12$, so the correct expansion is $6x - 12 = 30$. Can you write this correctly and continue?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student multiplied 6 by $x$ but incorrectly multiplied 6 by $-2$ to get $-14$ instead of $-12$, showing an arithmetic slip during the distribution of the bracket."
+    },
+    {
+      "id": "arith-6",
+      "locale": "uk",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "У нас є рівність $28 = 4x$. Подумай, як правильно знайти $x$, якщо $4$ помножити на $x$ дає $28$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Тут спрацювало правило оберненої дії: щоб знайти невідомий множник, треба добуток поділити на відомий. Наприклад, якщо $3x = 12$, то смужка $12$ ділиться на $3$ на рівні частини.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Поділи $28$ на $4$ за правилом знаходження невідомого множника: $x = 28 \\div 4$. Запиши правильне значення $x$.",
+          "checks": {
+            "revealsAnswer": true,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student divided 28 by 4 incorrectly, obtaining 8 instead of 7."
+    },
+    {
+      "id": "arith-7",
+      "locale": "en",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Let us check $9 \\times 7$. Does it equal $54$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "When we divide to isolate $x$, we must use the inverse operation correctly. For example, if $3x = 12$, what does $x$ equal?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "To isolate $x$ in $9x = 54$, we divide both sides by $9$, since $9 \times 6 = 54$. What should $x$ be?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": false,
+              "newLines": 0
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": false
+          }
+        }
+      ],
+      "misconception": "The student made an arithmetic error when dividing 54 by 9, incorrectly calculating it as 7 instead of 6."
+    },
+    {
+      "id": "arith-8",
+      "locale": "uk",
+      "expected": "ARITHMETIC",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "У цьому кроці є неточність. Перевір ще раз обчислення: скільки буде $48 + 23$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Щоб знайти невідоме зменшуване, треба до різниці додати від'ємник за правилом оберненої дії. Наприклад, якщо $x - 2 = 5$, то $x = 5 + 2$. Перевір свої обчислення для $48 + 23$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "За правилом, $x = 48 + 23$. Додай числа правильно: скільки буде $48 + 23$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": true,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student added $23$ to $48$ instead of $48 + 23$, but made an arithmetic slip calculating $48 + 23$ as $61$ instead of $71$."
+    },
+    {
+      "id": "other-1",
+      "locale": "en",
+      "expected": "OTHER",
+      "predicted": "ARITHMETIC",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look closely at the number on the far right of your equation. How did $19$ become $91$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We must follow the rule of copying numbers accurately. If you write $25$ as $52$, you change the value entirely. Look at the last term on your right side.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Let us copy the right-hand side accurately from the original equation as $19$ instead of $91$. Can you rewrite the equation correctly with this term?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student copied the number 19 from the right side as 91, representing a transposition of digits rather than a valid algebraic transformation."
+    },
+    {
+      "id": "other-2",
+      "locale": "uk",
+      "expected": "OTHER",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на ліву частину рівняння: $4x + 7$. Чи можна додавати числа з буквою та без букви?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Додавати можна лише подібні доданки, тобто ті, що мають однакову буквну частину. Наприклад, у виразі $3x + 5$ ми не можемо додати $3$ і $5$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Додавати $4x$ і $7$ не можна, бо це не подібні доданки. Запиши початкове рівняння $4x + 7 = 31$ і подумай, як позбутися числа $7$ у лівій частині.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student combined the coefficient 4 and the constant 7 into 7x + 4, mistakenly treating them as like terms."
+    },
+    {
+      "id": "other-3",
+      "locale": "en",
+      "expected": "OTHER",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the left side: $3x + 4$. Can you add a term with $x$ and a plain number like $4$ into a single term?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We can only combine like terms that share the exact same variable part. For example, $2a$ and $3$ cannot be added together to make $5a$, just like $2$ apples and $3$ oranges.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Since $3x$ and $4$ are not like terms, we cannot combine them, so the left side remains $3x + 4 = 19$. What should we do to both sides to isolate the term with $x$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": false,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student combined the x-term $3x$ and the constant $4$ into $7$, treating them as like terms."
+    },
+    {
+      "id": "other-4",
+      "locale": "uk",
+      "expected": "OTHER",
+      "predicted": "SIGN_TRANSFER",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Поглянь уважно на число $-3$ у правій частині рівняння: що з ним сталося під час переходу до твого рядка?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Коли ми переносимо доданок через знак рівності або залишаємо його з іншим знаком, діє правило збереження знака. Наприклад, у рівнянні $5 - 2 = 3$ число $-2$ не стає $+2$, якщо ми його не переносимо правильно. Що відбувається зі знаком $-3$, коли ти змінюєш його положення?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Коли ми переносимо $-3$ у ліву частину або залишаємо на місці, знак змінюється на протилежний згідно з правилом перенесення доданка: $x - 4x = -3 - 9$. Запиши правильний рядок і продовж розв'язання.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student changed the minus sign of the term -3 to a plus sign when considering it or moving it, likely due to a careless sign error."
+    },
+    {
+      "id": "other-5",
+      "locale": "en",
+      "expected": "OTHER",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Look at the right side of your equation: $3x + 6$. Can an $x$-term and a constant number be combined like that?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "We can only combine like terms that contain the same variable part. For example, $2x + 3$ cannot be added to make $5x$ because $3$ has no $x$.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Since $3x$ and $6$ are unlike terms, we leave them separate as $3x + 6$. Can you rewrite the equation correctly and subtract $3x$ from both sides?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "en",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 0
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student combined the unlike terms 3x and 6 on the right-hand side into 6x by treating the constant as an x-term."
+    },
+    {
+      "id": "other-6",
+      "locale": "uk",
+      "expected": "OTHER",
+      "predicted": "COMBINING_LIKE_TERMS",
+      "hints": [
+        {
+          "level": 1,
+          "message": "Подивись уважно на ліву частину: чи можна додати числа з $x$ до звичайних чисел $9$?",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "question": true,
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 2,
+          "message": "Додавати можна лише подібні доданки. Наприклад, вираз $3x + 2$ не можна спростити, бо $3x$ і $2$ — це різні типи чисел.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "latexIntact": true
+          }
+        },
+        {
+          "level": 3,
+          "message": "Щоб зібрати всі члени з $x$ в одному місці, перенесемо $2x$ у праву частину з протилежним знаком за правилом транспозиції: $9 = 5x - 2x$. Запиши, що вийде в правій частині після цього спрощення.",
+          "checks": {
+            "revealsAnswer": false,
+            "language": "uk",
+            "correctedStep": {
+              "shows": true,
+              "newLines": 1
+            },
+            "finalStep": false,
+            "namesOperation": true,
+            "latexIntact": true
+          }
+        }
+      ],
+      "misconception": "The student attempted to combine the variable term 2x with the constant 9 on the left side, and dropped the variable x entirely."
+    }
+  ],
+  "calls": [
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1073,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1415,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 637,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1632,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 816,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 955,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1162,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 956,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 920,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 797,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1545,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 937,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 682,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 926,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 916,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 814,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 986,
+          "reason": "provider_error",
+          "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 252,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 983,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1694,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 209,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1204,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1737,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 206,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1798,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 211,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1798,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 189,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 909,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1746,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 229,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1694,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 202,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1727,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 216,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 932,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 933,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1149,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1562,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 799,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 941,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1029,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1107,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 816,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 770,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 849,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 865,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1067,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1274,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 676,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 827,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 906,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1690,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 315,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 901,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1721,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 212,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1824,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 289,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1706,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 253,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1784,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 795,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 736,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 529,
+          "reason": "provider_error",
+          "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 593,
+          "reason": "provider_error",
+          "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 813,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 756,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1144,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1090,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 687,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1015,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1729,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 206,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1834,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 225,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1813,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 212,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 862,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1002,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 929,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 843,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 870,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 909,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1536,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1757,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 186,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1768,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 226,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1809,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 214,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1805,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 249,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1408,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1738,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 231,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1720,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 329,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1717,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 223,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1679,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 236,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1197,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1075,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1051,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 946,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1000,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 878,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 731,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 670,
+          "reason": "provider_error",
+          "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 985,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1055,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1014,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 926,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 924,
+          "reason": "provider_error",
+          "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 869,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1688,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 200,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1288,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 894,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1122,
+          "reason": "provider_error",
+          "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 196,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1694,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 189,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1069,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 896,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1742,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 215,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 966,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 889,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 715,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 668,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1003,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 836,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 864,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 883,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 695,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1139,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 974,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 844,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 737,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 787,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 943,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1713,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 207,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1019,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1703,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 201,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1820,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 278,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1797,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 223,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1784,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 863,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 842,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 788,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 932,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 663,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 869,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 864,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 695,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 954,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 753,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1179,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1816,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1055,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 959,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 937,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1675,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 813,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1737,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 206,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1814,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 191,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1707,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 217,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1265,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 895,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1003,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 914,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 990,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 948,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 900,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1002,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 877,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 736,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1024,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 856,
+          "reason": "provider_error",
+          "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 668,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 739,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 974,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1026,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 810,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1726,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 202,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1837,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 213,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1688,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 216,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1171,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 691,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 803,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 808,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 924,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 901,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1579,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 916,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 694,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1274,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1044,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 818,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 934,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 866,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 796,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1300,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1727,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 216,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1834,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 180,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1764,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 226,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1840,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 216,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1813,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 201,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1820,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 195,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1680,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 193,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1714,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 731,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1720,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 713,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1675,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 223,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1861,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 684,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1714,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 216,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1607,
+          "reason": "provider_error",
+          "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 719,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 862,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 834,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 646,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 748,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 742,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1149,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 932,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1373,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1189,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 812,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 721,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 835,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1038,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 833,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1684,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 200,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1779,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 775,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1711,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 219,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1761,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 245,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1817,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 191,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1736,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 246,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1256,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1670,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "latencyMs": 732,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1744,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 242,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1687,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 277,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1320,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 847,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 977,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1731,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 215,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1764,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 199,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": false,
+          "latencyMs": 1731,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 2,
+          "ok": false,
+          "latencyMs": 207,
+          "reason": "rate_limited",
+          "error": "The model provider is rate limiting requests: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: ge"
+        },
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1096,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1293,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 843,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "caseId": "inv-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1212,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "caseId": "sign-5",
+      "purpose": "diagnose",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1593,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "caseId": "inv-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1059,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "caseId": "sign-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 711,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "caseId": "inv-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1199,
+          "reason": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "caseId": "sign-5",
+      "purpose": "hint",
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "latencyMs": 1181,
+          "reason": null,
+          "error": null
+        }
+      ]
+    }
+  ]
+}
