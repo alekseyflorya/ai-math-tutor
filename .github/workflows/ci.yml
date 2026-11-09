@@ -108,21 +108,47 @@ jobs:
           script: |
             set -e
             cd /opt/ai-math-tutor
+            dc() { docker compose -f docker-compose.prod.yml "$@"; }
+            healthy() {
+              for i in $(seq 1 30); do
+                if dc exec -T api node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+                  return 0
+                fi
+                sleep 2
+              done
+              return 1
+            }
+            # The tag running now, read before pulling: the rollback target. Empty on the first deploy.
+            PREV=$(docker inspect --format '{{.Config.Image}}' "$(dc ps -q api)" 2>/dev/null | cut -d: -f2 || true)
             # The job token can read this repo's packages, so images may stay private.
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             export IMAGE_TAG=${{ github.sha }}
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            dc pull
+            dc up -d --remove-orphans
+            if healthy; then
+              echo "API healthy on $IMAGE_TAG"
+              docker logout ghcr.io
+              docker image prune -f # only now: the previous image stays until the new one is proven
+              exit 0
+            fi
+            dc logs --tail=80 api
+            if [ -z "$PREV" ]; then
+              echo "::error::Deploy of $IMAGE_TAG is unhealthy and there is no previous version to roll back to"
+              docker logout ghcr.io
+              exit 1
+            fi
+            echo "::error::Deploy of $IMAGE_TAG is unhealthy; rolling back to $PREV"
+            export IMAGE_TAG=$PREV
+            dc pull
+            dc up -d --remove-orphans
+            if healthy; then
+              echo "Rolled back to $PREV; it is healthy"
+            else
+              echo "::error::The rollback to $PREV is unhealthy too"
+              dc logs --tail=80 api
+            fi
             docker logout ghcr.io
-            docker image prune -f
-            for i in $(seq 1 30); do
-              if docker compose -f docker-compose.prod.yml exec -T api node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
-                echo "API healthy"; exit 0
-              fi
-              sleep 2
-            done
-            docker compose -f docker-compose.prod.yml logs --tail=80 api
-            exit 1
+            exit 1 # a rollback is still a failed deploy
       - name: Skipped
         if: env.HAS_SSH != 'true'
         run: echo "SSH secrets are not configured yet; images are pushed, deploy skipped."
