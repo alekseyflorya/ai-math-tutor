@@ -181,5 +181,5 @@ zod · Gemini · Docker, Caddy, GitHub Actions.
 
 ## License
 
-© 2026 alekseyflorya. All rights reserved. The source is published for review and as a portfolio
+© 2026 Oleksii Floria. All rights reserved. The source is published for review and as a portfolio
 piece; it may not be copied, modified or used without written permission.
