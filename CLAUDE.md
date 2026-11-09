@@ -11,7 +11,8 @@ verifies understanding with an LLM-generated follow-up problem that the math eng
 ## Layout
 
 - `packages/shared` — **math engine** (safe parser → exact `a·x + b` form, solution-set step
-  check, input normalisation) and **API contracts** (zod schemas + view types). Used by both apps.
+  check, input normalisation, `judgeLine`: the verdict on a sent line) and **API contracts**
+  (zod schemas + view types). Used by both apps.
   Must be built (`pnpm --filter @tutor/shared build`) before the api/web typecheck or run.
 - `apps/api` — NestJS 11 + Drizzle/Postgres.
   - Feature modules: `TutorModule`, `ProblemsModule`, `ProgressModule`; `AppModule` only assembles them.
@@ -50,6 +51,11 @@ docker compose up --build                    # full stack on http://localhost:80
 
 - **Correctness is decided by the math engine, never by the LLM.** The LLM only diagnoses why
   and writes teaching messages. Do not add LLM-based grading.
+- The verdict on a line comes from `judgeLine` (`@tutor/shared`): the server acts on it and the
+  browser shows it before the tutor answers. Change routing/verdict rules there, not in
+  `TutorService` or the web app.
+- Schemas for model output put `message` last (the model decides first); the Gemini provider adds
+  `propertyOrdering` from the key order.
 - The tutor never reveals the final answer, and neither does the API: nothing the root can be read
   from (e.g. `solutionLatex`) before the student reaches it.
 - Migrations: a new enum value must not be used in the same migration batch that adds it. Hint level 3 shows the corrected _current_ step only;

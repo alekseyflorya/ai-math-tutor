@@ -34,14 +34,15 @@ export type CheckDiagnosis = z.infer<typeof CheckDiagnosisSchema>;
 export const FeedbackSchema = z.object({ message });
 export type Feedback = z.infer<typeof FeedbackSchema>;
 
+/** `message` last: the model decides first, then writes (as in DiagnosisSchema). */
 export const ChatReplySchema = z.object({
-  message,
   understood: z
     .boolean()
     .describe('True if the student’s words show they now understand the rule they broke'),
   escalate: z
     .boolean()
     .describe('True if this reply gives the NEXT hint level because the student is still stuck'),
+  message,
 });
 export type ChatReply = z.infer<typeof ChatReplySchema>;
 

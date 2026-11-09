@@ -3,4 +3,5 @@ export * from './math/equation';
 export * from './math/step-check';
 export * from './math/latex';
 export * from './math/substitution';
+export * from './math/verdict';
 export * from './schemas';

@@ -5,6 +5,7 @@ import {
   durationMs,
   GeminiProvider,
   msUntilPacificMidnight,
+  withPropertyOrdering,
   type GenerateContentClient,
 } from './gemini.provider';
 
@@ -157,5 +158,23 @@ describe('cooldownFrom', () => {
   it('knows when the Pacific day ends', () => {
     expect(msUntilPacificMidnight(now)).toBe(12 * 3600_000);
     expect(msUntilPacificMidnight(Date.parse('2026-07-01T06:59:00Z'))).toBe(60_000); // PDT
+  });
+});
+
+describe('field order', () => {
+  it('asks Gemini to write the fields in the order of the schema, message last', () => {
+    const schema = z.toJSONSchema(
+      z.object({
+        understood: z.boolean(),
+        nested: z.object({ b: z.string(), a: z.string() }),
+        message: z.string(),
+      }),
+    );
+    const ordered = withPropertyOrdering(schema) as {
+      propertyOrdering: string[];
+      properties: { nested: { propertyOrdering: string[] } };
+    };
+    expect(ordered.propertyOrdering).toEqual(['understood', 'nested', 'message']);
+    expect(ordered.properties.nested.propertyOrdering).toEqual(['b', 'a']);
   });
 });

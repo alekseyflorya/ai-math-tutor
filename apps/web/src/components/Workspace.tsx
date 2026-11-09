@@ -8,6 +8,7 @@ import { useI18n } from '../i18n/i18n';
 import { api } from '../lib/api';
 import { errorText } from '../lib/errors';
 import { useAttempt, useAttemptUpdate, useStartAttempt } from '../lib/hooks';
+import { agreesWithServer, provisionalLine, type ProvisionalLine } from '../lib/verdict';
 import { Chat } from './Chat';
 import { Composer } from './Composer';
 import { Tex } from './MathText';
@@ -19,6 +20,8 @@ export function Workspace({ attemptId }: { attemptId: string }) {
   const { data: attempt, isLoading, error } = useAttempt(attemptId);
   const applyUpdate = useAttemptUpdate(attemptId);
   const [pending, setPending] = useState<MessageView | null>(null);
+  // The engine's verdict on the line just sent, shown before the tutor answers.
+  const [provisional, setProvisional] = useState<ProvisionalLine | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
 
   const turn = useMutation({
@@ -32,6 +35,8 @@ export function Workspace({ attemptId }: { attemptId: string }) {
       setSendError(null);
       // Show the student's line immediately; the tutor's reply follows.
       if (arg.kind === 'send') {
+        const line = attempt ? provisionalLine(attempt, arg.text) : null;
+        setProvisional(line);
         setPending({
           id: 'pending',
           role: 'STUDENT',
@@ -40,11 +45,23 @@ export function Workspace({ attemptId }: { attemptId: string }) {
           createdAt: new Date().toISOString(),
           meta: null,
         });
+        return { before: attempt, line };
       }
     },
-    onSuccess: (a) => applyUpdate(a),
+    onSuccess: (a, _arg, context) => {
+      // The server runs the same engine: a different verdict is a bug, and the server wins.
+      if (context?.before && !agreesWithServer(context.line, context.before, a)) {
+        if (import.meta.env.DEV) {
+          console.warn('The verdict in the browser differs from the server', context.line, a.steps);
+        }
+      }
+      applyUpdate(a);
+    },
     onError: (e) => setSendError(errorText(e, t)),
-    onSettled: () => setPending(null),
+    onSettled: () => {
+      setPending(null);
+      setProvisional(null);
+    },
   });
 
   if (isLoading) return <div className="h-[32rem] animate-pulse rounded-2xl bg-paper-2" />;
@@ -67,7 +84,7 @@ export function Workspace({ attemptId }: { attemptId: string }) {
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
       <div className="min-w-0 space-y-4">
         <ProblemHeader attempt={attempt} />
-        <Notebook attempt={attempt} />
+        <Notebook attempt={attempt} provisional={provisional} />
         {solved && <SolvedCard attempt={attempt} onNext={(id) => void navigate(`/learn/${id}`)} />}
       </div>
 
@@ -128,7 +145,13 @@ export function Workspace({ attemptId }: { attemptId: string }) {
         </div>
       </div>
       <span className="sr-only" aria-live="polite">
-        {turn.isPending ? t.thinking : ''}
+        {provisional?.isCorrect === true
+          ? t.verdictCorrect
+          : provisional?.isCorrect === false
+            ? t.verdictWrong
+            : turn.isPending
+              ? t.thinking
+              : ''}
       </span>
     </div>
   );

@@ -6,14 +6,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  checkStep,
-  checkSubstitution,
-  classifyInput,
   ERROR_TO_SKILL,
+  judgeLine,
   MathInputError,
-  normalizeMathInput,
   parseEquation,
+  sameText,
   solve,
+  type LineContext,
+  type LineVerdict,
   type AttemptSummary,
   type AttemptView,
   type ErrorType,
@@ -25,7 +25,6 @@ import {
   type Skill,
   type StartAttemptInput,
   type StepCheckResult,
-  type SubstitutionCheck,
 } from '@tutor/shared';
 import type { Attempt, Mistake } from '../db/schema';
 import { LlmService } from '../llm/llm.service';
@@ -170,10 +169,10 @@ export class TutorService {
   async submit(userId: string, attemptId: string, text: string): Promise<AttemptView> {
     return this.lock.run(userId, attemptId, async () => {
       const turn = await this.loadTurn(userId, attemptId);
-      const route = classifyInput(text, { mode: turn.attempt.mode });
-      if (route === 'message') await this.handleChat(turn, text);
-      else if (turn.attempt.mode === 'CHECKING') await this.handleCheckLine(turn, text);
-      else await this.handleStep(turn, text);
+      // The browser computes the same verdict to show it at once (judgeLine in @tutor/shared).
+      const verdict = judgeLine(text, lineContext(turn));
+      if (verdict.kind === 'message') await this.handleChat(turn, text);
+      else await this.handleLine(turn, text, verdict);
       await this.commit(turn);
       return this.getView(userId, attemptId);
     });
@@ -240,38 +239,51 @@ export class TutorService {
 
   // --- Turn handlers ---------------------------------------------------------
 
-  private async handleStep(turn: Turn, text: string) {
+  /** A line of the solution or of the check, already judged by the engine. */
+  private async handleLine(
+    turn: Turn,
+    text: string,
+    verdict: Exclude<LineVerdict, { kind: 'message' }>,
+  ) {
     const { attempt, locale } = turn;
     this.say(turn, 'STUDENT', 'STEP', text);
 
-    // Re-typing the last correct line is "equivalent" but proves nothing; after a mistake it
-    // would otherwise count as the correction.
-    if (sameText(text, attempt.currentLine)) {
-      this.say(
-        turn,
-        'TUTOR',
-        'NOTICE',
-        notices.sameLine(locale, Boolean(activeMistake(turn))),
-        meta.notice({ repeatedLine: true }),
-      );
-      return;
-    }
-
-    let check: StepCheckResult;
-    try {
-      check = checkStep(attempt.currentLine, text, attempt.variable);
-    } catch (e) {
-      if (e instanceof MathInputError) {
+    switch (verdict.kind) {
+      case 'repeated':
         this.say(
           turn,
           'TUTOR',
           'NOTICE',
-          notices.parseError(locale, e.code),
-          meta.notice({ inputError: e.code }),
+          notices.sameLine(locale, Boolean(activeMistake(turn))),
+          meta.notice({ repeatedLine: true }),
+        );
+        return;
+      case 'unreadable':
+        this.say(
+          turn,
+          'TUTOR',
+          'NOTICE',
+          notices.parseError(locale, verdict.code),
+          meta.notice({ inputError: verdict.code }),
+        );
+        return;
+      case 'not_check': {
+        const { solutionLatex, equationLatex } = answerOf(attempt);
+        this.say(
+          turn,
+          'TUTOR',
+          'NOTICE',
+          verdict.reason === 'not_numeric'
+            ? notices.checkNotNumeric(locale, solutionLatex)
+            : notices.checkNotSubstitution(locale, solutionLatex, equationLatex),
+          meta.notice({ checkError: verdict.reason }),
         );
         return;
       }
-      throw e;
+      case 'check':
+        return this.onCheckLine(turn, text, verdict);
+      case 'step':
+        break;
     }
 
     const step = {
@@ -279,16 +291,16 @@ export class TutorService {
       attemptId: attempt.id,
       index: turn.steps.length,
       input: text,
-      latex: check.current.latex,
-      isCorrect: check.equivalent,
+      latex: verdict.latex,
+      isCorrect: verdict.isCorrect,
       phase: 'SOLUTION' as const,
       createdAt: new Date(),
     };
     turn.steps.push(step);
     this.later(turn, (r) => r.insertStep(step));
 
-    if (check.equivalent) await this.onCorrectStep(turn, text, check);
-    else await this.onWrongStep(turn, text, check);
+    if (verdict.isCorrect) await this.onCorrectStep(turn, text, verdict.result);
+    else await this.onWrongStep(turn, text, verdict.result);
   }
 
   private async onCorrectStep(turn: Turn, text: string, check: StepCheckResult) {
@@ -388,68 +400,29 @@ export class TutorService {
   }
 
   /** A line of the check by substitution. Right or wrong is the engine's call alone. */
-  private async handleCheckLine(turn: Turn, text: string) {
+  /** A line of the check by substitution (CHECKING), right or with a slip. */
+  private async onCheckLine(
+    turn: Turn,
+    text: string,
+    verdict: Extract<LineVerdict, { kind: 'check' }>,
+  ) {
     const { attempt, locale } = turn;
-    this.say(turn, 'STUDENT', 'STEP', text);
-    const lastRight = turn.steps.filter((s) => s.phase === 'CHECK' && s.isCorrect).at(-1);
-    const { solutionLatex, equationLatex } = answerOf(attempt);
-
-    if (lastRight && sameText(text, lastRight.input)) {
-      this.say(
-        turn,
-        'TUTOR',
-        'NOTICE',
-        notices.sameLine(locale, Boolean(activeMistake(turn))),
-        meta.notice({ repeatedLine: true }),
-      );
-      return;
-    }
-
-    let result: SubstitutionCheck;
-    try {
-      result = checkSubstitution(attempt.equation, text, { afterCheckLine: Boolean(lastRight) });
-    } catch (e) {
-      if (e instanceof MathInputError) {
-        this.say(
-          turn,
-          'TUTOR',
-          'NOTICE',
-          notices.parseError(locale, e.code),
-          meta.notice({ inputError: e.code }),
-        );
-        return;
-      }
-      throw e;
-    }
-
-    const { verdict } = result;
-    if (verdict.kind === 'not_numeric' || verdict.kind === 'not_substitution') {
-      this.say(
-        turn,
-        'TUTOR',
-        'NOTICE',
-        verdict.kind === 'not_numeric'
-          ? notices.checkNotNumeric(locale, solutionLatex)
-          : notices.checkNotSubstitution(locale, solutionLatex, equationLatex),
-        meta.notice({ checkError: verdict.kind }),
-      );
-      return;
-    }
-
+    const lastRight = lastCheckLine(turn);
+    const result = verdict.result;
     const step = {
       id: randomUUID(),
       attemptId: attempt.id,
       index: turn.steps.length,
       input: text,
-      latex: parseEquation(text).latex,
-      isCorrect: verdict.kind === 'correct',
+      latex: verdict.latex,
+      isCorrect: verdict.isCorrect,
       phase: 'CHECK' as const,
       createdAt: new Date(),
     };
     turn.steps.push(step);
     this.later(turn, (r) => r.insertStep(step));
 
-    if (verdict.kind === 'arithmetic') {
+    if (result.verdict.kind === 'arithmetic') {
       return this.onCheckSlip(turn, text, result.facts, lastRight?.input ?? attempt.equation);
     }
 
@@ -461,7 +434,8 @@ export class TutorService {
       this.recordSkill(turn, ERROR_TO_SKILL[fixed.errorType], OUTCOME.CORRECTED);
       this.update(turn, { hintLevel: 0, activeMistakeId: null });
     }
-    if (verdict.done) return this.onSolved(turn, { checked: true, pendingStudentMessage: text });
+    if (result.verdict.kind === 'correct' && result.verdict.done)
+      return this.onSolved(turn, { checked: true, pendingStudentMessage: text });
     this.say(
       turn,
       'TUTOR',
@@ -774,8 +748,21 @@ export class TutorService {
   }
 }
 
-const sameText = (a: string, b: string) =>
-  normalizeMathInput(a).replace(/\s/g, '') === normalizeMathInput(b).replace(/\s/g, '');
+/** The last right line of the check, if the student has started it. */
+const lastCheckLine = (turn: Turn) =>
+  turn.steps.filter((s) => s.phase === 'CHECK' && s.isCorrect).at(-1);
+
+/** What the engine needs from the turn to judge a line (the browser builds it from the view). */
+function lineContext(turn: Turn): LineContext {
+  const { attempt } = turn;
+  return {
+    mode: attempt.mode,
+    equation: attempt.equation,
+    currentLine: attempt.currentLine,
+    variable: attempt.variable,
+    lastCheckLine: lastCheckLine(turn)?.input ?? null,
+  };
+}
 
 /** The root and the original equation, as LaTeX (only shown once the root is reached). */
 function answerOf(attempt: Attempt): { solutionLatex: string; equationLatex: string } {
