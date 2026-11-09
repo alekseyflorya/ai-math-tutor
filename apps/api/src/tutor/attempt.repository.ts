@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, desc, eq, isNull } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 import type {
   AttemptSummary,
   AttemptView,
@@ -228,6 +228,23 @@ export class AttemptRepository {
   }
 
   // --- Writes ------------------------------------------------------------------
+
+  /**
+   * Inserts an attempt unless the student already has an open one on that curriculum problem
+   * (partial unique index): then nothing is written and null comes back. A concurrent insert
+   * waits for the other transaction, so a double click cannot create two attempts.
+   */
+  async insertUnlessOpen(values: NewAttempt): Promise<Attempt | null> {
+    const [row] = await this.db
+      .insert(attempts)
+      .values(values)
+      .onConflictDoNothing({
+        target: [attempts.userId, attempts.problemId],
+        where: sql`${attempts.status} = 'IN_PROGRESS'`,
+      })
+      .returning();
+    return row ?? null;
+  }
 
   async insert(values: NewAttempt): Promise<Attempt> {
     const [row] = await this.db.insert(attempts).values(values).returning();

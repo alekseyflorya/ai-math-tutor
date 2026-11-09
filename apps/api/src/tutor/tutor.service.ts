@@ -144,19 +144,16 @@ export class TutorService {
       throw e;
     }
 
+    const values = { userId, problemId, title, equation, variable, currentLine: equation };
     const attempt = await this.repo.transaction(async (r) => {
-      const row = await r.insert({
-        userId,
-        problemId,
-        title,
-        equation,
-        variable,
-        currentLine: equation,
-      });
-      await r.say(row.id, 'TUTOR', 'GREETING', notices.greeting(locale, latex, false));
+      // On a curriculum problem a parallel request may have opened it a moment ago.
+      const row = problemId ? await r.insertUnlessOpen(values) : await r.insert(values);
+      if (row) await r.say(row.id, 'TUTOR', 'GREETING', notices.greeting(locale, latex, false));
       return row;
     });
-    return this.getView(userId, attempt.id);
+    if (attempt) return this.getView(userId, attempt.id);
+    const open = await this.repo.latestForProblem(userId, problemId!, 'IN_PROGRESS');
+    return this.getView(userId, open!);
   }
 
   async submit(userId: string, attemptId: string, text: string): Promise<AttemptView> {

@@ -12,7 +12,14 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Pool } from 'pg';
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import type { ApiErrorBody, AttemptView, ProblemView, ProgressView, UserView } from '@tutor/shared';
+import type {
+  ApiErrorBody,
+  AttemptSummary,
+  AttemptView,
+  ProblemView,
+  ProgressView,
+  UserView,
+} from '@tutor/shared';
 import { LLM_PROVIDER, type LlmProvider } from '../src/llm/llm.types';
 import { AttemptRepository } from '../src/tutor/attempt.repository';
 
@@ -248,6 +255,28 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     const next = await say(before.id, '4x + 1 = 2x + 10');
     expect(next.mode).toBe('REMEDIATION');
     expect(next.steps).toHaveLength(1);
+  });
+
+  it('opens one attempt per problem even when "start" is clicked several times at once', async () => {
+    const student = request.agent(server);
+    await student.post('/api/auth/demo').send({}).expect(200);
+    const problems = (await student.get('/api/problems').expect(200)).body as ProblemView[];
+    const featured = problems.find((p) => p.featured)!;
+
+    const started = await Promise.all(
+      Array.from({ length: 5 }, () =>
+        student.post('/api/attempts').send({ problemId: featured.id }).expect(201),
+      ),
+    );
+    const ids = new Set(started.map((r) => (r.body as AttemptView).id));
+    expect(ids.size).toBe(1);
+    const list = (await student.get('/api/attempts').expect(200)).body as AttemptSummary[];
+    expect(
+      list.filter((a) => a.equation === featured.equation && a.status === 'IN_PROGRESS'),
+    ).toHaveLength(1);
+    // Exactly one greeting: the losing requests wrote nothing.
+    const view = started[0]!.body as AttemptView;
+    expect(view.messages.filter((m) => m.kind === 'GREETING')).toHaveLength(1);
   });
 
   it('rejects overlapping turns and messages to a finished problem', async () => {
