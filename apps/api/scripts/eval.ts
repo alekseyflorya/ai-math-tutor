@@ -62,7 +62,7 @@ function makeProvider(): LlmProvider {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY is not set');
   // One model only: the retry must not fall back to another model, or we would measure a mix.
-  const model = args.model ?? env('GEMINI_MODEL', 'gemini-3.5-flash').split(',')[0]!.trim();
+  const model = args.model ?? env('GEMINI_MODEL', 'gemini-3.5-flash-lite').split(',')[0]!.trim();
   return new GeminiProvider(key, model);
 }
 

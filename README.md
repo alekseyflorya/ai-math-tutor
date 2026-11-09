@@ -270,4 +270,10 @@ Deliberate scope cuts for a three-day prototype, and what I would do next:
 - **Code structure:** `tutor.service.ts` still holds the state machine and its queries (~700
   lines, sectioned; the prompt context and the turn lock are already separate). Next split: an
   `AttemptRepository` for the queries, and Nest feature modules per domain.
-- The free Gemini tier has low rate limits; the app degrades gracefully when they are hit.
+- **Model choice and rate limits.** `GEMINI_MODEL=gemini-3.5-flash-lite,gemini-3.5-flash`: lite is
+  the primary model. It has a measured eval baseline (see above), answers in about 1 s, and its
+  free tier is far larger than flash's 20 requests per day (flash itself is not measured yet). A
+  model that answers 429 is skipped until the time the API names ("retry in 41s", or the reset of
+  a daily quota at midnight Pacific time), and the next model is tried at once. When all models
+  are cooling down, the API is not called at that turn; the student gets the usual "AI
+  unavailable" notice and the math engine keeps checking steps. The cooldown lives in process memory (per replica).

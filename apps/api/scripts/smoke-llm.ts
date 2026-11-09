@@ -30,7 +30,7 @@ const provider: LlmProvider =
       )
     : new GeminiProvider(
         process.env.GEMINI_API_KEY!,
-        process.env.GEMINI_MODEL ?? 'gemini-3.5-flash,gemini-3.5-flash-lite',
+        process.env.GEMINI_MODEL ?? 'gemini-3.5-flash-lite,gemini-3.5-flash',
       );
 
 async function run<T>(req: LlmJsonRequest<T>): Promise<T> {

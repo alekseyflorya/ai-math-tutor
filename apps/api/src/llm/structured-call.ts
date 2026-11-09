@@ -45,6 +45,7 @@ export async function callStructured<T>(
       break;
     }
     const timeoutMs = Math.min(opts.timeoutMs, left);
+    let stop = false;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     const started = Date.now();
@@ -82,7 +83,10 @@ export async function callStructured<T>(
           'rate_limited',
           `The model provider is rate limiting requests${detail ? `: ${detail}` : ''}`,
         );
-        if (attempt < MAX_ATTEMPTS) await sleep(RATE_LIMIT_BACKOFF_MS);
+        // The provider already tried every model it has and knows they are all cooling down:
+        // a retry would not even reach the API.
+        if ((err as { cooldown?: boolean }).cooldown) stop = true;
+        else if (attempt < MAX_ATTEMPTS) await sleep(RATE_LIMIT_BACKOFF_MS);
       } else {
         lastError = new LlmUnavailableError(
           'provider_error',
@@ -100,6 +104,7 @@ export async function callStructured<T>(
       reason: lastError.reason,
       error: lastError.message,
     });
+    if (stop) break;
   }
   throw lastError ?? new LlmUnavailableError('provider_error', 'Unknown LLM failure');
 }

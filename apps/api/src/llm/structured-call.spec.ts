@@ -33,4 +33,24 @@ describe('callStructured', () => {
       callStructured(provider('{"message":"hi"}'), req, { timeoutMs: 1000 }),
     ).resolves.toEqual({ message: 'hi' });
   });
+
+  it('does not retry when the provider says every model is cooling down', async () => {
+    let calls = 0;
+    const cooling: LlmProvider = {
+      name: 'fake',
+      model: 'a,b',
+      completeJson: () => {
+        calls++;
+        return Promise.reject(
+          Object.assign(new Error('retry in 30s'), { status: 429, cooldown: true }),
+        );
+      },
+    };
+    const started = Date.now();
+    await expect(callStructured(cooling, req, { timeoutMs: 1000 })).rejects.toMatchObject({
+      reason: 'rate_limited',
+    });
+    expect(calls).toBe(1);
+    expect(Date.now() - started).toBeLessThan(500); // no 1.5 s backoff
+  });
 });

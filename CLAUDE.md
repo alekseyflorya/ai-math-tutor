@@ -20,7 +20,8 @@ verifies understanding with an LLM-generated follow-up problem that the math eng
   - `src/llm/prompts.ts` — all pedagogy and prompts. `src/llm/structured-call.ts` — timeout, zod
     validation, one self-correcting retry (pure; shared with the eval). `src/llm/llm.service.ts` — quotas + logging around it.
   - `evals/` — labelled wrong-step cases, message rule checks, metrics, markdown reports (`evals/reports/`).
-  - `src/llm/providers/*` — Gemini, Anthropic, Mock (tests only; refused in production).
+  - `src/llm/providers/*` — Gemini, Anthropic, Mock (tests only; refused in production). Gemini
+    takes a model list (lite first) and skips a model after a 429 until the time the API names.
   - `src/db/schema.ts` — Drizzle schema; migrations in `drizzle/` (applied on boot).
 - `apps/web` — React 19 + Vite + Tailwind 4 + TanStack Query + KaTeX. EN/UK in `src/i18n/dict.ts`.
 - `deploy/` — Caddyfile, prod compose, VPS bootstrap script. `.github/workflows/ci.yml` — CI/CD.

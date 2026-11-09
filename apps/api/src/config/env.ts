@@ -16,7 +16,7 @@ export const EnvSchema = z
     LLM_PROVIDER: z.enum(['gemini', 'anthropic', 'mock']).default('gemini'),
     GEMINI_API_KEY: z.string().optional(),
     /** Comma-separated: the first is primary, the rest are fallbacks tried on retry. */
-    GEMINI_MODEL: z.string().default('gemini-3.5-flash,gemini-3.5-flash-lite'),
+    GEMINI_MODEL: z.string().default('gemini-3.5-flash-lite,gemini-3.5-flash'),
     ANTHROPIC_API_KEY: z.string().optional(),
     ANTHROPIC_MODEL: z.string().default('claude-haiku-5-5'),
     /** One model call (one try). */
