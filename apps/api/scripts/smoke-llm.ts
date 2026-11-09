@@ -4,10 +4,7 @@
  *
  *   pnpm smoke:llm            (reads the repo-root .env)
  */
-import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { GoogleGenAI } from '@google/genai';
-import { z } from 'zod';
 import { checkStep } from '@tutor/shared';
 import {
   diagnosePrompt,
@@ -19,15 +16,11 @@ import { DiagnosisSchema, FollowUpSchema } from '../src/llm/tutor-schemas';
 import { GeminiProvider } from '../src/llm/providers/gemini.provider';
 import { AnthropicProvider } from '../src/llm/providers/anthropic.provider';
 import type { LlmJsonRequest, LlmProvider } from '../src/llm/llm.types';
+import { callStructured } from '../src/llm/structured-call';
 import { validateFollowUp } from '../src/tutor/follow-up.service';
+import { loadRootEnv } from './load-env';
 
-const envFile = join(__dirname, '..', '..', '..', '.env');
-if (existsSync(envFile)) {
-  for (const line of readFileSync(envFile, 'utf8').split('\n')) {
-    const m = /^([A-Z0-9_]+)=(.*)$/.exec(line.trim());
-    if (m && !process.env[m[1]!]) process.env[m[1]!] = m[2];
-  }
-}
+loadRootEnv();
 
 const provider: LlmProvider =
   process.env.LLM_PROVIDER === 'anthropic'
@@ -41,19 +34,22 @@ const provider: LlmProvider =
       );
 
 async function run<T>(req: LlmJsonRequest<T>): Promise<T> {
-  const schema = z.toJSONSchema(req.schema);
-  delete (schema as Record<string, unknown>).$schema;
   const started = Date.now();
-  let raw: string;
+  let parsed: T;
   try {
-    raw = await provider.completeJson(req, schema, AbortSignal.timeout(60_000));
+    // The same validation + self-correcting retry as the API.
+    parsed = await callStructured(provider, req, {
+      timeoutMs: 60_000,
+      onAttempt: (a) => {
+        if (!a.ok) console.warn(`[${req.purpose}] attempt ${a.attempt} failed: ${a.error}`);
+      },
+    });
   } catch (e) {
     throw new Error(
       `[${req.purpose}] failed after ${Date.now() - started} ms: ${(e as Error).message}`,
       { cause: e },
     );
   }
-  const parsed = req.schema.parse(JSON.parse(raw));
   console.log(`\n[${req.purpose}] ${Date.now() - started} ms`);
   console.log(JSON.stringify(parsed, null, 2));
   return parsed;
