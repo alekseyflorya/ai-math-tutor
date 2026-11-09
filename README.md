@@ -333,7 +333,35 @@ scored with the same checks; production setup, `gemini-3.6-flash`:
   ("the coefficient $4$") counts against it.
 - **A new leak, at level 1 of the check.** Three Ukrainian hints began with "the left side is
   right: $3 \cdot 11 = 33$", computing the side for the student. The level-1 prompt did not change
-  in this fix, so this is run-to-run variance, but it is a real leak.
+  in this fix, so this is run-to-run variance, but it is a real leak. Fixed below.
+
+### A guard on hints for a slip in the check
+
+Prompts reduce leaks; they cannot rule them out. So hints on a slip in the check also pass a
+deterministic guard in the API (`src/tutor/check-hint-guard.ts`):
+
+1. **What it forbids.** The engine lists the values the hint must not state: the value both sides
+   take at the root, and the true values of both sides of the student's line. Numbers the student
+   wrote in that line are allowed, since quoting "33 = 32" gives nothing away.
+2. **One retry.** If the model's message states one of those values, the model is asked once more,
+   and the request names the violation.
+3. **A fixed hint.** If the retry leaks too (or fails), a fixed hint for that level is shown
+   instead (`notices.checkHintTemplate`, en/uk, no numbers).
+
+The guard covers the diagnosis of the slip and the "Hint" button. The message meta records
+`guard: retried | template`, and the API logs it. Level 1 of the check's ladder now only asks
+("never say which side is right with a number").
+
+The eval runs the 12 check cases through the same guard (`pnpm eval --only CHECK`).
+Production setup, `gemini-3.6-flash`:
+
+| Run                                                 | L1 is a question | No value of a side | No computed line | L3 = operations, no results | L2 on other numbers | Guard: retried / template | No leak after the guard |
+| --------------------------------------------------- | ---------------- | ------------------ | ---------------- | --------------------------- | ------------------- | ------------------------- | ----------------------- |
+| Before (`2026-11-09-gemini-3.6-flash-2`, re-scored) | 100%             | 91.7% (33/36)      | 91.7% (33/36)    | 100%                        | 66.7% (8/12)        | —                         | —                       |
+| After (`2026-11-10-gemini-3.6-flash`)               | 100%             | 100% (36/36)       | 100% (36/36)     | 100%                        | 75.0% (9/12)        | 1 / 0 of 36               | 100% (36/36)            |
+
+The level-1 fix removed the three leaks. The guard caught one more, a level-2 example ending in
+the value of the sides (40), and the retry was clean. No fixed hint was needed in this run.
 
 `pnpm eval` is not part of CI: it needs an API key and spends quota (one run is about 200
 requests). By default it measures the primary model of `GEMINI_MODEL_DIAGNOSIS`, the one that
