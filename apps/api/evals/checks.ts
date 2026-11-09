@@ -293,12 +293,15 @@ export function computedCheckLines(
 const NUM = /\d+(?:[.,]\d+)?/g;
 const numbersOf = (text: string): string[] => text.match(NUM) ?? [];
 
-/** `run` appears as a contiguous run in `seq`. */
-function hasRun(seq: readonly string[], run: readonly string[]): boolean {
-  for (let i = 0; i + run.length <= seq.length; i++) {
-    if (run.every((n, j) => seq[i + j] === n)) return true;
-  }
-  return false;
+/** Every number of `part` is in `seq` (as many times): "19 - 12" quotes "x + 12 = 19". */
+function within(seq: readonly string[], part: readonly string[]): boolean {
+  const left = [...seq];
+  return part.every((n) => {
+    const i = left.indexOf(n);
+    if (i === -1) return false;
+    left.splice(i, 1);
+    return true;
+  });
 }
 
 /**
@@ -306,8 +309,8 @@ function hasRun(seq: readonly string[], run: readonly string[]): boolean {
  * student's lines, and must not state a value from their line. Returns the student's numbers
  * the message uses outside a quote of their own work.
  *
- * A quote is a math piece with an operation or the variable whose numbers appear in the same
- * order in one of the lines ("$2(7) + 19$" for "… = 2·7 + 19", "$3x + 4$" for "3x + 4 = …"):
+ * A quote is a math piece with an operation or the variable whose numbers all appear in one of
+ * the lines ("$2(7) + 19$" for "… = 2·7 + 19", "$3x + 4$" for "3x + 4 = …"):
  * pointing at what they wrote is allowed. A bare number ("not $28$", "$4$") or an example built on
  * their numbers ("$6 \cdot 4 = 24$" when they wrote "·4") is not.
  */
@@ -329,7 +332,7 @@ export function studentNumbersUsed(message: string, lines: readonly string[]): s
     return (
       expression &&
       (numbers.length >= 2 || /x/.test(t)) &&
-      sequences.some((seq) => hasRun(seq, numbers))
+      sequences.some((seq) => within(seq, numbers))
     );
   };
 

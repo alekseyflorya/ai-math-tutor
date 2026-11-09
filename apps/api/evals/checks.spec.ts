@@ -193,6 +193,7 @@ describe('level 2: an example on other numbers', () => {
     expect(studentNumbersUsed('Go back to $3x + 4 = 2x + 19$.', step)).toEqual([]);
     expect(studentNumbersUsed('What happens to $+4$ and to $19$?', step)).toEqual(['19']);
     expect(studentNumbersUsed('Recompute $11 : 3$.', ['33 = 11 : 3'])).toEqual([]);
+    expect(studentNumbersUsed('Re-check $19 - 12$.', ['x + 12 = 19', 'x = 8'])).toEqual([]);
     expect(
       studentNumbersUsed('Multiply first: in $5 \\cdot 6 + 8$ we get $30$, then $38$.', check),
     ).toEqual([]);
