@@ -178,3 +178,8 @@ More detail (state machine, locks and transactions, security, latency measuremen
 
 **Stack:** React 19, Vite, Tailwind CSS 4, TanStack Query, KaTeX · NestJS 11, PostgreSQL, Drizzle,
 zod · Gemini · Docker, Caddy, GitHub Actions.
+
+## License
+
+© 2026 alekseyflorya. All rights reserved. The source is published for review and as a portfolio
+piece; it may not be copied, modified or used without written permission.
