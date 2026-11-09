@@ -1,3 +1,4 @@
+import type { AiUnavailableReason } from '@tutor/shared';
 import type { ZodType } from 'zod';
 
 export type LlmPurpose = 'diagnose' | 'step_feedback' | 'chat' | 'hint' | 'celebrate' | 'follow_up';
@@ -40,13 +41,7 @@ export const LLM_PROVIDER = Symbol('LLM_PROVIDER');
 
 export class LlmUnavailableError extends Error {
   constructor(
-    readonly reason:
-      | 'quota_user'
-      | 'quota_global'
-      | 'rate_limited'
-      | 'timeout'
-      | 'invalid_output'
-      | 'provider_error',
+    readonly reason: AiUnavailableReason,
     message: string,
   ) {
     super(message);

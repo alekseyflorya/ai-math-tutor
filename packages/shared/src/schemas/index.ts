@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MATH_ERROR_CODES } from '../math/errors';
 
 export const LOCALES = ['en', 'uk'] as const;
 export const LocaleSchema = z.enum(LOCALES);
@@ -107,26 +108,100 @@ export interface StepView {
 }
 
 export type MessageRole = 'STUDENT' | 'TUTOR' | 'SYSTEM';
-export type MessageKind =
-  | 'STEP'
-  | 'CHAT'
-  | 'GREETING'
-  | 'FEEDBACK'
-  | 'HINT'
-  | 'EXPLANATION'
-  | 'CELEBRATION'
-  | 'FOLLOW_UP'
-  | 'NOTICE';
+export const MESSAGE_KINDS = [
+  'STEP',
+  'CHAT',
+  'GREETING',
+  'FEEDBACK',
+  'HINT',
+  'EXPLANATION',
+  'CELEBRATION',
+  'FOLLOW_UP',
+  'NOTICE',
+] as const;
+export type MessageKind = (typeof MESSAGE_KINDS)[number];
 
-export interface MessageView {
-  id: string;
-  role: MessageRole;
-  kind: MessageKind;
-  content: string;
-  createdAt: string;
-  /** e.g. { hintLevel: 2, errorType: 'DISTRIBUTION', nextAttemptId: '...' } */
-  meta: Record<string, unknown> | null;
+/** Why the tutor answered without the model (shown as a notice, steps are still checked). */
+export const AI_UNAVAILABLE_REASONS = [
+  'quota_user',
+  'quota_global',
+  'rate_limited',
+  'timeout',
+  'invalid_output',
+  'provider_error',
+] as const;
+export type AiUnavailableReason = (typeof AI_UNAVAILABLE_REASONS)[number];
+
+const HintLevelSchema = z.number().int().min(1).max(3);
+
+/**
+ * What each kind of message carries besides its text. The API writes meta only through these
+ * shapes; reading, a row that does not match (older or unexpected data) is shown with meta null.
+ */
+export const MESSAGE_META = {
+  STEP: z.null(),
+  GREETING: z.null(),
+  /** A student's question, or the tutor's chat reply. */
+  CHAT: z.object({ understood: z.literal(true) }).nullable(),
+  FEEDBACK: z.object({ correct: z.literal(true), fixedErrorType: ErrorTypeSchema.nullable() }),
+  HINT: z.object({
+    hintLevel: HintLevelSchema,
+    errorType: ErrorTypeSchema.optional(),
+    correct: z.literal(false).optional(),
+    requested: z.literal(true).optional(),
+  }),
+  CELEBRATION: z.object({ solved: z.literal(true) }),
+  FOLLOW_UP: z.object({
+    nextAttemptId: z.string(),
+    equation: z.string(),
+    errorType: ErrorTypeSchema,
+    source: z.enum(['llm', 'template']),
+  }),
+  NOTICE: z
+    .object({
+      aiUnavailable: z.enum(AI_UNAVAILABLE_REASONS).optional(),
+      correct: z.boolean().optional(),
+      solved: z.literal(true).optional(),
+      repeatedLine: z.literal(true).optional(),
+      inputError: z.enum(MATH_ERROR_CODES).optional(),
+    })
+    .nullable(),
+} satisfies Record<Exclude<MessageKind, 'EXPLANATION'>, z.ZodType>;
+
+/** Level 3 of the hint ladder is an explanation; same meta as a hint. */
+const metaSchemaOf = (kind: MessageKind) =>
+  kind === 'EXPLANATION' ? MESSAGE_META.HINT : MESSAGE_META[kind];
+
+export type MessageMeta<K extends MessageKind> = z.infer<
+  K extends 'EXPLANATION'
+    ? (typeof MESSAGE_META)['HINT']
+    : (typeof MESSAGE_META)[Exclude<K, 'EXPLANATION'>]
+>;
+export type HintMeta = MessageMeta<'HINT'>;
+export type FeedbackMeta = MessageMeta<'FEEDBACK'>;
+export type FollowUpMeta = MessageMeta<'FOLLOW_UP'>;
+export type NoticeMeta = NonNullable<MessageMeta<'NOTICE'>>;
+
+/** Validates stored meta for a kind; null when it does not match. */
+export function parseMessageMeta<K extends MessageKind>(
+  kind: K,
+  meta: unknown,
+): { ok: true; meta: MessageMeta<K> | null } | { ok: false } {
+  const parsed = metaSchemaOf(kind).safeParse(meta ?? null);
+  return parsed.success ? { ok: true, meta: parsed.data as MessageMeta<K> } : { ok: false };
 }
+
+/** One message; `meta` is typed by `kind` (null when absent or unreadable). */
+export type MessageView = {
+  [K in MessageKind]: {
+    id: string;
+    role: MessageRole;
+    kind: K;
+    content: string;
+    createdAt: string;
+    meta: MessageMeta<K> | null;
+  };
+}[MessageKind];
 
 export interface AttemptView {
   id: string;

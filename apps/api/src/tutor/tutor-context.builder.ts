@@ -10,14 +10,26 @@ import { activeMistake, type Turn } from './turn';
  * the student's steps, the mistake being fixed, recent dialogue and a short profile of earlier
  * work. Student-authored parts are delimited later, in `contextBlock()`.
  */
+/** Messages of recent dialogue the model sees. */
+const RECENT = 8;
+
 @Injectable()
 export class TutorContextBuilder {
   constructor(@Inject(DB) private readonly db: Db) {}
 
-  async build(turn: Turn, override: Partial<TutorContext> = {}): Promise<TutorContext> {
+  /**
+   * `pendingStudentMessage`: what the student sent this turn. A turn writes only after the model
+   * has answered, so the message is not in the database yet; it is added to the dialogue exactly
+   * where the stored message would appear.
+   */
+  async build(
+    turn: Turn,
+    override: Partial<TutorContext> = {},
+    pendingStudentMessage?: string,
+  ): Promise<TutorContext> {
     const { attempt } = turn;
     const active = activeMistake(turn);
-    const recent = await this.db
+    const stored = await this.db
       .select({ role: messages.role, content: messages.content })
       .from(messages)
       .where(
@@ -27,7 +39,11 @@ export class TutorContextBuilder {
         ),
       )
       .orderBy(desc(messages.seq))
-      .limit(8);
+      .limit(pendingStudentMessage === undefined ? RECENT : RECENT - 1);
+    const recent =
+      pendingStudentMessage === undefined
+        ? stored
+        : [{ role: 'STUDENT' as const, content: pendingStudentMessage }, ...stored];
     // Short profile of EARLIER work so explanations can connect to recurring patterns.
     const [pastMistakes, [solved]] = await Promise.all([
       this.db

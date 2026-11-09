@@ -1,4 +1,5 @@
-import { parseEquation, type AttemptView } from '@tutor/shared';
+import { Logger } from '@nestjs/common';
+import { parseEquation, parseMessageMeta, type AttemptView, type MessageView } from '@tutor/shared';
 import type { Attempt, Message, Step } from '../db/schema';
 
 const latexOf = (equation: string) => {
@@ -36,18 +37,30 @@ export function toAttemptView(
       isCorrect: s.isCorrect,
       index: s.index,
     })),
-    messages: messages.map((m) => ({
-      id: m.id,
-      role: m.role,
-      kind: m.kind,
-      content: m.content,
-      createdAt: m.createdAt.toISOString(),
-      meta: m.meta ?? null,
-    })),
+    messages: messages.map(toMessageView),
     nextAttemptId: next?.id ?? null,
     nextAttemptStatus: next?.status ?? null,
     parentAttemptId: a.parentAttemptId ?? null,
     understandingVerified,
     problemId: a.problemId ?? null,
   };
+}
+
+const logger = new Logger('AttemptMapper');
+
+/**
+ * Meta is checked against the contract for its kind. A stored row that does not match (older
+ * data, a bug) is shown with meta null and logged, instead of failing the whole page.
+ */
+export function toMessageView(m: Message): MessageView {
+  const parsed = parseMessageMeta(m.kind, m.meta);
+  if (!parsed.ok) logger.warn(`Message ${m.id} (${m.kind}) has unexpected meta; shown without it`);
+  return {
+    id: m.id,
+    role: m.role,
+    kind: m.kind,
+    content: m.content,
+    createdAt: m.createdAt.toISOString(),
+    meta: parsed.ok ? parsed.meta : null,
+  } as MessageView;
 }

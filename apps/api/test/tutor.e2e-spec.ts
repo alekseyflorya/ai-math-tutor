@@ -8,12 +8,24 @@
  */
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { ThrottlerStorage, ThrottlerStorageService } from '@nestjs/throttler';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import type { ApiErrorBody, AttemptView, ProblemView, ProgressView, UserView } from '@tutor/shared';
+import type {
+  ApiErrorBody,
+  AttemptSummary,
+  AttemptView,
+  ProblemView,
+  ProgressView,
+  UserView,
+} from '@tutor/shared';
 import { LLM_PROVIDER, type LlmProvider } from '../src/llm/llm.types';
+import { DemoCleanupService } from '../src/auth/demo-cleanup.service';
+import { AttemptLock } from '../src/tutor/attempt-lock';
+import { AttemptRepository } from '../src/tutor/attempt.repository';
 
 const DB_URL = process.env.DATABASE_URL_TEST ?? 'postgres://tutor:tutor@localhost:5433/tutor_test';
 
@@ -23,7 +35,25 @@ Object.assign(process.env, {
   LLM_PROVIDER: 'mock',
   JWT_SECRET: 'test-secret-test-secret-test-secret-123',
   COOKIE_SECURE: 'false',
+  // Short turn-lock lease, so the "expired lease" case runs in a second.
+  TURN_LOCK_LEASE_MS: '1500',
 });
+
+/** The real in-memory rate-limit store, replaced by a fresh one before each test. */
+class ResettableRateLimits {
+  private store = new ThrottlerStorageService();
+  increment(...args: Parameters<ThrottlerStorageService['increment']>) {
+    return this.store.increment(...args);
+  }
+  reset() {
+    this.store.onApplicationShutdown();
+    this.store = new ThrottlerStorageService();
+  }
+  onApplicationShutdown() {
+    this.store.onApplicationShutdown();
+  }
+}
+const rateLimits = new ResettableRateLimits();
 
 describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
   let app: INestApplication;
@@ -41,7 +71,10 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
 
     const { AppModule } = await import('../src/app.module');
     const { configureApp } = await import('../src/app.setup');
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(rateLimits)
+      .compile();
     app = moduleRef.createNestApplication<NestExpressApplication>();
     configureApp(app as NestExpressApplication);
     await app.init();
@@ -49,6 +82,10 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     agent = request.agent(server);
     provider = app.get<LlmProvider>(LLM_PROVIDER);
   });
+
+  // Every request here comes from one IP: start each test with fresh per-IP rate limits, so the
+  // number of turns earlier tests made does not matter.
+  beforeEach(() => rateLimits.reset());
 
   afterEach(() => jest.restoreAllMocks());
 
@@ -227,6 +264,77 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     expect(lastTutor(a)).toMatchObject({ kind: 'NOTICE', meta: { solved: true } });
   });
 
+  it('writes a turn all or nothing: a failing write leaves the attempt as it was', async () => {
+    const before = await startCustom('4(x + 1) = 2x + 10');
+    // The mistake is written in the middle of the turn: after the student message and the
+    // step, before the attempt update and the tutor's hint.
+    const failing = jest
+      .spyOn(AttemptRepository.prototype, 'insertMistake')
+      .mockRejectedValue(new Error('disk full'));
+
+    await agent
+      .post(`/api/attempts/${before.id}/messages`)
+      .send({ text: '4x + 1 = 2x + 10' })
+      .expect(500);
+    const after = (await agent.get(`/api/attempts/${before.id}`).expect(200)).body as AttemptView;
+    expect(after).toEqual(before);
+
+    // The turn lock was released, and the next turn works normally.
+    failing.mockRestore();
+    const next = await say(before.id, '4x + 1 = 2x + 10');
+    expect(next.mode).toBe('REMEDIATION');
+    expect(next.steps).toHaveLength(1);
+  });
+
+  it('opens one attempt per problem even when "start" is clicked several times at once', async () => {
+    const student = request.agent(server);
+    await student.post('/api/auth/demo').send({}).expect(200);
+    const problems = (await student.get('/api/problems').expect(200)).body as ProblemView[];
+    const featured = problems.find((p) => p.featured)!;
+
+    const started = await Promise.all(
+      Array.from({ length: 5 }, () =>
+        student.post('/api/attempts').send({ problemId: featured.id }).expect(201),
+      ),
+    );
+    const ids = new Set(started.map((r) => (r.body as AttemptView).id));
+    expect(ids.size).toBe(1);
+    const list = (await student.get('/api/attempts').expect(200)).body as AttemptSummary[];
+    expect(
+      list.filter((a) => a.equation === featured.equation && a.status === 'IN_PROGRESS'),
+    ).toHaveLength(1);
+    // Exactly one greeting: the losing requests wrote nothing.
+    const view = started[0]!.body as AttemptView;
+    expect(view.messages.filter((m) => m.kind === 'GREETING')).toHaveLength(1);
+  });
+
+  it('releases the turn lock: consecutive turns on one attempt both go through', async () => {
+    const a = await startCustom('x + 4 = 9');
+    await say(a.id, 'why?');
+    await say(a.id, 'how?');
+    const next = await say(a.id, 'x = 5');
+    expect(next.status).toBe('SOLVED');
+  });
+
+  it('lets a turn through once a stuck lease has expired', async () => {
+    const a = await startCustom('x + 6 = 8');
+    const lock = app.get(AttemptLock);
+    const me = ((await agent.get('/api/auth/me').expect(200)).body as UserView).id;
+    // Someone else cannot take the lock on this attempt (it does not exist for them).
+    expect(await lock.acquire(randomUUID(), a.id)).toBe('missing');
+
+    // An instance took the lock and died without releasing it.
+    const held = await lock.acquire(me, a.id);
+    expect(held).toHaveProperty('token');
+
+    const blocked = await agent.post(`/api/attempts/${a.id}/messages`).send({ text: 'why?' });
+    expect(blocked.status).toBe(409);
+    expect((blocked.body as ApiErrorBody).code).toBe('BUSY');
+
+    await new Promise((r) => setTimeout(r, 1700)); // lease is 1.5 s in tests
+    await say(a.id, 'why?');
+  });
+
   it('rejects overlapping turns and messages to a finished problem', async () => {
     const real = provider.completeJson.bind(provider);
     jest.spyOn(provider, 'completeJson').mockImplementation(async (...args) => {
@@ -243,6 +351,38 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     const closed = await agent.post(`/api/attempts/${a.id}/messages`).send({ text: 'x = 3' });
     expect(closed.status).toBe(409);
     expect((closed.body as ApiErrorBody).code).toBe('ATTEMPT_CLOSED');
+  });
+
+  it('deletes demo accounts older than a week, with everything they own', async () => {
+    const pool = new Pool({ connectionString: DB_URL });
+    try {
+      const user = async (isDemo: boolean, daysOld: number) => {
+        const { rows } = await pool.query<{ id: string }>(
+          `INSERT INTO users (name, is_demo, created_at) VALUES ('t', $1, now() - $2 * interval '1 day') RETURNING id`,
+          [isDemo, daysOld],
+        );
+        return rows[0]!.id;
+      };
+      const oldDemo = await user(true, 8);
+      const newDemo = await user(true, 1);
+      const oldRegular = await user(false, 30);
+      await pool.query(
+        `INSERT INTO attempts (user_id, title, equation, current_line) VALUES ($1, 't', 'x = 1', 'x = 1')`,
+        [oldDemo],
+      );
+
+      // Older demo users from earlier tests (none) and this one: exactly one is due.
+      expect(await app.get(DemoCleanupService).deleteExpired()).toBe(1);
+
+      const left = await pool.query<{ id: string }>('SELECT id FROM users WHERE id = ANY($1)', [
+        [oldDemo, newDemo, oldRegular],
+      ]);
+      expect(left.rows.map((r) => r.id).sort()).toEqual([newDemo, oldRegular].sort());
+      const orphans = await pool.query('SELECT 1 FROM attempts WHERE user_id = $1', [oldDemo]);
+      expect(orphans.rowCount).toBe(0);
+    } finally {
+      await pool.end();
+    }
   });
 
   it('registers, logs out and logs in with email and password', async () => {

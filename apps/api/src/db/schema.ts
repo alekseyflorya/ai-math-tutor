@@ -11,6 +11,7 @@ import {
   serial,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
@@ -77,18 +78,33 @@ export const attempts = pgTable(
     /** Last line verified as correct; each new step is checked against it. */
     currentLine: text('current_line').notNull(),
     /** Mistake being remediated while mode = REMEDIATION. */
-    activeMistakeId: uuid('active_mistake_id'),
+    activeMistakeId: uuid('active_mistake_id').references((): AnyPgColumn => mistakes.id, {
+      onDelete: 'set null',
+    }),
     /** Follow-up practice: the attempt it came from and the error it verifies. */
     parentAttemptId: uuid('parent_attempt_id').references((): AnyPgColumn => attempts.id, {
       onDelete: 'set null',
     }),
     targetErrorType: errorType('target_error_type'),
-    sourceMistakeId: uuid('source_mistake_id'),
+    sourceMistakeId: uuid('source_mistake_id').references((): AnyPgColumn => mistakes.id, {
+      onDelete: 'set null',
+    }),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     solvedAt: timestamp('solved_at', { withTimezone: true }),
+    /** Turn lock (lease): set while a turn runs; see AttemptLock. */
+    busyUntil: timestamp('busy_until', { withTimezone: true }),
+    /** Who holds the lease: released only by the holder's token. */
+    busyToken: uuid('busy_token'),
   },
-  (t) => [index('attempts_user_updated_idx').on(t.userId, t.updatedAt)],
+  (t) => [
+    index('attempts_user_updated_idx').on(t.userId, t.updatedAt),
+    index('attempts_parent_idx').on(t.parentAttemptId),
+    // One open attempt per student and curriculum problem: a double click cannot create two.
+    uniqueIndex('attempts_one_open_per_problem_idx')
+      .on(t.userId, t.problemId)
+      .where(sql`${t.status} = 'IN_PROGRESS'`),
+  ],
 );
 
 export const steps = pgTable(
@@ -148,7 +164,10 @@ export const mistakes = pgTable(
     verifiedAt: timestamp('verified_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
-  (t) => [index('mistakes_user_created_idx').on(t.userId, t.createdAt)],
+  (t) => [
+    index('mistakes_user_created_idx').on(t.userId, t.createdAt),
+    index('mistakes_attempt_idx').on(t.attemptId),
+  ],
 );
 
 export const skillStats = pgTable(

@@ -23,6 +23,8 @@ export const EnvSchema = z
     LLM_TIMEOUT_MS: z.coerce.number().int().min(1000).default(15000),
     /** All model calls of one student turn together (retries, follow-up, celebration). */
     LLM_TURN_BUDGET_MS: z.coerce.number().int().min(5000).default(25000),
+    /** How long a turn may hold its attempt; default: the turn budget + 15 s. */
+    TURN_LOCK_LEASE_MS: z.coerce.number().int().min(500).optional(),
 
     /** Protects the LLM budget/quota on a public demo. */
     LLM_DAILY_LIMIT_PER_USER: z.coerce.number().int().min(1).default(150),

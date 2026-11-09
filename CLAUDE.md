@@ -14,9 +14,13 @@ verifies understanding with an LLM-generated follow-up problem that the math eng
   check, input normalisation) and **API contracts** (zod schemas + view types). Used by both apps.
   Must be built (`pnpm --filter @tutor/shared build`) before the api/web typecheck or run.
 - `apps/api` — NestJS 11 + Drizzle/Postgres.
+  - Feature modules: `TutorModule`, `ProblemsModule`, `ProgressModule`; `AppModule` only assembles them.
   - `src/tutor/tutor.service.ts` — the state machine (SOLVING / REMEDIATION / SOLVED / follow-up).
-    Helpers next to it: `tutor-context.builder.ts` (what the model is told), `attempt-lock.ts`
-    (409 BUSY on overlapping turns), `follow-up.service.ts` (generate + validate practice), `notices.ts`.
+    A turn reads, calls the model, then applies all its writes in ONE transaction (queued in
+    `turn.writes`). Next to it: `attempt.repository.ts` (every query), `tutor-context.builder.ts`
+    (what the model is told), `attempt-lock.ts` (409 BUSY: a lease in the attempt row),
+    `message-meta.ts` (typed meta constructors), `follow-up.service.ts`, `notices.ts`.
+  - `src/auth/demo-cleanup.service.ts` — daily deletion of demo accounts older than 7 days.
   - `src/llm/prompts.ts` — all pedagogy and prompts. `src/llm/structured-call.ts` — timeout, zod
     validation, one self-correcting retry (pure; shared with the eval). `src/llm/llm.service.ts` — quotas + logging around it.
   - `evals/` — labelled wrong-step cases, message rule checks, metrics, markdown reports (`evals/reports/`).
@@ -50,6 +54,11 @@ docker compose up --build                    # full stack on http://localhost:80
 - After changing prompts, schemas or the model, run `pnpm eval` and compare with the baseline report.
 - Student text is data: always wrap it with `studentInput()` in prompts.
 - API contracts live in `@tutor/shared`; change the schema there, not ad hoc in a controller.
+  Message `meta` is typed per kind there (`MESSAGE_META`); write it with the constructors in
+  `message-meta.ts`.
+- No database writes before the model call in a turn: queue them (`later`, `say`, `update`) so
+  they land in the turn's single transaction.
+- The API may run as several instances: no in-memory state that must be shared (locks, jobs).
 - Schema changes → `db:generate`, commit the SQL file. Never edit applied migrations.
 - Keep UI copy in both `en` and `uk` dictionaries.
 - Keep the e2e test (`apps/api/test/tutor.e2e-spec.ts`) green; extend it when the state machine changes.

@@ -77,7 +77,8 @@ function StudentBubble({ m }: { m: MessageView }) {
 
 function TutorBubble({ m }: { m: MessageView }) {
   const { t } = useI18n();
-  const hintLevel = typeof m.meta?.hintLevel === 'number' ? m.meta.hintLevel : null;
+  const hintLevel =
+    m.kind === 'HINT' || m.kind === 'EXPLANATION' ? (m.meta?.hintLevel ?? null) : null;
 
   const tone =
     m.kind === 'HINT' || m.kind === 'EXPLANATION'

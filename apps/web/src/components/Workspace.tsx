@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { parseEquation, type AttemptView, type ErrorType, type MessageView } from '@tutor/shared';
+import { parseEquation, type AttemptView, type MessageView } from '@tutor/shared';
 import { ArrowLeft, ArrowRight, PartyPopper, RotateCcw, ShieldCheck, Target } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
@@ -56,7 +56,8 @@ export function Workspace({ attemptId }: { attemptId: string }) {
   }
 
   const solved = attempt.status === 'SOLVED';
-  const aiOffline = attempt.messages.at(-1)?.meta?.aiUnavailable;
+  const last = attempt.messages.at(-1);
+  const aiOffline = last?.kind === 'NOTICE' ? last.meta?.aiUnavailable : undefined;
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
@@ -139,9 +140,10 @@ function SolvedCard({ attempt, onNext }: { attempt: AttemptView; onNext: (id: st
   const { t, locale } = useI18n();
   const start = useStartAttempt();
   // The practice problem and the mistake it targets come from the tutor's FOLLOW_UP message.
-  const followUp = attempt.messages.find((m) => m.kind === 'FOLLOW_UP')?.meta;
+  const followUpMessage = attempt.messages.find((m) => m.kind === 'FOLLOW_UP');
+  const followUp = followUpMessage?.kind === 'FOLLOW_UP' ? followUpMessage.meta : null;
   const followUpLatex = useMemo(() => {
-    const eq = typeof followUp?.equation === 'string' ? followUp.equation : null;
+    const eq = followUp?.equation ?? null;
     if (!eq) return null;
     try {
       return parseEquation(eq).latex;
@@ -149,7 +151,7 @@ function SolvedCard({ attempt, onNext }: { attempt: AttemptView; onNext: (id: st
       return null;
     }
   }, [followUp]);
-  const errorType = followUp?.errorType as ErrorType | undefined;
+  const errorType = followUp?.errorType;
   const practiceDone = attempt.nextAttemptStatus === 'SOLVED';
   const linkButton =
     'inline-flex items-center gap-1.5 rounded-lg border border-ink/30 px-3 py-1.5 text-sm font-bold text-ink transition hover:bg-ink-soft';
