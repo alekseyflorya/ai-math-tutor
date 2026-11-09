@@ -40,15 +40,16 @@ export function valuesIn(text: string): Fraction[] {
 
 /**
  * The values a hint for this slip must not state: v* (both sides of the equation at the root) and
- * the true values of both sides of the student's line — except numbers the student wrote in the
- * line themselves (quoting their own "33 = 32" gives nothing away). Null when the line is not a
- * slip in the check.
+ * the true values of both sides of the student's line — except numbers already written in the
+ * original equation or in the student's line. Naming those gives nothing away: in x + 5 = 12, v*
+ * is the 12 on the right, and a hint may quote the equation; quoting their own "33 = 32" is fine
+ * too. Null when the line is not a slip in the check.
  */
 export function checkHintFacts(equation: string, line: string): CheckHintFacts | null {
   const result = checkSubstitution(equation, line, { afterCheckLine: true });
   const v = result.verdict;
   if (v.kind !== 'arithmetic') return null;
-  const written = valuesIn(line);
+  const written = [...valuesIn(equation), ...valuesIn(line)];
   const forbidden: Fraction[] = [];
   for (const value of [result.target, v.left, v.right].map(abs)) {
     if (written.some((w) => w.equals(value))) continue;

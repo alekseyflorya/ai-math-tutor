@@ -42,6 +42,30 @@ describe('check-hint guard: the detector', () => {
   });
 });
 
+describe('check-hint guard: numbers written in the equation are not a leak', () => {
+  // x + 5 = 12: x = 7, and v* is the 12 already on the right. "7 + 5 = 13" slips on the right.
+  it('forbids nothing the equation already shows, so quoting it passes on the first try', async () => {
+    const facts = checkHintFacts('x + 5 = 12', '7 + 5 = 13')!;
+    expect(facts.wrongSides).toEqual(['right']);
+    expect(facts.forbidden).toEqual([]);
+
+    const quote = { message: 'Compare with the right side of $x + 5 = 12$: what is $7 + 5$?' };
+    const generate = jest.fn().mockResolvedValue(quote);
+    await expect(guardCheckHint({ forbidden: facts.forbidden, generate })).resolves.toEqual({
+      guard: null,
+      value: quote,
+    });
+    expect(generate).toHaveBeenCalledTimes(1);
+  });
+
+  it('still forbids a value the equation does not show', () => {
+    // 3x − 7 = 11: v* = 11 is in the equation, but their left side "17 − 7" is really 10.
+    expect(checkHintFacts('3x - 7 = 11', '17 - 7 = 11')!.forbidden.map(String)).toEqual(['10']);
+    // 2(x + 3) = x + 10: v* = 14 appears nowhere, so it stays forbidden.
+    expect(checkHintFacts('2(x + 3) = x + 10', '2·7 = 15')!.forbidden.map(String)).toEqual(['14']);
+  });
+});
+
 describe('check-hint guard: violation → one retry → template', () => {
   const forbidden = [new Fraction(33n)];
   const leak = { message: 'The left side is right: 33. Look at the right side?' };
