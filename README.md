@@ -14,7 +14,7 @@ open the **test scenario** `3(x + 4) = 2x + 19` and type the classic wrong step 
 | Backend  | NestJS 11, PostgreSQL, Drizzle ORM (SQL migrations), zod                                        |
 | AI       | Google Gemini (default) or Anthropic Claude via a thin provider adapter, structured JSON output |
 | Infra    | Docker, Caddy (automatic HTTPS), GitHub Actions → GHCR → VPS                                    |
-| Quality  | Vitest (math engine, React), Jest + Supertest e2e on a real Postgres, type-aware ESLint         |
+| Quality  | Vitest + fast-check (math engine), Vitest (React), Jest + Supertest e2e, type-aware ESLint      |
 
 ---
 
@@ -147,6 +147,13 @@ pnpm db:up                    # the dev database also creates tutor_test
 pnpm test                     # math engine, React components, API unit + e2e
 pnpm lint                     # type-aware ESLint (floating promises, react-hooks)
 ```
+
+The math engine also has property-based tests (`packages/shared/src/math/equation.property.test.ts`,
+fast-check): random linear equations with brackets, fractions and `x` on both sides are solved by
+an independent bigint oracle; every valid transformation must be accepted, a typical mistake
+must be flagged exactly when it changes the solution set, notation (`−`, `×`, `:`, `2,5`, spaces)
+must not change the result, and any input up to 120 characters must either parse or throw a
+`MathInputError`. On failure fast-check prints `seed` and `path` for a replay.
 
 The e2e test drives the full scenario (wrong step → hint ladder → correction → solve →
 follow-up → verified) through HTTP against a real database, with a deterministic mock model
