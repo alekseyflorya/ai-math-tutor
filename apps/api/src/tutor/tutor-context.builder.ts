@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { parseEquation, solve } from '@tutor/shared';
 import { and, count, desc, eq, ne, notInArray, sql } from 'drizzle-orm';
 import { DB, type Db } from '../db/db.module';
 import { attempts, messages, mistakes } from '../db/schema';
@@ -71,7 +72,8 @@ export class TutorContextBuilder {
       locale: turn.locale,
       problem: attempt.equation,
       currentLine: attempt.currentLine,
-      steps: turn.steps.map((s) => ({ input: s.input, isCorrect: s.isCorrect })),
+      steps: turn.steps.map((s) => ({ input: s.input, isCorrect: s.isCorrect, phase: s.phase })),
+      checking: attempt.mode === 'CHECKING' ? { solution: solutionText(attempt) } : null,
       mode: attempt.mode,
       hintLevel: attempt.hintLevel,
       activeMistake: active
@@ -80,6 +82,7 @@ export class TutorContextBuilder {
             description: active.description,
             stepInput: active.stepInput,
             previousLine: active.previousLine,
+            phase: active.phase,
           }
         : null,
       recentDialogue: recent.reverse().map((m) => ({
@@ -94,4 +97,10 @@ export class TutorContextBuilder {
       ...override,
     };
   }
+}
+
+/** "x = 7": only used once the student has reached it (CHECKING). */
+function solutionText(attempt: Turn['attempt']): string {
+  const s = solve(parseEquation(attempt.equation));
+  return s.kind === 'unique' ? `${attempt.variable} = ${s.value.toString()}` : '';
 }

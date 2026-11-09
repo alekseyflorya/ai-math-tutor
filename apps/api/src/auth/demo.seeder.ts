@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { parseEquation, type ErrorType } from '@tutor/shared';
+import { evaluateSide, parseEquation, solve, type ErrorType } from '@tutor/shared';
 import { DB, type Db } from '../db/db.module';
 import { attempts, mistakes, skillStats, steps } from '../db/schema';
 
@@ -36,6 +36,7 @@ export class DemoSeeder {
             equation: opts.equation,
             currentLine: opts.lines.at(-1)!.input,
             status: 'SOLVED',
+            check: 'DONE',
             solvedAt: opts.when,
             createdAt: opts.when,
             updatedAt: opts.when,
@@ -44,15 +45,31 @@ export class DemoSeeder {
             sourceMistakeId: opts.sourceMistakeId ?? null,
           })
           .returning();
+        // Each solved problem was also checked by substitution: "v = v" with both sides computed.
+        const original = parseEquation(opts.equation);
+        const root = solve(original);
+        const value = root.kind === 'unique' ? evaluateSide(original.left, root.value) : null;
+        const check = value
+          ? [
+              {
+                input: `${value.toString()} = ${value.toString()}`,
+                ok: true,
+                phase: 'CHECK' as const,
+              },
+            ]
+          : [];
         await tx.insert(steps).values(
-          opts.lines.map((l, index) => ({
-            attemptId: a!.id,
-            index,
-            input: l.input,
-            latex: parseEquation(l.input).latex,
-            isCorrect: l.ok ?? true,
-            createdAt: opts.when,
-          })),
+          [...opts.lines.map((l) => ({ ...l, phase: 'SOLUTION' as const })), ...check].map(
+            (l, index) => ({
+              attemptId: a!.id,
+              index,
+              input: l.input,
+              latex: parseEquation(l.input).latex,
+              isCorrect: l.ok ?? true,
+              phase: l.phase,
+              createdAt: opts.when,
+            }),
+          ),
         );
         return a!;
       };

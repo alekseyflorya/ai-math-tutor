@@ -57,4 +57,12 @@ export class TutorController {
   hint(@CurrentUser() user: AuthUser, @Param('id') id: string): Promise<AttemptView> {
     return this.tutor.hint(user.id, id);
   }
+
+  /** Close a problem whose answer is reached without checking it (409 NOT_CHECKING otherwise). */
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @HttpCode(200)
+  @Post(':id/skip-check')
+  skipCheck(@CurrentUser() user: AuthUser, @Param('id') id: string): Promise<AttemptView> {
+    return this.tutor.skipCheck(user.id, id);
+  }
 }

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import {
   checkStep,
+  checkSubstitution,
   classifyInput,
   ERROR_TO_SKILL,
   MathInputError,
@@ -24,6 +25,7 @@ import {
   type Skill,
   type StartAttemptInput,
   type StepCheckResult,
+  type SubstitutionCheck,
 } from '@tutor/shared';
 import type { Attempt, Mistake } from '../db/schema';
 import { LlmService } from '../llm/llm.service';
@@ -31,12 +33,18 @@ import { LlmUnavailableError } from '../llm/llm.types';
 import {
   celebratePrompt,
   chatPrompt,
+  checkDiagnosePrompt,
   diagnosePrompt,
   hintPrompt,
   stepFeedbackPrompt,
   systemPrompt,
 } from '../llm/prompts';
-import { ChatReplySchema, DiagnosisSchema, FeedbackSchema } from '../llm/tutor-schemas';
+import {
+  ChatReplySchema,
+  CheckDiagnosisSchema,
+  DiagnosisSchema,
+  FeedbackSchema,
+} from '../llm/tutor-schemas';
 import { ProblemsService } from '../problems/problems.service';
 import { OUTCOME, SkillsService } from '../progress/skills.service';
 import { AppConfig } from '../config/config.service';
@@ -57,7 +65,10 @@ const MAX_FOLLOW_UP_DEPTH = 2;
  *   SOLVING ──wrong step──▶ REMEDIATION (hint level 1)
  *      ▲                      │ still stuck (chat / "Hint" / another wrong try) → level 2 → 3
  *      └──correct step────────┘ mistake marked corrected
- *   SOLVING ──"x = answer"──▶ SOLVED ──had corrected mistakes?──▶ follow-up attempt
+ *   SOLVING ──"x = answer"──▶ CHECKING: substitute it into the original equation
+ *      CHECKING ──slip──▶ hint ladder (mode stays CHECKING) ──"33 = 33"──▶ SOLVED (check DONE)
+ *      CHECKING ──"skip the check"──▶ SOLVED (check SKIPPED)
+ *   SOLVED ──had corrected mistakes in the solution?──▶ follow-up attempt
  *   follow-up SOLVED without repeating the error ──▶ mistake marked verified
  *
  * Correctness is decided by the math engine (exact solution-set comparison).
@@ -159,8 +170,10 @@ export class TutorService {
   async submit(userId: string, attemptId: string, text: string): Promise<AttemptView> {
     return this.lock.run(userId, attemptId, async () => {
       const turn = await this.loadTurn(userId, attemptId);
-      if (classifyInput(text) === 'step') await this.handleStep(turn, text);
-      else await this.handleChat(turn, text);
+      const route = classifyInput(text, { mode: turn.attempt.mode });
+      if (route === 'message') await this.handleChat(turn, text);
+      else if (turn.attempt.mode === 'CHECKING') await this.handleCheckLine(turn, text);
+      else await this.handleStep(turn, text);
       await this.commit(turn);
       return this.getView(userId, attemptId);
     });
@@ -199,6 +212,32 @@ export class TutorService {
     });
   }
 
+  /**
+   * Closes the problem without the check (allowed only while CHECKING). A slip in the check that
+   * is being worked on stays uncorrected: it is recorded as it was.
+   */
+  async skipCheck(userId: string, attemptId: string): Promise<AttemptView> {
+    return this.lock.run(userId, attemptId, async () => {
+      const turn = await this.loadTurn(userId, attemptId);
+      if (turn.attempt.mode !== 'CHECKING') {
+        throw new ConflictException({
+          code: 'NOT_CHECKING',
+          message: 'There is no answer to check yet',
+        });
+      }
+      this.say(
+        turn,
+        'TUTOR',
+        'NOTICE',
+        notices.checkSkipped(turn.locale),
+        meta.notice({ checkSkipped: true }),
+      );
+      await this.onSolved(turn, { checked: false });
+      await this.commit(turn);
+      return this.getView(userId, attemptId);
+    });
+  }
+
   // --- Turn handlers ---------------------------------------------------------
 
   private async handleStep(turn: Turn, text: string) {
@@ -212,7 +251,7 @@ export class TutorService {
         turn,
         'TUTOR',
         'NOTICE',
-        notices.sameLine(locale, attempt.mode === 'REMEDIATION'),
+        notices.sameLine(locale, Boolean(activeMistake(turn))),
         meta.notice({ repeatedLine: true }),
       );
       return;
@@ -242,6 +281,7 @@ export class TutorService {
       input: text,
       latex: check.current.latex,
       isCorrect: check.equivalent,
+      phase: 'SOLUTION' as const,
       createdAt: new Date(),
     };
     turn.steps.push(step);
@@ -253,7 +293,7 @@ export class TutorService {
 
   private async onCorrectStep(turn: Turn, text: string, check: StepCheckResult) {
     const { attempt, locale } = turn;
-    const fixed = attempt.mode === 'REMEDIATION' ? activeMistake(turn) : null;
+    const fixed = activeMistake(turn);
 
     if (fixed) {
       const hintsUsed = attempt.hintLevel;
@@ -263,7 +303,7 @@ export class TutorService {
     }
     this.update(turn, { currentLine: text, mode: 'SOLVING', hintLevel: 0, activeMistakeId: null });
 
-    if (check.solved) return this.onSolved(turn, check, text);
+    if (check.solved) return this.onAnswerReached(turn, fixed);
 
     const ctx = await this.contexts.build(turn, {}, text);
     try {
@@ -331,16 +371,180 @@ export class TutorService {
     }
   }
 
-  private async onSolved(turn: Turn, check: StepCheckResult, text: string) {
+  /**
+   * The answer is reached and verified by the engine. Not solved yet: the student checks it by
+   * substitution first. Fixed copy, no model call.
+   */
+  private onAnswerReached(turn: Turn, fixed: Mistake | null) {
+    const { solutionLatex, equationLatex } = answerOf(turn.attempt);
+    this.update(turn, { mode: 'CHECKING' });
+    this.say(
+      turn,
+      'TUTOR',
+      'FEEDBACK',
+      notices.checkRequest(turn.locale, solutionLatex, equationLatex),
+      meta.feedback(fixed?.errorType ?? null, { checkRequested: true }),
+    );
+  }
+
+  /** A line of the check by substitution. Right or wrong is the engine's call alone. */
+  private async handleCheckLine(turn: Turn, text: string) {
     const { attempt, locale } = turn;
-    this.update(turn, { status: 'SOLVED', solvedAt: new Date() });
+    this.say(turn, 'STUDENT', 'STEP', text);
+    const lastRight = turn.steps.filter((s) => s.phase === 'CHECK' && s.isCorrect).at(-1);
+    const { solutionLatex, equationLatex } = answerOf(attempt);
+
+    if (lastRight && sameText(text, lastRight.input)) {
+      this.say(
+        turn,
+        'TUTOR',
+        'NOTICE',
+        notices.sameLine(locale, Boolean(activeMistake(turn))),
+        meta.notice({ repeatedLine: true }),
+      );
+      return;
+    }
+
+    let result: SubstitutionCheck;
+    try {
+      result = checkSubstitution(attempt.equation, text, { afterCheckLine: Boolean(lastRight) });
+    } catch (e) {
+      if (e instanceof MathInputError) {
+        this.say(
+          turn,
+          'TUTOR',
+          'NOTICE',
+          notices.parseError(locale, e.code),
+          meta.notice({ inputError: e.code }),
+        );
+        return;
+      }
+      throw e;
+    }
+
+    const { verdict } = result;
+    if (verdict.kind === 'not_numeric' || verdict.kind === 'not_substitution') {
+      this.say(
+        turn,
+        'TUTOR',
+        'NOTICE',
+        verdict.kind === 'not_numeric'
+          ? notices.checkNotNumeric(locale, solutionLatex)
+          : notices.checkNotSubstitution(locale, solutionLatex, equationLatex),
+        meta.notice({ checkError: verdict.kind }),
+      );
+      return;
+    }
+
+    const step = {
+      id: randomUUID(),
+      attemptId: attempt.id,
+      index: turn.steps.length,
+      input: text,
+      latex: parseEquation(text).latex,
+      isCorrect: verdict.kind === 'correct',
+      phase: 'CHECK' as const,
+      createdAt: new Date(),
+    };
+    turn.steps.push(step);
+    this.later(turn, (r) => r.insertStep(step));
+
+    if (verdict.kind === 'arithmetic') {
+      return this.onCheckSlip(turn, text, result.facts, lastRight?.input ?? attempt.equation);
+    }
+
+    const fixed = activeMistake(turn);
+    if (fixed) {
+      const hintsUsed = attempt.hintLevel;
+      fixed.corrected = true;
+      this.later(turn, (r) => r.markCorrected(fixed.id, hintsUsed));
+      this.recordSkill(turn, ERROR_TO_SKILL[fixed.errorType], OUTCOME.CORRECTED);
+      this.update(turn, { hintLevel: 0, activeMistakeId: null });
+    }
+    if (verdict.done) return this.onSolved(turn, { checked: true, pendingStudentMessage: text });
+    this.say(
+      turn,
+      'TUTOR',
+      'FEEDBACK',
+      notices.checkStepOk(locale),
+      meta.feedback(fixed?.errorType ?? null, { checkStep: true }),
+    );
+  }
+
+  /**
+   * A calculation slip in the check: an ARITHMETIC mistake with the usual hint ladder. The mode
+   * stays CHECKING; the model only explains (the category is the engine's).
+   */
+  private async onCheckSlip(turn: Turn, text: string, facts: string[], previousLine: string) {
+    const { attempt, locale } = turn;
+    const active = activeMistake(turn);
+    const level = (active ? Math.min(MAX_HINT, attempt.hintLevel + 1) : 1) as 1 | 2 | 3;
+    const ctx = await this.contexts.build(turn, { hintLevel: level }, text);
+
+    let tutorMessage: string | null = null;
+    let unavailable: unknown = null;
+    let misconception = notices.notDiagnosed(locale);
+    try {
+      const diagnosis = await this.llm.generate(
+        {
+          purpose: 'diagnose',
+          system: systemPrompt(locale),
+          prompt: checkDiagnosePrompt(ctx, text, facts, level),
+          schema: CheckDiagnosisSchema,
+          deadline: turn.deadline,
+          temperature: 0.3,
+        },
+        attempt.userId,
+      );
+      misconception = diagnosis.misconception;
+      tutorMessage = diagnosis.message;
+    } catch (e) {
+      if (!(e instanceof LlmUnavailableError)) throw e;
+      unavailable = e;
+    }
+
+    const mistakeId =
+      active?.id ??
+      this.recordMistake(turn, text, 'ARITHMETIC', misconception, { phase: 'CHECK', previousLine })
+        .id;
+    this.update(turn, { hintLevel: level, activeMistakeId: mistakeId });
+
+    if (tutorMessage) {
+      this.say(
+        turn,
+        'TUTOR',
+        level === 3 ? 'EXPLANATION' : 'HINT',
+        tutorMessage,
+        meta.hint(level, { errorType: 'ARITHMETIC', correct: false }),
+      );
+    } else {
+      this.sayUnavailable(turn, unavailable, notices.stepWrongNoAi(locale), { correct: false });
+    }
+  }
+
+  /** Checked (or the check skipped): skills, follow-up verification and practice, celebration. */
+  private async onSolved(turn: Turn, opts: { checked: boolean; pendingStudentMessage?: string }) {
+    const { attempt, locale } = turn;
+    this.update(turn, {
+      status: 'SOLVED',
+      solvedAt: new Date(),
+      check: opts.checked ? 'DONE' : 'SKIPPED',
+      mode: 'SOLVING', // nothing left to check or remediate
+      hintLevel: 0,
+      // A slip in the check that was left when skipping stays uncorrected, honestly.
+      activeMistakeId: null,
+    });
 
     const outcome = turn.mistakes.length ? OUTCOME.SOLVED_WITH_MISTAKES : OUTCOME.CLEAN;
     for (const skill of turn.problemSkills) this.recordSkill(turn, skill, outcome);
 
     // Follow-up passed: the original error was not repeated → understanding verified.
     if (attempt.targetErrorType && attempt.sourceMistakeId) {
-      const repeated = turn.mistakes.some((m) => m.errorType === attempt.targetErrorType);
+      // Only the solution counts: a slip in checking the practice problem is not the original
+      // mistake coming back.
+      const repeated = turn.mistakes.some(
+        (m) => m.phase === 'SOLUTION' && m.errorType === attempt.targetErrorType,
+      );
       if (!repeated) {
         const { sourceMistakeId, userId, targetErrorType } = attempt;
         this.later(turn, (r) => r.markVerified(sourceMistakeId, userId));
@@ -348,18 +552,18 @@ export class TutorService {
       }
     }
 
-    const fixed = turn.mistakes.filter((m) => m.corrected && m.errorType !== 'OTHER');
+    // Practice targets mistakes of the solution, not slips while checking the answer.
+    const fixed = turn.mistakes.filter(
+      (m) => m.corrected && m.errorType !== 'OTHER' && m.phase === 'SOLUTION',
+    );
     const target =
       (await this.repo.followUpDepth(attempt)) < MAX_FOLLOW_UP_DEPTH ? fixed[0] : undefined;
-    const solution =
-      check.currentSolution.kind === 'unique'
-        ? `${attempt.variable} = ${check.currentSolution.value.toLatex()}`
-        : '';
+    const solution = answerOf(attempt).solutionLatex;
 
     // Build the follow-up first so the celebration can point at the real problem.
     const followUp = target ? await this.createFollowUp(turn, target) : null;
 
-    const ctx = await this.contexts.build(turn, {}, text);
+    const ctx = await this.contexts.build(turn, {}, opts.pendingStudentMessage);
     try {
       const out = await this.llm.generate(
         {
@@ -370,13 +574,14 @@ export class TutorService {
             solution,
             fixed.map((m) => `${m.errorType}: ${m.description}`),
             followUp?.latex ?? null,
+            opts.checked,
           ),
           schema: FeedbackSchema,
           deadline: turn.deadline,
         },
         attempt.userId,
       );
-      this.say(turn, 'TUTOR', 'CELEBRATION', out.message, meta.celebration());
+      this.say(turn, 'TUTOR', 'CELEBRATION', out.message, meta.celebration(opts.checked));
     } catch (e) {
       this.sayUnavailable(turn, e, notices.solvedNoAi(locale, solution), { solved: true });
     }
@@ -412,7 +617,7 @@ export class TutorService {
         },
         attempt.userId,
       );
-      if (attempt.mode === 'REMEDIATION' && activeMistake(turn) && reply.escalate) {
+      if (activeMistake(turn) && reply.escalate) {
         const level = Math.min(MAX_HINT, attempt.hintLevel + 1) as 1 | 2 | 3;
         this.update(turn, { hintLevel: level });
         this.say(
@@ -473,6 +678,7 @@ export class TutorService {
     stepInput: string,
     errorType: ErrorType,
     description: string,
+    opts: { phase?: Mistake['phase']; previousLine?: string } = {},
   ): Mistake {
     const mistake: Mistake = {
       id: randomUUID(),
@@ -480,8 +686,9 @@ export class TutorService {
       attemptId: turn.attempt.id,
       errorType,
       description,
-      previousLine: turn.attempt.currentLine,
+      previousLine: opts.previousLine ?? turn.attempt.currentLine,
       stepInput,
+      phase: opts.phase ?? 'SOLUTION',
       hintsUsed: 0,
       corrected: false,
       correctedAt: null,
@@ -569,3 +776,13 @@ export class TutorService {
 
 const sameText = (a: string, b: string) =>
   normalizeMathInput(a).replace(/\s/g, '') === normalizeMathInput(b).replace(/\s/g, '');
+
+/** The root and the original equation, as LaTeX (only shown once the root is reached). */
+function answerOf(attempt: Attempt): { solutionLatex: string; equationLatex: string } {
+  const parsed = parseEquation(attempt.equation);
+  const s = solve(parsed);
+  return {
+    solutionLatex: `${attempt.variable} = ${s.kind === 'unique' ? s.value.toLatex() : '?'}`,
+    equationLatex: parsed.latex,
+  };
+}

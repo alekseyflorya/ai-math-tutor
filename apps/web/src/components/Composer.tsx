@@ -1,4 +1,4 @@
-import { classifyInput, MathInputError, parseEquation } from '@tutor/shared';
+import { classifyInput, MathInputError, parseEquation, type TutorMode } from '@tutor/shared';
 import { Lightbulb, SendHorizontal } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useI18n } from '../i18n/i18n';
@@ -12,6 +12,10 @@ interface Props {
   onHint: () => void;
   /** Last verified line, shown above the input on phones where the notebook scrolls away. */
   currentLatex: string;
+  /** While CHECKING, lines are check lines (labelled so) and the root is shown in the hint. */
+  mode?: TutorMode;
+  /** The root (e.g. "x = 7"), only known once reached. */
+  solutionLatex?: string | null;
 }
 
 /**
@@ -19,7 +23,15 @@ interface Props {
  * uses (from @tutor/shared) shows live whether this will be checked as a step,
  * and the same parser renders a preview, so what you see is what gets checked.
  */
-export function Composer({ busy, variable, onSend, onHint, currentLatex }: Props) {
+export function Composer({
+  busy,
+  variable,
+  onSend,
+  onHint,
+  currentLatex,
+  mode = 'SOLVING',
+  solutionLatex = null,
+}: Props) {
   const { t } = useI18n();
   const [text, setText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -32,7 +44,7 @@ export function Composer({ busy, variable, onSend, onHint, currentLatex }: Props
   const preview = useMemo(() => {
     const value = text.trim();
     if (!value) return null;
-    if (classifyInput(value) === 'message') return { kind: 'message' as const };
+    if (classifyInput(value, { mode }) === 'message') return { kind: 'message' as const };
     try {
       return { kind: 'step' as const, latex: parseEquation(value).latex };
     } catch (e) {
@@ -42,7 +54,10 @@ export function Composer({ busy, variable, onSend, onHint, currentLatex }: Props
         error: e instanceof MathInputError ? e.code : 'SYNTAX',
       };
     }
-  }, [text]);
+  }, [text, mode]);
+  const checking = mode === 'CHECKING';
+  const placeholder =
+    checking && solutionLatex ? t.checkPlaceholder(plainRoot(solutionLatex)) : t.inputPlaceholder;
 
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
@@ -72,7 +87,7 @@ export function Composer({ busy, variable, onSend, onHint, currentLatex }: Props
         {preview?.kind === 'step' && (
           <>
             <span className="rounded bg-ink-soft px-1.5 py-0.5 text-xs font-bold text-ink">
-              {t.inputStep}
+              {checking ? t.inputCheck : t.inputStep}
             </span>
             {preview.latex ? (
               <Tex tex={preview.latex} className="text-ink" />
@@ -99,12 +114,12 @@ export function Composer({ busy, variable, onSend, onHint, currentLatex }: Props
           ref={inputRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder={t.inputPlaceholder}
+          placeholder={placeholder}
           maxLength={400}
           disabled={busy}
           autoComplete="off"
           spellCheck={false}
-          aria-label={t.inputPlaceholder}
+          aria-label={placeholder}
           className="min-w-0 flex-1 rounded-lg border border-line bg-paper px-3 py-2.5 text-base text-text outline-none transition focus:border-ink focus:ring-2 focus:ring-ink-soft disabled:opacity-60"
         />
         <button
@@ -142,4 +157,9 @@ export function Composer({ busy, variable, onSend, onHint, currentLatex }: Props
       </div>
     </form>
   );
+}
+
+/** The placeholder is plain text: "x = -\\frac{3}{2}" → "x = -3/2". */
+function plainRoot(latex: string): string {
+  return latex.replace(/\\frac\{(\d+)\}\{(\d+)\}/g, '$1/$2');
 }

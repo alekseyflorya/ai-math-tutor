@@ -22,8 +22,12 @@ export function Workspace({ attemptId }: { attemptId: string }) {
   const [sendError, setSendError] = useState<string | null>(null);
 
   const turn = useMutation({
-    mutationFn: (arg: { kind: 'send'; text: string } | { kind: 'hint' }) =>
-      arg.kind === 'send' ? api.send(attemptId, arg.text) : api.hint(attemptId),
+    mutationFn: (arg: { kind: 'send'; text: string } | { kind: 'hint' } | { kind: 'skipCheck' }) =>
+      arg.kind === 'send'
+        ? api.send(attemptId, arg.text)
+        : arg.kind === 'hint'
+          ? api.hint(attemptId)
+          : api.skipCheck(attemptId),
     onMutate: (arg) => {
       setSendError(null);
       // Show the student's line immediately; the tutor's reply follows.
@@ -70,11 +74,18 @@ export function Workspace({ attemptId }: { attemptId: string }) {
       <div className="flex min-h-[26rem] flex-col rounded-2xl border border-line bg-surface shadow-sm xl:sticky xl:top-19 xl:h-[calc(100dvh-6.5rem)]">
         <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
           <h2 className="font-serif font-bold text-text">{t.tutor}</h2>
-          {attempt.mode === 'REMEDIATION' && attempt.hintLevel > 0 && (
-            <span className="rounded-full bg-pen-soft px-2.5 py-0.5 text-xs font-bold text-pen">
-              {t.hintLevel(attempt.hintLevel)}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {!solved && attempt.mode === 'CHECKING' && (
+              <span className="rounded-full bg-ok-soft px-2.5 py-0.5 text-xs font-bold text-ok">
+                {t.checking}
+              </span>
+            )}
+            {!solved && attempt.mode !== 'SOLVING' && attempt.hintLevel > 0 && (
+              <span className="rounded-full bg-pen-soft px-2.5 py-0.5 text-xs font-bold text-pen">
+                {t.hintLevel(attempt.hintLevel)}
+              </span>
+            )}
+          </div>
         </div>
         <Chat messages={attempt.messages} pending={pending} thinking={turn.isPending} />
         {/* Phones: the page scrolls, the input stays pinned to the bottom of the screen. */}
@@ -96,13 +107,23 @@ export function Workspace({ attemptId }: { attemptId: string }) {
               </Link>
             </div>
           ) : (
-            <Composer
-              busy={turn.isPending}
-              variable={attempt.variable}
-              onSend={(text) => turn.mutateAsync({ kind: 'send', text })}
-              onHint={() => turn.mutate({ kind: 'hint' })}
-              currentLatex={attempt.currentLatex}
-            />
+            <>
+              {attempt.mode === 'CHECKING' && (
+                <SkipCheck
+                  busy={turn.isPending}
+                  onSkip={() => turn.mutate({ kind: 'skipCheck' })}
+                />
+              )}
+              <Composer
+                busy={turn.isPending}
+                variable={attempt.variable}
+                onSend={(text) => turn.mutateAsync({ kind: 'send', text })}
+                onHint={() => turn.mutate({ kind: 'hint' })}
+                currentLatex={attempt.currentLatex}
+                mode={attempt.mode}
+                solutionLatex={attempt.solutionLatex}
+              />
+            </>
           )}
         </div>
       </div>
@@ -222,6 +243,53 @@ function SolvedCard({ attempt, onNext }: { attempt: AttemptView; onNext: (id: st
           className="mt-3 inline-flex items-center gap-2 rounded-lg border border-ok/50 px-4 py-2 text-sm font-bold text-ok transition hover:bg-ok-soft disabled:opacity-60"
         >
           <RotateCcw size={15} aria-hidden /> {t.solveAgain}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** "Skip the check", confirmed in place (no browser dialog). */
+function SkipCheck({ busy, onSkip }: { busy: boolean; onSkip: () => void }) {
+  const { t } = useI18n();
+  const [confirming, setConfirming] = useState(false);
+  const button =
+    'rounded-md px-2.5 py-1 text-xs font-bold transition disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ink';
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-3 py-2 text-xs">
+      {confirming ? (
+        <>
+          <span className="mr-auto text-muted" role="status">
+            {t.skipCheckConfirm}
+          </span>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => setConfirming(false)}
+            className={`${button} text-muted hover:bg-paper-2`}
+          >
+            {t.cancel}
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              setConfirming(false);
+              onSkip();
+            }}
+            className={`${button} bg-pen-soft text-pen hover:brightness-95`}
+          >
+            {t.skipCheckYes}
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => setConfirming(true)}
+          className={`${button} text-muted hover:bg-paper-2 hover:text-text`}
+        >
+          {t.skipCheck}
         </button>
       )}
     </div>

@@ -58,6 +58,7 @@ export const api = {
   send: (id: string, text: string) =>
     request<AttemptView>('POST', `/attempts/${id}/messages`, { text }),
   hint: (id: string) => request<AttemptView>('POST', `/attempts/${id}/hint`),
+  skipCheck: (id: string) => request<AttemptView>('POST', `/attempts/${id}/skip-check`),
 
   progress: () => request<ProgressView>('GET', '/progress'),
 };

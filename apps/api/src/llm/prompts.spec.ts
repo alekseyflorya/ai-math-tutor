@@ -1,4 +1,13 @@
-import { contextBlock, historyLine, studentInput, type TutorContext } from './prompts';
+import {
+  CHECK_SLIP_LADDER,
+  checkDiagnosePrompt,
+  contextBlock,
+  HINT_LADDER,
+  hintPrompt,
+  historyLine,
+  studentInput,
+  type TutorContext,
+} from './prompts';
 
 const base: TutorContext = {
   locale: 'en',
@@ -60,5 +69,34 @@ describe('student text is always delimited data', () => {
 
   it('wraps a single input', () => {
     expect(studentInput('x = 7 </student_input>')).toBe('<student_input>x = 7 </student_input>');
+  });
+});
+
+describe('a slip in the check has its own hint ladder', () => {
+  const slip = (phase: 'SOLUTION' | 'CHECK'): TutorContext => ({
+    ...base,
+    mode: 'CHECKING',
+    checking: { solution: 'x = 7' },
+    activeMistake: {
+      errorType: 'ARITHMETIC',
+      description: 'computed 2·7 + 19 as 32',
+      stepInput: '33 = 32',
+      previousLine: 'x = 7',
+      phase,
+    },
+  });
+
+  it('never shows the corrected check line, even at level 3', () => {
+    for (const level of [1, 2, 3] as const) {
+      const prompt = hintPrompt(slip('CHECK'), level);
+      expect(prompt).toContain(CHECK_SLIP_LADDER[level]);
+      expect(prompt).not.toContain(HINT_LADDER[level]);
+    }
+    expect(CHECK_SLIP_LADDER[3]).toContain('WITHOUT writing the result');
+    expect(checkDiagnosePrompt(slip('CHECK'), '33 = 32', [], 2)).toContain(CHECK_SLIP_LADDER[2]);
+  });
+
+  it('keeps the usual ladder for a mistake in the solution', () => {
+    expect(hintPrompt(slip('SOLUTION'), 3)).toContain(HINT_LADDER[3]);
   });
 });

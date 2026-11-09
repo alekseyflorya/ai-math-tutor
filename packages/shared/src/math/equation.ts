@@ -129,7 +129,13 @@ export function parseEquation(input: string, opts: { variable?: string } = {}): 
  * precise "I couldn't read that" instead of a chat reply), so we decide on shape only:
  * it has "=", and contains no words (2+ letters in a row) or non-latin text.
  */
-export function classifyInput(text: string): 'step' | 'message' {
+export function classifyInput(
+  text: string,
+  // The rules are the same in every mode today; the mode is part of the contract so the server
+  // and the composer preview always route a line the same way (e.g. while CHECKING an answer,
+  // a numeric equality "3(7 + 4) = 2*7 + 19" and a line with x are both steps).
+  _opts: { mode?: 'SOLVING' | 'REMEDIATION' | 'CHECKING' } = {},
+): 'step' | 'message' {
   const t = normalizeMathInput(text);
   if (!t.includes('=')) return 'message';
   if (/[a-z]{2,}/.test(t) || /[?!]/.test(t) || /[^\x20-\x7e]/.test(t)) return 'message';
@@ -168,6 +174,12 @@ export function isFinalForm(eq: ParsedEquation): boolean {
   );
   if (!m) return false;
   return isSimplifiedNumber((m[1] ?? m[2])!);
+}
+
+/** One number in lowest terms, as written: "33", "-2.5", "3/2" — not "66/2" or "30 + 3". */
+export function isPlainNumber(text: string): boolean {
+  const t = text.trim();
+  return /^-?\d+(?:\.\d+)?(?:\s*\/\s*-?\d+(?:\.\d+)?)?$/.test(t) && isSimplifiedNumber(t);
 }
 
 /** "6", "-2.5", "3/2" are simplified; "18/3", "4/2", "6/1", "1.5/3", "3/-2" are not. */

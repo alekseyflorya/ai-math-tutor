@@ -47,4 +47,44 @@ describe('Composer', () => {
     await user.type(input, '3x + 12 = 2x + 19{Enter}');
     await vi.waitFor(() => expect((input as HTMLInputElement).value).toBe('3x + 12 = 2x + 19'));
   });
+
+  it('while checking, labels check lines and points at the root to substitute', async () => {
+    render(
+      <I18nProvider>
+        <Composer
+          busy={false}
+          variable="x"
+          onSend={() => Promise.resolve()}
+          onHint={() => {}}
+          currentLatex="x=7"
+          mode="CHECKING"
+          solutionLatex="x = 7"
+        />
+      </I18nProvider>,
+    );
+    const input = screen.getByLabelText(t.checkPlaceholder('x = 7'));
+    const user = userEvent.setup();
+    await user.type(input, '3(7 + 4) = 2*7 + 19');
+    expect(screen.getByText(t.inputCheck)).toBeTruthy();
+    await user.clear(input);
+    await user.type(input, 'why 33?');
+    expect(screen.getByText(t.inputQuestion)).toBeTruthy();
+  });
+
+  it('writes a fractional root as plain text in the placeholder', () => {
+    render(
+      <I18nProvider>
+        <Composer
+          busy={false}
+          variable="x"
+          onSend={() => Promise.resolve()}
+          onHint={() => {}}
+          currentLatex="x=-3/2"
+          mode="CHECKING"
+          solutionLatex={'x = -\\frac{3}{2}'}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.getByLabelText(t.checkPlaceholder('x = -3/2'))).toBeTruthy();
+  });
 });

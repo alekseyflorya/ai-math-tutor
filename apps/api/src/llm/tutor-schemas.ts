@@ -20,6 +20,17 @@ export const DiagnosisSchema = z.object({
 });
 export type Diagnosis = z.infer<typeof DiagnosisSchema>;
 
+/** A slip while checking the answer: always ARITHMETIC (the engine knows), so no category. */
+export const CheckDiagnosisSchema = z.object({
+  misconception: z
+    .string()
+    .min(5)
+    .max(400)
+    .describe('Teacher-facing, one sentence: which calculation of the check went wrong'),
+  message,
+});
+export type CheckDiagnosis = z.infer<typeof CheckDiagnosisSchema>;
+
 export const FeedbackSchema = z.object({ message });
 export type Feedback = z.infer<typeof FeedbackSchema>;
 

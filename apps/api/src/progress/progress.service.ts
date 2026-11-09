@@ -18,7 +18,7 @@ export class ProgressService {
 
     const [attemptRows, stepRows, userMistakes, skills, recentAttempts] = await Promise.all([
       this.db
-        .select({ status: attempts.status, solvedAt: attempts.solvedAt })
+        .select({ status: attempts.status, solvedAt: attempts.solvedAt, check: attempts.check })
         .from(attempts)
         .where(ownAttempts),
       this.db
@@ -97,6 +97,10 @@ export class ProgressService {
         correctedMistakes: userMistakes.filter((m) => m.corrected).length,
         verifiedMistakes: verified,
         followUpsPassed: verified,
+      },
+      checks: {
+        done: attemptRows.filter((a) => a.check === 'DONE').length,
+        skipped: attemptRows.filter((a) => a.check === 'SKIPPED').length,
       },
       mistakesByType: ERROR_TYPES.filter((t) => byType.has(t)).map((errorType) => ({
         errorType,

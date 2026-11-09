@@ -22,6 +22,7 @@ import type {
   ProgressView,
   UserView,
 } from '@tutor/shared';
+import { evaluateSide, parseEquation, solve } from '@tutor/shared';
 import { LLM_PROVIDER, type LlmProvider } from '../src/llm/llm.types';
 import { DemoCleanupService } from '../src/auth/demo-cleanup.service';
 import { AttemptLock } from '../src/tutor/attempt-lock';
@@ -125,9 +126,16 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     let a = (await agent.post('/api/attempts').send({ problemId: featured.id }).expect(201))
       .body as AttemptView;
     expect(a.messages[0]!.kind).toBe('GREETING');
+    // Until the student reaches it, the answer is nowhere in what the API returns.
+    const noAnswer = (view: AttemptView) => {
+      expect(view.solutionLatex).toBeNull();
+      expect(JSON.stringify(view)).not.toMatch(/x\s*=\s*7(?![0-9])/);
+    };
+    noAnswer(a);
 
     // 1. The classic mistake: only the first term was multiplied.
     a = await say(a.id, '3x + 4 = 2x + 19');
+    noAnswer(a);
     expect(a.steps.at(-1)!.isCorrect).toBe(false);
     expect(a.mode).toBe('REMEDIATION');
     expect(a.hintLevel).toBe(1);
@@ -152,10 +160,27 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     expect(a.mode).toBe('SOLVING');
     expect(lastTutor(a).meta).toMatchObject({ correct: true, fixedErrorType: 'DISTRIBUTION' });
 
-    // 4. Any equivalent path is accepted; finish.
+    // 4. Any equivalent path is accepted; the answer is reached.
     a = await say(a.id, '3x - 2x = 19 - 12');
+    noAnswer(a);
     a = await say(a.id, 'x = 7');
+    expect(a.status).toBe('IN_PROGRESS');
+    expect(a.mode).toBe('CHECKING');
+    expect(a.solutionLatex).toBe('x = 7');
+    expect(lastTutor(a)).toMatchObject({ kind: 'FEEDBACK', meta: { checkRequested: true } });
+    expect(a.messages.some((m) => m.kind === 'FOLLOW_UP')).toBe(false); // only once checked
+
+    // 5. The check, as at school: substitute into the original equation, compute both sides.
+    a = await say(a.id, '3(7 + 4) = 2·7 + 19');
+    expect(a.mode).toBe('CHECKING');
+    expect(a.steps.at(-1)).toMatchObject({ phase: 'CHECK', isCorrect: true });
+    expect(lastTutor(a)).toMatchObject({ kind: 'FEEDBACK', meta: { checkStep: true } });
+    a = await say(a.id, '33 = 33');
     expect(a.status).toBe('SOLVED');
+    expect(a.check).toBe('DONE');
+    expect(a.messages.find((m) => m.kind === 'CELEBRATION')!.meta).toMatchObject({
+      checked: true,
+    });
     const followUpMsg = a.messages.find((m) => m.kind === 'FOLLOW_UP')!;
     expect(followUpMsg.meta).toMatchObject({ errorType: 'DISTRIBUTION', source: 'llm' });
     expect(a.nextAttemptId).toBeTruthy();
@@ -171,7 +196,7 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     expect(fresh.id).not.toBe(a.id);
     expect(fresh.status).toBe('IN_PROGRESS');
 
-    // 5. Follow-up targets the same skill and was validated by the math engine.
+    // 6. Follow-up targets the same skill and was validated by the math engine.
     let f = (await agent.get(`/api/attempts/${a.nextAttemptId}`).expect(200)).body as AttemptView;
     expect(f.isFollowUp).toBe(true);
     expect(f.targetErrorType).toBe('DISTRIBUTION');
@@ -180,6 +205,8 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     f = await say(f.id, '5x - 10 = 3x + 4');
     f = await say(f.id, '2x = 14');
     f = await say(f.id, 'x = 7');
+    expect(f.mode).toBe('CHECKING'); // practice problems are checked too
+    f = await say(f.id, '25 = 25'); // 5(7 - 2) = 3·7 + 4, computed mentally
     expect(f.status).toBe('SOLVED');
 
     expect(f.understandingVerified).toBe(true);
@@ -188,11 +215,128 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     expect(original.nextAttemptStatus).toBe('SOLVED');
     expect(original.understandingVerified).toBe(true);
 
-    // 6. Progress: the distribution mistake is corrected AND verified.
+    // 7. Progress: the distribution mistake is corrected AND verified.
     const progress = (await agent.get('/api/progress').expect(200)).body as ProgressView;
     const dist = progress.mistakesByType.find((m) => m.errorType === 'DISTRIBUTION')!;
     expect(dist).toEqual({ errorType: 'DISTRIBUTION', total: 1, corrected: 1, verified: 1 });
     expect(progress.skills.find((s) => s.skill === 'distribution')!.attempts).toBeGreaterThan(0);
+    expect(progress.checks.done).toBeGreaterThanOrEqual(2);
+  });
+
+  it('checks the answer: a slip in the check climbs the hint ladder, lines that are not a substitution get a notice', async () => {
+    let a = await startCustom('2(x + 3) = x + 10'); // x = 4, both sides 14
+    a = await say(a.id, 'x = 4');
+    expect(a.mode).toBe('CHECKING');
+
+    // Not a substitution: still the unknown, or another equation altogether.
+    a = await say(a.id, 'x = 4');
+    expect(lastTutor(a)).toMatchObject({ kind: 'NOTICE', meta: { checkError: 'not_numeric' } });
+    a = await say(a.id, '5 = 5');
+    expect(lastTutor(a)).toMatchObject({
+      kind: 'NOTICE',
+      meta: { checkError: 'not_substitution' },
+    });
+    expect(a.steps.filter((s) => s.phase === 'CHECK')).toHaveLength(0);
+
+    a = await say(a.id, '2(4 + 3) = 4 + 10');
+    a = await say(a.id, '14 = 15');
+    expect(a.mode).toBe('CHECKING');
+    expect(a.hintLevel).toBe(1);
+    expect(a.steps.at(-1)).toMatchObject({ phase: 'CHECK', isCorrect: false });
+    expect(lastTutor(a)).toMatchObject({
+      kind: 'HINT',
+      meta: { hintLevel: 1, errorType: 'ARITHMETIC', correct: false },
+    });
+
+    a = await hint(a.id);
+    expect(a.hintLevel).toBe(2);
+
+    a = await say(a.id, '14 = 14');
+    expect(a.status).toBe('SOLVED');
+    expect(a.check).toBe('DONE');
+    const progress = (await agent.get('/api/progress').expect(200)).body as ProgressView;
+    const arithmetic = progress.recentMistakes.find((m) => m.stepInput === '14 = 15')!;
+    expect(arithmetic).toMatchObject({ errorType: 'ARITHMETIC', corrected: true });
+    // A slip in the check is not what practice targets: no follow-up for it.
+    expect(a.nextAttemptId).toBeNull();
+  });
+
+  it('skips the check: solved without it, a pending slip stays uncorrected, practice still comes', async () => {
+    let a = await startCustom('4(x + 1) = 3x + 7'); // x = 3, both sides 16
+
+    // Only while checking.
+    const early = await agent.post(`/api/attempts/${a.id}/skip-check`).send({});
+    expect(early.status).toBe(409);
+    expect((early.body as ApiErrorBody).code).toBe('NOT_CHECKING');
+
+    a = await say(a.id, '4x + 1 = 3x + 7'); // DISTRIBUTION (mock)
+    a = await say(a.id, '4x + 4 = 3x + 7');
+    a = await say(a.id, 'x = 3');
+    a = await say(a.id, '16 = 17'); // a slip in the check, then the student gives up on it
+    expect(a.hintLevel).toBe(1);
+
+    a = (await agent.post(`/api/attempts/${a.id}/skip-check`).send({}).expect(200))
+      .body as AttemptView;
+    expect(a.status).toBe('SOLVED');
+    expect(a.check).toBe('SKIPPED');
+    expect(a.hintLevel).toBe(0);
+    expect(a.messages.some((m) => m.kind === 'NOTICE' && m.meta?.checkSkipped)).toBe(true);
+    expect(a.messages.find((m) => m.kind === 'CELEBRATION')!.meta).toMatchObject({
+      checked: false,
+    });
+    // The practice problem targets the solution's mistake, not the slip in the check.
+    expect(a.messages.find((m) => m.kind === 'FOLLOW_UP')!.meta).toMatchObject({
+      errorType: 'DISTRIBUTION',
+    });
+
+    const progress = (await agent.get('/api/progress').expect(200)).body as ProgressView;
+    expect(progress.recentMistakes.find((m) => m.stepInput === '16 = 17')).toMatchObject({
+      errorType: 'ARITHMETIC',
+      corrected: false,
+    });
+    expect(progress.checks.skipped).toBeGreaterThanOrEqual(1);
+
+    const again = await agent.post(`/api/attempts/${a.id}/skip-check`).send({});
+    expect(again.status).toBe(409);
+    expect((again.body as ApiErrorBody).code).toBe('ATTEMPT_CLOSED');
+  });
+
+  it('a slip while checking the practice problem does not undo "understood"', async () => {
+    // The model diagnoses the first mistake as ARITHMETIC (the practice will target it).
+    const real = provider.completeJson.bind(provider);
+    jest.spyOn(provider, 'completeJson').mockImplementation(async (req, ...rest) => {
+      if (req.purpose === 'diagnose' && req.prompt.includes('2x = 9')) {
+        return JSON.stringify({
+          errorType: 'ARITHMETIC',
+          misconception: 'Subtracted 3 from 11 and got 9.',
+          message: '[mock] Check 11 - 3 again?',
+        });
+      }
+      return real(req, ...rest);
+    });
+    let a = await startCustom('2x + 3 = 11');
+    a = await say(a.id, '2x = 9');
+    expect(lastTutor(a).meta).toMatchObject({ errorType: 'ARITHMETIC' });
+    a = await say(a.id, '2x = 8');
+    a = await say(a.id, 'x = 4');
+    a = await say(a.id, '11 = 11');
+    expect(a.status).toBe('SOLVED');
+    expect(a.nextAttemptId).toBeTruthy();
+
+    // The practice problem: solved right, but an ARITHMETIC slip in its check.
+    let f = (await agent.get(`/api/attempts/${a.nextAttemptId}`).expect(200)).body as AttemptView;
+    expect(f.targetErrorType).toBe('ARITHMETIC');
+    const eq = parseEquation(f.equation);
+    const sol = solve(eq);
+    if (sol.kind !== 'unique') throw new Error('practice problem without a unique root');
+    const v = evaluateSide(eq.left, sol.value).toString();
+    f = await say(f.id, `x = ${sol.value.toString()}`);
+    expect(f.mode).toBe('CHECKING');
+    f = await say(f.id, `${v} = ${v}1`);
+    expect(lastTutor(f).meta).toMatchObject({ errorType: 'ARITHMETIC' });
+    f = await say(f.id, `${v} = ${v}`);
+    expect(f.status).toBe('SOLVED');
+    expect(f.understandingVerified).toBe(true);
   });
 
   it('explains unreadable input instead of guessing', async () => {
@@ -260,6 +404,8 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     expect(lastTutor(a)).toMatchObject({ kind: 'NOTICE', meta: { correct: true } });
 
     a = await say(a.id, 'x = 5');
+    expect(a.mode).toBe('CHECKING'); // the request to check is fixed copy: no model needed
+    a = await say(a.id, '10 = 10');
     expect(a.status).toBe('SOLVED');
     expect(lastTutor(a)).toMatchObject({ kind: 'NOTICE', meta: { solved: true } });
   });
@@ -313,7 +459,7 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     await say(a.id, 'why?');
     await say(a.id, 'how?');
     const next = await say(a.id, 'x = 5');
-    expect(next.status).toBe('SOLVED');
+    expect(next.mode).toBe('CHECKING');
   });
 
   it('lets a turn through once a stuck lease has expired', async () => {
@@ -348,6 +494,7 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     expect([first, second].map((r) => (r.body as ApiErrorBody).code)).toContain('BUSY');
 
     await say(a.id, 'x = 3');
+    await say(a.id, '5 = 5');
     const closed = await agent.post(`/api/attempts/${a.id}/messages`).send({ text: 'x = 3' });
     expect(closed.status).toBe(409);
     expect((closed.body as ApiErrorBody).code).toBe('ATTEMPT_CLOSED');

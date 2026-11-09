@@ -15,7 +15,10 @@ verifies understanding with an LLM-generated follow-up problem that the math eng
   Must be built (`pnpm --filter @tutor/shared build`) before the api/web typecheck or run.
 - `apps/api` — NestJS 11 + Drizzle/Postgres.
   - Feature modules: `TutorModule`, `ProblemsModule`, `ProgressModule`; `AppModule` only assembles them.
-  - `src/tutor/tutor.service.ts` — the state machine (SOLVING / REMEDIATION / SOLVED / follow-up).
+  - `src/tutor/tutor.service.ts` — the state machine (SOLVING / REMEDIATION / CHECKING / SOLVED /
+    follow-up). CHECKING: the answer is reached and checked by substitution
+    (`checkSubstitution` in `@tutor/shared`); a slip there is an ARITHMETIC mistake of phase
+    CHECK (counts for skills, not for follow-ups or their verification).
     A turn reads, calls the model, then applies all its writes in ONE transaction (queued in
     `turn.writes`). Next to it: `attempt.repository.ts` (every query), `tutor-context.builder.ts`
     (what the model is told), `attempt-lock.ts` (409 BUSY: a lease in the attempt row),
@@ -47,7 +50,9 @@ docker compose up --build                    # full stack on http://localhost:80
 
 - **Correctness is decided by the math engine, never by the LLM.** The LLM only diagnoses why
   and writes teaching messages. Do not add LLM-based grading.
-- The tutor never reveals the final answer. Hint level 3 shows the corrected _current_ step only;
+- The tutor never reveals the final answer, and neither does the API: nothing the root can be read
+  from (e.g. `solutionLatex`) before the student reaches it.
+- Migrations: a new enum value must not be used in the same migration batch that adds it. Hint level 3 shows the corrected _current_ step only;
   when that step would be the answer (`x = number`), it names the operation and the line to apply it
   to ("divide both sides of 4x = 20 by 4") and leaves the result to the student.
 - Every LLM call goes through `LlmService.generate` with a zod schema (quotas + logging + retry).
