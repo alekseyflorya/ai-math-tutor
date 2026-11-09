@@ -341,8 +341,9 @@ Prompts reduce leaks; they cannot rule them out. So hints on a slip in the check
 deterministic guard in the API (`src/tutor/check-hint-guard.ts`):
 
 1. **What it forbids.** The engine lists the values the hint must not state: the value both sides
-   take at the root, and the true values of both sides of the student's line. Numbers the student
-   wrote in that line are allowed, since quoting "33 = 32" gives nothing away.
+   take at the root, and the true values of both sides of the student's line. Numbers written in
+   the original equation or in the student's line are allowed: quoting "33 = 32", or
+   "$x + 5 = 12$" where the 12 on the right is the value itself, gives nothing away.
 2. **One retry.** If the model's message states one of those values, the model is asked once more,
    and the request names the violation.
 3. **A fixed hint.** If the retry leaks too (or fails), a fixed hint for that level is shown
@@ -355,13 +356,32 @@ The guard covers the diagnosis of the slip and the "Hint" button. The message me
 The eval runs the 12 check cases through the same guard (`pnpm eval --only CHECK`).
 Production setup, `gemini-3.6-flash`:
 
-| Run                                                 | L1 is a question | No value of a side | No computed line | L3 = operations, no results | L2 on other numbers | Guard: retried / template | No leak after the guard |
-| --------------------------------------------------- | ---------------- | ------------------ | ---------------- | --------------------------- | ------------------- | ------------------------- | ----------------------- |
-| Before (`2026-11-09-gemini-3.6-flash-2`, re-scored) | 100%             | 91.7% (33/36)      | 91.7% (33/36)    | 100%                        | 66.7% (8/12)        | —                         | —                       |
-| After (`2026-11-10-gemini-3.6-flash`)               | 100%             | 100% (36/36)       | 100% (36/36)     | 100%                        | 75.0% (9/12)        | 1 / 0 of 36               | 100% (36/36)            |
+| Run                                                                                             | L1 is a question | No value of a side | No computed line | L3 = operations, no results | L2 on other numbers | Guard: retried / template | No leak after the guard |
+| ----------------------------------------------------------------------------------------------- | ---------------- | ------------------ | ---------------- | --------------------------- | ------------------- | ------------------------- | ----------------------- |
+| Before (`2026-11-09-gemini-3.6-flash-2`, re-scored)                                             | 100%             | 91.7% (33/36)      | 91.7% (33/36)    | 100%                        | 66.7% (8/12)        | —                         | —                       |
+| After (`2026-11-10-gemini-3.6-flash`)                                                           | 100%             | 100% (36/36)       | 100% (36/36)     | 100%                        | 75.0% (9/12)        | 1 / 0 of 36               | 100% (36/36)            |
+| With the 6 cases where the equation shows the value (`2026-11-10-gemini-3.6-flash-3`, 18 cases) | 100%             | 96.3% (52/54)      | 100% (54/54)     | 100%                        | 66.7% (12/18)       | 2 / 1 of 54               | 100% (54/54)            |
 
 The level-1 fix removed the three leaks. The guard caught one more, a level-2 example ending in
 the value of the sides (40), and the retry was clean. No fixed hint was needed in this run.
+
+**Equations that show the value themselves.** In `x + 5 = 12` and `3x − 7 = 11`, the first
+curriculum problems, the value of the sides is the number on the right. The first version of the
+guard forbade it, so a hint quoting the equation was retried and could end as the fixed hint. Six
+check cases cover this now (`check-13` … `check-18`). In two of them the value is not in the
+student's line (a miscopied right side, `7 + 5 = 13`; and `5x − 10 = 2x − 1`, where it is the
+coefficient 5), so only the equation makes it allowed. The eval reports **guard false positives**:
+triggers where every number caught is already written in the equation or the student's lines.
+
+- In the 18-case run the guard acted 3 times out of 54 hints, with 0 false positives:
+  - twice it caught the value of the sides (40, 33), and the retry was clean;
+  - once it caught 4, the true value of the student's `14 − 10`; the retry leaked again, so the
+    fixed hint was shown.
+- On the same messages, the previous guard would have fired 2 more times, both false: `check-17`
+  hints quoting `5 · 3`.
+- The eval's wider check (it also forbids the result of the operation that slipped) found 2
+  level-2 examples that end in such a result (`check-7`: 28, `check-18`: 5). The guard does not
+  know which operation slipped, so these stay a prompt matter.
 
 `pnpm eval` is not part of CI: it needs an API key and spends quota (one run is about 200
 requests). By default it measures the primary model of `GEMINI_MODEL_DIAGNOSIS`, the one that
