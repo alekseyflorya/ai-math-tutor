@@ -120,8 +120,8 @@ export class GeminiProvider implements LlmProvider {
 
 /**
  * How long a 429 lasts. Gemini puts a RetryInfo ("41s") and the quota id ("…PerDay…") in the
- * error body; older messages only say "Please retry in 20h5m48s". A daily quota without a retry
- * time lasts until it resets at midnight Pacific time.
+ * error body; older messages only say "Please retry in 20h5m48s". A daily quota lasts at least
+ * until it resets at midnight Pacific time, whatever retry time comes with it.
  */
 export function cooldownFrom(err: unknown, now: number): Cooldown {
   const message = (err as Error)?.message ?? '';
@@ -139,8 +139,9 @@ export function cooldownFrom(err: unknown, now: number): Cooldown {
     /* not a JSON body */
   }
   delayMs ??= durationMs(/retry in ((?:\d+h)?(?:\d+m)?[\d.]+s)/i.exec(message)?.[1] ?? '');
-  delayMs ??= daily ? msUntilPacificMidnight(now) : DEFAULT_COOLDOWN_MS;
-  return { until: now + delayMs, daily };
+  // A daily quota frees up only at the reset, even when Google suggests a short retryDelay.
+  if (daily) return { until: now + Math.max(delayMs ?? 0, msUntilPacificMidnight(now)), daily };
+  return { until: now + (delayMs ?? DEFAULT_COOLDOWN_MS), daily };
 }
 
 /** "41s", "41.2s", "20h5m48.6s" → ms; null if unreadable. */

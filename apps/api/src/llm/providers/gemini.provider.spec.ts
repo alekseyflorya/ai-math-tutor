@@ -121,6 +121,21 @@ describe('cooldownFrom', () => {
     });
   });
 
+  it('keeps a daily quota cooling until the Pacific reset, even with a short retryDelay', () => {
+    const daily = 'GenerateRequestsPerDayPerProjectPerModel-FreeTier';
+    expect(cooldownFrom(quota429({ quotaId: daily, retryDelay: '41s' }), now)).toEqual({
+      until: now + 12 * 3600_000,
+      daily: true,
+    });
+    // a longer retryDelay than the reset still wins
+    expect(cooldownFrom(quota429({ quotaId: daily, retryDelay: '50000s' }), now).until).toBe(
+      now + 50_000_000,
+    );
+    expect(cooldownFrom(new Error('requests per day limit; Please retry in 30s.'), now).until).toBe(
+      now + 12 * 3600_000,
+    );
+  });
+
   it('falls back to "retry in …" text and then to a minute', () => {
     expect(cooldownFrom(new Error('Please retry in 20h5m48s.'), now).until).toBe(
       now + (20 * 3600 + 5 * 60 + 48) * 1000,
