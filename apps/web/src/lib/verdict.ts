@@ -1,4 +1,10 @@
-import { judgeLine, parseEquation, type AttemptView, type StepView } from '@tutor/shared';
+import {
+  judgeLine,
+  lineContext,
+  parseEquation,
+  type AttemptView,
+  type StepView,
+} from '@tutor/shared';
 
 /**
  * The line the student just sent, as the notebook shows it until the server answers. The verdict
@@ -16,14 +22,7 @@ export interface ProvisionalLine {
 export function provisionalLine(attempt: AttemptView, text: string): ProvisionalLine | null {
   let verdict;
   try {
-    verdict = judgeLine(text, {
-      mode: attempt.mode,
-      equation: attempt.equation,
-      currentLine: attempt.currentLine,
-      variable: attempt.variable,
-      lastCheckLine:
-        attempt.steps.filter((s) => s.phase === 'CHECK' && s.isCorrect).at(-1)?.input ?? null,
-    });
+    verdict = judgeLine(text, lineContext(attempt, attempt.steps));
   } catch {
     return null; // the server decides; nothing to show early
   }
