@@ -22,7 +22,13 @@ import {
   solve,
 } from '@tutor/shared';
 import { CASES, validateCases, type EvalCase } from '../evals/cases';
-import { correctedStep, detectLanguage, isQuestion, revealsAnswer } from '../evals/checks';
+import {
+  correctedStep,
+  detectLanguage,
+  isQuestion,
+  namesOperation,
+  revealsAnswer,
+} from '../evals/checks';
 import {
   summarize,
   violations,
@@ -142,11 +148,17 @@ function checkMessage(
   if (sol.kind !== 'unique') throw new Error(`${k.id}: the problem has no unique solution`);
   return {
     revealsAnswer: revealsAnswer(message, sol.value),
-    // When the corrected step is "x = 5", level 3 cannot show it without the answer.
-    answerAllowed: level === 3 && isFinalForm(parseEquation(k.correctStep)),
+
     language: detectLanguage(message),
     ...(level === 1 ? { question: isQuestion(message) } : {}),
-    ...(level === 3 ? { correctedStep: correctedStep(message, k) } : {}),
+    ...(level === 3
+      ? {
+          correctedStep: correctedStep(message, k),
+          // "4x = 20 → x = 5": level 3 names the operation instead of showing the answer.
+          finalStep: isFinalForm(parseEquation(k.correctStep)),
+          namesOperation: namesOperation(message),
+        }
+      : {}),
   };
 }
 

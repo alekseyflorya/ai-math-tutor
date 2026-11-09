@@ -97,6 +97,16 @@ const squash = (s: string) => normalizeMathInput(s).replace(/\s+/g, '');
 
 // --- Rules ------------------------------------------------------------------------------------
 
+/**
+ * Names an operation on the equation ("divide both sides of 4x = 20 by 4", "помнож обидві
+ * частини на 3"). Words only: the math itself is checked separately.
+ */
+export function namesOperation(message: string): boolean {
+  return /\b(divid|multipl|subtract|add|move|take away)|(поділ|діли|помнож|множ|відн|відім|дода|перенес)/i.test(
+    prose(message),
+  );
+}
+
 /** Level 1 must be a question. */
 export function isQuestion(message: string): boolean {
   return /[?？]/.test(prose(message));

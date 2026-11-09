@@ -42,7 +42,7 @@ export const ERROR_TYPE_GUIDE: Record<ErrorType, string> = {
 export const HINT_LADDER: Record<1 | 2 | 3, string> = {
   1: 'HINT LEVEL 1 — Ask ONE Socratic question that directs attention to where the error is. Do not name the rule and do not show any corrected expression.',
   2: 'HINT LEVEL 2 — Name the rule that was broken and illustrate it on a DIFFERENT, simpler example with other numbers. Do not show the corrected version of the student’s line.',
-  3: 'HINT LEVEL 3 — Show the correct version of THIS step with a one-sentence justification, then ask the student to continue from it. Still do not give the final answer.',
+  3: 'HINT LEVEL 3 — Show the corrected version of THIS step (only this one line, nothing beyond it) with a one-sentence justification, then ask the student to continue from it. Exception: if the corrected step would already be the answer (x = a number), do not write it or its result; name the operation and the line to apply it to (e.g. "divide both sides of $4x = 20$ by $4$") and ask the student to carry it out.',
 };
 
 export interface TutorContext {

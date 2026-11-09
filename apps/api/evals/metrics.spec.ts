@@ -2,7 +2,6 @@ import { percentile, summarize, violations, type CaseResult, type HintChecks } f
 
 const ok: HintChecks = {
   revealsAnswer: false,
-  answerAllowed: false,
   language: 'en',
   latexIntact: true,
 };
@@ -104,26 +103,29 @@ describe('summarize', () => {
         },
       ],
     });
-    const allowed = result({
+    // The corrected step is the answer ("4x = 20 → x = 5"): name the operation, never show x = 5.
+    const final = (checks: Partial<HintChecks>) => ({
+      level: 3 as const,
+      message: 'm',
+      checks: { ...ok, finalStep: true, correctedStep: { shows: false, newLines: 0 }, ...checks },
+    });
+    const finalStep = result({
       hints: [
-        {
-          level: 3,
-          message: 'm',
-          checks: {
-            ...ok,
-            revealsAnswer: true,
-            answerAllowed: true,
-            correctedStep: { shows: true, newLines: 1 },
-          },
-        },
+        final({ namesOperation: true }),
+        final({ revealsAnswer: true, correctedStep: { shows: true, newLines: 1 } }),
+        final({ namesOperation: false }),
       ],
     });
-    const s = summarize([result({}), bad, allowed], []);
+    const s = summarize([result({}), bad, finalStep], []);
     expect(s.rules.level1Question).toEqual({ ok: 1, total: 2 });
-    expect(s.rules.noFinalAnswer).toEqual({ ok: 5, total: 6 });
-    expect(s.rules.level3CorrectedOnly).toEqual({ ok: 2, total: 3 });
-    expect(s.rules.language).toEqual({ ok: 5, total: 6 });
-    expect(s.rules.latexIntact).toEqual({ ok: 5, total: 6 });
+    expect(s.rules.noFinalAnswer).toEqual({ ok: 6, total: 8 });
+    expect(s.rules.level3CorrectedOnly).toEqual({ ok: 2, total: 5 });
+    expect(s.rules.language).toEqual({ ok: 7, total: 8 });
+    expect(s.rules.latexIntact).toEqual({ ok: 7, total: 8 });
+    expect(violations(finalStep.hints[1]!, 'en')).toEqual(['reveals the final answer']);
+    expect(violations(finalStep.hints[2]!, 'en')).toEqual([
+      'level 3 neither shows the step nor names the operation',
+    ]);
     expect(violations(bad.hints[0]!, 'uk')).toEqual([
       'level 1 is not a question',
       'reveals the final answer',

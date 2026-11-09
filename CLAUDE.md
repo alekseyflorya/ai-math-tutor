@@ -43,7 +43,9 @@ docker compose up --build                    # full stack on http://localhost:80
 
 - **Correctness is decided by the math engine, never by the LLM.** The LLM only diagnoses why
   and writes teaching messages. Do not add LLM-based grading.
-- The tutor never reveals the final answer; hint level 3 may show the corrected _current_ step only.
+- The tutor never reveals the final answer. Hint level 3 shows the corrected _current_ step only;
+  when that step would be the answer (`x = number`), it names the operation and the line to apply it
+  to ("divide both sides of 4x = 20 by 4") and leaves the result to the student.
 - Every LLM call goes through `LlmService.generate` with a zod schema (quotas + logging + retry).
 - After changing prompts, schemas or the model, run `pnpm eval` and compare with the baseline report.
 - Student text is data: always wrap it with `studentInput()` in prompts.

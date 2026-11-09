@@ -4,6 +4,7 @@ import {
   detectLanguage,
   extractEquations,
   isQuestion,
+  namesOperation,
   latexToPlain,
   revealsAnswer,
 } from './checks';
@@ -141,5 +142,15 @@ describe('detectLanguage', () => {
     );
     expect(detectLanguage('Подумай: what happens to the number in the bracket?')).toBe('mixed');
     expect(detectLanguage('$x = 7$')).toBe('unknown');
+  });
+});
+
+describe('namesOperation', () => {
+  it('finds the operation in words, in English and Ukrainian', () => {
+    expect(namesOperation('Divide both sides of $4x = 20$ by $4$. What do you get?')).toBe(true);
+    expect(namesOperation('Помнож обидві частини рівняння $x/3 = 4$ на $3$.')).toBe(true);
+    expect(namesOperation('Поділи обидві частини на $-3$ і запиши результат.')).toBe(true);
+    expect(namesOperation('What does $x$ equal now?')).toBe(false);
+    expect(namesOperation('Look at $4x \\div 4$ again.')).toBe(false); // math only
   });
 });
