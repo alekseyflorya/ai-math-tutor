@@ -45,6 +45,21 @@ export const HINT_LADDER: Record<1 | 2 | 3, string> = {
   3: 'HINT LEVEL 3 — Show the corrected version of THIS step (only this one line, nothing beyond it) with a one-sentence justification, then ask the student to continue from it. Exception: if the corrected step would already be the answer (x = a number), do not write it or its result; name the operation and the line to apply it to (e.g. "divide both sides of $4x = 20$ by $4$") and ask the student to carry it out.',
 };
 
+/**
+ * The ladder for a slip in the check by substitution. A corrected check line is just the two
+ * values, so no level may show it: the student computes the sides themselves.
+ */
+export const CHECK_SLIP_LADDER: Record<1 | 2 | 3, string> = {
+  1: 'HINT LEVEL 1 — Ask ONE question that points at the side (left or right) whose value is wrong. Do not name any value and do not compute anything.',
+  2: 'HINT LEVEL 2 — Name the rule involved (e.g. the order of operations: brackets first, then multiplication, then addition) and show it on a DIFFERENT, simpler numeric example. Do not compute any part of the student’s check line.',
+  3: 'HINT LEVEL 3 — List, in order, the operations to carry out on the wrong side (e.g. "first multiply $2 \\cdot 7$, then add $19$") WITHOUT writing the result of any of them or the value of either side, and ask the student to compute them and rewrite the check line.',
+};
+
+/** The ladder for the mistake being worked on: a slip in the check has its own. */
+function ladderFor(ctx: TutorContext, level: 1 | 2 | 3): string {
+  return ctx.activeMistake?.phase === 'CHECK' ? CHECK_SLIP_LADDER[level] : HINT_LADDER[level];
+}
+
 export interface TutorContext {
   locale: Locale;
   problem: string;
@@ -57,6 +72,8 @@ export interface TutorContext {
     description: string;
     stepInput: string;
     previousLine: string;
+    /** CHECK: a slip in the check by substitution (its own hint ladder). */
+    phase?: 'SOLUTION' | 'CHECK';
   } | null;
   recentDialogue: { role: 'Student' | 'Tutor'; content: string }[];
   isFollowUp: boolean;
@@ -191,7 +208,7 @@ ${
   remediation
     ? `The student is working on the mistake above.
 - If their message shows they now understand the broken rule: confirm briefly and ask them to rewrite the step correctly. Set understood=true, escalate=false.
-- If they are still stuck, guessing, or ask for help: give the next hint. ${HINT_LADDER[next]} Set understood=false, escalate=true.
+- If they are still stuck, guessing, or ask for help: give the next hint. ${ladderFor(ctx, next)} Set understood=false, escalate=true.
 - If they ask for the final answer, do not give it; give the next hint instead.`
     : ctx.checking
       ? `They are checking the answer by substitution. Answer their question briefly; do not compute the sides for them. Set understood=false, escalate=false.`
@@ -216,7 +233,7 @@ export function hintPrompt(ctx: TutorContext, level: 1 | 2 | 3): string {
 The student pressed "Hint".
 Task: ${
     remediation
-      ? HINT_LADDER[level]
+      ? ladderFor(ctx, level)
       : ctx.checking
         ? CHECK_HINT[level](ctx)
         : level < 3
@@ -292,7 +309,7 @@ Math engine facts about this line:
 ${facts.map((f) => `- ${f}`).join('\n')}
 
 Task: the line has a calculation slip (category ARITHMETIC: the method is right). Work out which calculation went wrong.
-Then write the tutor's message: ${HINT_LADDER[level]}${
+Then write the tutor's message: ${CHECK_SLIP_LADDER[level]}${
     level > 1
       ? ' The student already received a hint for this slip and tried again unsuccessfully; acknowledge the new attempt briefly.'
       : ' Point at the side to recompute with a question; do not give the correct value.'

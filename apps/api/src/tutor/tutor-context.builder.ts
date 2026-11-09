@@ -82,6 +82,7 @@ export class TutorContextBuilder {
             description: active.description,
             stepInput: active.stepInput,
             previousLine: active.previousLine,
+            phase: active.phase,
           }
         : null,
       recentDialogue: recent.reverse().map((m) => ({
