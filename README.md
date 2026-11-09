@@ -192,10 +192,10 @@ pnpm eval --rescore apps/api/evals/reports/<file>.json  # re-apply changed check
 
 Baseline (2026-11-09):
 
-| Model                   | Error type accuracy                    | Invalid JSON | Latency p50 / p95 | L1 is a question | No final answer | L3 = corrected step only | Language matches |
-| ----------------------- | -------------------------------------- | ------------ | ----------------- | ---------------- | --------------- | ------------------------ | ---------------- |
-| `gemini-3.5-flash-lite` | 75.9% (41/54)                          | 0.0%         | 916 / 1408 ms     | 100%             | 100%            | 85.2%                    | 100%             |
-| `gemini-3.5-flash`      | _pending (free tier: 20 requests/day)_ |              |                   |                  |                 |                          |                  |
+| Model                   | Error type accuracy                                                | Invalid JSON | Latency p50 / p95 | L1 is a question | No final answer | L3 = corrected step only | Language matches |
+| ----------------------- | ------------------------------------------------------------------ | ------------ | ----------------- | ---------------- | --------------- | ------------------------ | ---------------- |
+| `gemini-3.5-flash-lite` | 75.9% (41/54)                                                      | 0.0%         | 916 / 1408 ms     | 100%             | 100%            | 85.2%                    | 100%             |
+| `gemini-3.5-flash`      | _not measured: free tier allows 20 requests/day, a run needs ~160_ |              |                   |                  |                 |                          |                  |
 
 What the numbers say:
 
