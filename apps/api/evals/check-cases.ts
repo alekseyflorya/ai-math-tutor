@@ -58,7 +58,19 @@ export const CHECK_CASES: CheckCase[] = [
   c('check-10', 'uk', '3(2x - 1) = 4x + 9', '3(2·6 - 1) = 4·6 + 9',  '3(13 - 1) = 4·6 + 9', 'left', 'multiplication', '12'),
   c('check-11', 'en', '3(2x - 1) = 4x + 9', '3(2·6 - 1) = 4·6 + 9',  '3·11 = 30 + 9',      'right', 'multiplication', '24'),
   c('check-12', 'uk', '2(x + 4) = 3x + 1',  '2(7 + 4) = 3·7 + 1',    '2·11 = 23',          'right', 'addition',       '22'),
+  // The equation itself shows v* (a number on one side): quoting it gives nothing away, and the
+  // guard must not fire on it. check-13 and check-14 are the first curriculum problems.
+  c('check-13', 'en', 'x + 5 = 12',         '7 + 5 = 12',            '13 = 12',            'left',  'addition',       '12'),
+  c('check-14', 'uk', '3x - 7 = 11',        '3·6 - 7 = 11',          '17 - 7 = 11',        'left',  'multiplication', '18'),
+  c('check-15', 'en', '2x + 3 = 13',        '2·5 + 3 = 13',          '11 + 3 = 13',        'left',  'multiplication', '10'),
+  c('check-16', 'uk', 'x - 4 = 9',          '13 - 4 = 9',            '8 = 9',              'left',  'addition',       '9'),
+  c('check-17', 'en', '4x = 28',            '4·7 = 28',              '24 = 28',            'left',  'multiplication', '28'),
+  c('check-18', 'uk', '2(x - 1) = 10',      '2(6 - 1) = 10',         '2·4 = 10',           'left',  'addition',       '5'),
 ];
+
+/** The value of the sides at the root is a number written in the equation (x + 5 = 12 → 12). */
+export const equationShowsValue = (k: CheckCase): boolean =>
+  valuesIn(k.problem).some((v) => v.equals(solveSides(k)));
 
 /** The root and the value both sides take at it (the engine's numbers). */
 export function checkFacts(k: Pick<CheckCase, 'problem'>): { root: string; sideValue: string } {
@@ -70,13 +82,17 @@ export function checkFacts(k: Pick<CheckCase, 'problem'>): { root: string; sideV
 
 /**
  * Values the tutor must not state: the value of the sides at the root and the right result of the
- * operation that slipped. Wider than what the API's guard forbids (it does not know which
- * operation slipped), so the eval also sees what the guard lets through.
+ * operation that slipped, unless the equation already shows them (naming those gives nothing
+ * away). Wider than what the API's guard forbids (it does not know which operation slipped), so
+ * the eval also sees what the guard lets through.
  */
 export function hiddenValues(k: CheckCase): Fraction[] {
-  const side = solveSides(k);
-  const slipped = valuesIn(k.slippedResult)[0]!;
-  return side.equals(slipped) ? [side] : [side, slipped];
+  const shown = valuesIn(k.problem);
+  const out: Fraction[] = [];
+  for (const v of [solveSides(k), valuesIn(k.slippedResult)[0]!]) {
+    if (!shown.some((s) => s.equals(v)) && !out.some((o) => o.equals(v))) out.push(v);
+  }
+  return out;
 }
 
 function solveSides(k: CheckCase): Fraction {
@@ -84,6 +100,15 @@ function solveSides(k: CheckCase): Fraction {
   const s = solve(eq);
   if (s.kind !== 'unique') throw new InvalidCheckCaseError(`${k.problem} has no unique root`);
   return evaluateSide(eq.left, s.value);
+}
+
+/** Every number the guard caught is already written in the equation or the student's lines. */
+export function guardFalsePositive(k: CheckCase, leaked: readonly string[]): boolean {
+  const written = [k.problem, k.substituted, k.slip].flatMap(valuesIn);
+  return (
+    leaked.length > 0 &&
+    leaked.every((n) => valuesIn(n).every((v) => written.some((w) => w.equals(v))))
+  );
 }
 
 export class InvalidCheckCaseError extends Error {}

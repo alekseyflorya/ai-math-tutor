@@ -85,6 +85,7 @@ export const CHECK_HEADER = [
   'Latency p50 / p95',
   'Guard: retried / template',
   'No leak after the guard',
+  'Guard false positives',
 ];
 
 export function checkHeadlineRow(info: RunInfo, s: CheckSummary): string[] {
@@ -102,6 +103,7 @@ export function checkHeadlineRow(info: RunInfo, s: CheckSummary): string[] {
     `${s.latency.p50} / ${s.latency.p95} ms`,
     s.guard ? `${s.guard.retried} / ${s.guard.template} of ${s.guard.hints}` : '—',
     s.noLeakAfterGuard ? pct(s.noLeakAfterGuard) : '—',
+    s.guardFalsePositives ? `${s.guardFalsePositives.ok} of ${s.guardFalsePositives.total}` : '—',
   ];
 }
 
@@ -128,6 +130,12 @@ level 3 lists the operations without their results.
 ${table(CHECK_HEADER, [checkHeadlineRow(info, s)])}
 
 - Calls that failed even after the retry: ${frac(s.failedCalls)}
+- Cases where the equation itself shows the value of the sides (\`x + 5 = 12\`): ${results.filter((r) => r.equationShowsValue).length}; guard triggers on them: ${
+    results
+      .filter((r) => r.equationShowsValue)
+      .flatMap((r) => r.hints)
+      .filter((h) => h.guard).length
+  }
 
 ### Rule violations
 

@@ -213,6 +213,11 @@ export interface CheckHintChecks {
   statedNumbers: string[];
   /** Values the API's guard forbids that the final message still states (0 by design). */
   guardLeaks?: string[];
+  /**
+   * The guard acted although every number it caught is written in the equation or the student's
+   * lines: a false positive.
+   */
+  guardFalsePositive?: boolean;
   /** Right check lines computed for the student. */
   computedLines: string[];
   /** Level 3: names the operations to carry out. */
@@ -240,6 +245,8 @@ export interface CheckCaseResult {
   locale: Locale;
   side: 'left' | 'right';
   operation: 'multiplication' | 'addition';
+  /** The equation itself shows the value of the sides (x + 5 = 12). */
+  equationShowsValue?: boolean;
   misconception?: string;
   hints: CheckHintResult[];
 }
@@ -264,6 +271,8 @@ export interface CheckSummary {
   guard: { retried: number; template: number; hints: number };
   /** Final messages free of every value the guard forbids. */
   noLeakAfterGuard: Rate;
+  /** Guard triggers that caught only numbers written in the equation or the student's lines. */
+  guardFalsePositives: Rate;
 }
 
 export const checkLevel3Passes = (c: CheckHintChecks) =>
@@ -308,6 +317,10 @@ export function summarizeChecks(
       hints: hints.length,
     },
     noLeakAfterGuard: count(hints, (h) => (h.checks.guardLeaks ?? []).length === 0),
+    guardFalsePositives: count(
+      results.flatMap((r) => r.hints).filter((h) => h.guard && h.checks),
+      (h) => h.checks!.guardFalsePositive === true,
+    ),
   };
 }
 
@@ -319,6 +332,9 @@ export function checkViolations(h: CheckHintResult, locale: Locale): string[] {
   if (h.level === 1 && !c.question) out.push('level 1 is not a question');
   if (c.statedNumbers.length) out.push(`states ${c.statedNumbers.join(', ')}`);
   if (c.guardLeaks?.length) out.push(`leaks past the guard: ${c.guardLeaks.join(', ')}`);
+  if (c.guardFalsePositive) {
+    out.push(`guard false positive: ${(h.guardLeaked ?? []).join(', ')} is written already`);
+  }
   if (c.computedLines.length) out.push(`shows a computed line: ${c.computedLines.join('; ')}`);
   if (h.level === 3 && !c.namesOperation) out.push('level 3 does not name the operations');
   if (c.level2StudentNumbers?.length) {

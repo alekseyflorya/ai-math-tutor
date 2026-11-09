@@ -28,6 +28,8 @@ import { CASES, validateCases, type EvalCase } from '../evals/cases';
 import {
   CHECK_CASES,
   checkFacts,
+  equationShowsValue,
+  guardFalsePositive,
   hiddenValues,
   validateCheckCases,
   type CheckCase,
@@ -333,10 +335,13 @@ function checkMessageRules(
   k: CheckCase,
   level: 1 | 2 | 3,
   message: string,
+  guard?: CheckHintResult['guard'],
+  guardLeaked?: string[],
 ): Omit<CheckHintResult['checks'] & object, 'latexIntact'> {
   return {
     statedNumbers: leakedValues(message, hiddenValues(k)),
     guardLeaks: leakedValues(message, checkHintFacts(k.problem, k.slip)?.forbidden ?? []),
+    ...(guard ? { guardFalsePositive: guardFalsePositive(k, guardLeaked ?? []) } : {}),
     computedLines: computedCheckLines(message, k),
     language: detectLanguage(message),
     ...(level === 1 ? { question: isQuestion(message) } : {}),
@@ -356,7 +361,7 @@ function scoreCheck(k: CheckCase, r: CheckCaseResult): CheckCaseResult {
         : {
             ...h,
             checks: {
-              ...checkMessageRules(k, h.level, h.message),
+              ...checkMessageRules(k, h.level, h.message, h.guard, h.guardLeaked),
               latexIntact: h.latexIntact ?? isLatexIntact(h.message),
             },
           },
@@ -403,6 +408,7 @@ async function runCheckCase(
     locale: k.locale,
     side: k.side,
     operation: k.operation,
+    equationShowsValue: equationShowsValue(k),
     hints: [],
   };
 
