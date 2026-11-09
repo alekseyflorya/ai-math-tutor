@@ -1,11 +1,13 @@
 import {
   formatEquation,
+  formatLinear,
   isFinalForm,
   normalizeMathInput,
   parseEquation,
   sameSolutionSet,
   solve,
   type Fraction,
+  type Linear,
   type Locale,
   type ParsedEquation,
 } from '@tutor/shared';
@@ -109,7 +111,8 @@ function numberValue(text: string): Fraction | null {
   }
 }
 
-const NUMBER = String.raw`([-−]?\s*\d+(?:[.,]\d+)?(?:\s*\/\s*\d+)?)`;
+/** A number that is not the start of a longer expression ("5" in "x = 5 + 3" is not an answer). */
+const NUMBER = String.raw`([-−]?\s*\d+(?:[.,]\d+)?(?:\s*\/\s*\d+)?)(?![.,]\d)(?!\s*[-−+*/×·:^(x\d])`;
 const IN_WORDS = [
   new RegExp(
     String.raw`(?<![\wа-яіїєґ])(?<![\-−+*/=(]\s*)x\s*(?:=|equals|is equal to|is|дорівнює|рівний|рівне|буде)\s*` +
@@ -128,8 +131,10 @@ export function revealsAnswer(message: string, solution: Fraction): boolean {
     const s = solve(eq);
     return s.kind === 'unique' && s.value.equals(solution);
   };
-  // "x = 14/2" is not in final form for the engine but still gives the answer away.
-  const bareX = /^\s*x\s*=|=\s*x\s*$/;
+  // "x = 14/2" is not in final form for the engine but still gives the answer away. An expression
+  // ("x = 10 - 5") is not counted: it is usually a worked example with other numbers.
+  const num = String.raw`\(?-?\d+(?:\.\d+)?\)?(?:\s*\/\s*\(?-?\d+(?:\.\d+)?\)?)?`;
+  const bareX = new RegExp(String.raw`^\s*x\s*=\s*${num}\s*$|^\s*${num}\s*=\s*x\s*$`);
   if (
     extractEquations(message).some(
       (eq) => solvedTo(eq) && (isFinalForm(eq) || bareX.test(eq.normalized)),
@@ -144,29 +149,77 @@ export function revealsAnswer(message: string, solution: Fraction): boolean {
 }
 
 export interface CorrectedStepCheck {
-  /** Shows at least one new line equivalent to the previous verified line. */
+  /** Shows the corrected line, or the corrected part of it ("3(x + 4) → 3x + 12"). */
   shows: boolean;
-  /** Distinct new equivalent lines (by per-side simplified form). 1 = only the current step. */
+  /** Distinct new lines equivalent to the previous one (by per-side form). >1 = went further. */
   newLines: number;
 }
 
+export interface StepCase {
+  problem: string;
+  previousLine: string;
+  wrongStep: string;
+  correctStep: string;
+}
+
+const SIDES = ['left', 'right'] as const;
+const sameLinear = (x: Linear, y: Linear) => x.a.equals(y.a) && x.b.equals(y.b);
+const minus = (x: Linear, y: Linear): Linear => ({ a: x.a.sub(y.a), b: x.b.sub(y.b) });
+
+/** Expressions written in math segments: each side of every equality, or the whole segment. */
+function mathPieces(message: string): { text: string; value: Linear }[] {
+  const out: { text: string; value: Linear }[] = [];
+  for (const m of message.matchAll(MATH)) {
+    for (const part of latexToPlain(m[1] ?? m[2] ?? m[3] ?? '').split(/;|=|,(?!\d)|(?<!\d),/)) {
+      const text = part.trim();
+      if (!text) continue;
+      try {
+        const eq = parseEquation(`${text} = 0`);
+        if (eq.variable === null || eq.variable === 'x') out.push({ text, value: eq.left });
+      } catch {
+        /* not an expression */
+      }
+    }
+  }
+  return out;
+}
+
 /**
- * Level 3 shows the corrected version of THIS step. Lines that merely repeat the previous line or
- * the problem do not count; rewrites of the same line ("3·x + 3·4" and "3x + 12") count once.
+ * Level 3 shows the corrected version of THIS step: either a whole line equivalent to the previous
+ * one, or the corrected part of a side. A part P counts when it equals the corrected side, or when
+ * the student's version of it (P minus the correction) appears in the wrong step: for
+ * 3(x + 4) = 2x + 19 → 3x + 4 = …, "3x + 12" counts because "3x + 4" is what the student wrote.
+ * Quoting the previous line does not count, unless the fix IS the previous line (a miscopy).
  */
-export function correctedStep(
-  message: string,
-  previousLine: string,
-  problem: string,
-): CorrectedStepCheck {
-  const target = solve(parseEquation(previousLine));
-  const known = new Set([squash(previousLine), squash(problem)]);
+export function correctedStep(message: string, k: StepCase): CorrectedStepCheck {
+  const prev = parseEquation(k.previousLine);
+  const wrong = parseEquation(k.wrongStep);
+  const correct = parseEquation(k.correctStep);
+  const target = solve(prev);
+  const copyFix = squash(k.correctStep) === squash(k.previousLine);
+  const quoted = (text: string) =>
+    !copyFix && [k.previousLine, k.problem].some((line) => squash(line).includes(squash(text)));
+
   const fresh = new Set<string>();
   for (const eq of extractEquations(message)) {
-    if (known.has(squash(eq.normalized))) continue;
+    if (!copyFix && [k.previousLine, k.problem].some((l) => squash(l) === squash(eq.normalized))) {
+      continue;
+    }
     if (sameSolutionSet(solve(eq), target)) fresh.add(formatEquation(eq));
   }
-  return { shows: fresh.size > 0, newLines: fresh.size };
+
+  const wrongText = wrong.normalized.split('=');
+  const pieces = mathPieces(message).filter((p) => !quoted(p.text));
+  const showsPart = SIDES.some((side, i) => {
+    const fix = minus(correct[side], wrong[side]);
+    if (fix.a.isZero() && fix.b.isZero()) return false; // this side was right
+    return pieces.some((p) => {
+      if (sameLinear(p.value, correct[side])) return true;
+      const studentVersion = squash(formatLinear(minus(p.value, fix)));
+      return squash(wrongText[i] ?? '').includes(studentVersion);
+    });
+  });
+  return { shows: fresh.size > 0 || showsPart, newLines: fresh.size };
 }
 
 export type DetectedLanguage = Locale | 'ru' | 'mixed' | 'unknown';

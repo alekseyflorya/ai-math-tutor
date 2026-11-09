@@ -58,6 +58,9 @@ describe('revealsAnswer', () => {
       'If $-x = 7$, what is x?',
       'Multiply $7$ by $3$.',
       'Is $3x + x = 7$ right?',
+      // a worked example with other numbers, even when its value happens to match
+      'For example, if $x - 3 = 5$, then $x = 5 + 3$.',
+      'In $x + 3 = 10$ moving $3$ gives $x = 10 - 3$.',
     ]) {
       expect([m, revealsAnswer(m, seven)]).toEqual([m, false]);
     }
@@ -65,20 +68,67 @@ describe('revealsAnswer', () => {
 });
 
 describe('correctedStep', () => {
-  const prev = '3(x + 4) = 2x + 19';
-  it('finds the corrected version of the step, ignoring repeats of the previous line', () => {
-    expect(
-      correctedStep('From $3(x + 4) = 2x + 19$ we get $3x + 12 = 2x + 19$.', prev, prev),
-    ).toEqual({ shows: true, newLines: 1 });
+  const dist = {
+    problem: '3(x + 4) = 2x + 19',
+    previousLine: '3(x + 4) = 2x + 19',
+    wrongStep: '3x + 4 = 2x + 19',
+    correctStep: '3x + 12 = 2x + 19',
+  };
+
+  it('finds the corrected line, ignoring repeats of the previous line', () => {
+    expect(correctedStep('From $3(x + 4) = 2x + 19$ we get $3x + 12 = 2x + 19$.', dist)).toEqual({
+      shows: true,
+      newLines: 1,
+    });
     // the same line written twice counts once
     expect(
-      correctedStep('$3 \\cdot x + 3 \\cdot 4 = 2x + 19$, i.e. $3x + 12 = 2x + 19$', prev, prev),
+      correctedStep('$3 \\cdot x + 3 \\cdot 4 = 2x + 19$, i.e. $3x + 12 = 2x + 19$', dist),
     ).toEqual({ shows: true, newLines: 1 });
   });
 
+  it('accepts the corrected part of a side, not a quote of the original', () => {
+    expect(
+      correctedStep('By the distributive law, $3(x + 4)$ expands to $3x + 12$.', dist).shows,
+    ).toBe(true);
+    expect(correctedStep('Look again at $3(x + 4)$.', dist).shows).toBe(false);
+    const sub = {
+      problem: '7 - 3(x + 2) = 4',
+      previousLine: '7 - 3(x + 2) = 4',
+      wrongStep: '7 - 3x + 6 = 4',
+      correctStep: '7 - 3x - 6 = 4',
+    };
+    expect(correctedStep('So $-3(x + 2) = -3x - 6$.', sub).shows).toBe(true);
+    const comb = {
+      problem: '4x + 3 - x = 12',
+      previousLine: '4x + 3 - x = 12',
+      wrongStep: '5x + 3 = 12',
+      correctStep: '3x + 3 = 12',
+    };
+    expect(correctedStep('Since $-x$ is $-1x$, $4x - 1x$ equals $3x$.', comb).shows).toBe(true);
+  });
+
+  it('accepts restating the previous line when the mistake was a miscopy', () => {
+    const copy = {
+      problem: '3(x + 4) = 2x + 19',
+      previousLine: '3(x + 4) = 2x + 19',
+      wrongStep: '3(x + 4) = 2x + 91',
+      correctStep: '3(x + 4) = 2x + 19',
+    };
+    expect(correctedStep('The line is $3(x + 4) = 2x + 19$, not $91$.', copy).shows).toBe(true);
+  });
+
   it('counts steps beyond the current one and ignores wrong lines', () => {
-    expect(correctedStep('$3x + 12 = 2x + 19$, then $x = 7$', prev, prev).newLines).toBe(2);
-    expect(correctedStep('Not $3x + 4 = 2x + 19$. Try again.', prev, prev).shows).toBe(false);
+    expect(correctedStep('$3x + 12 = 2x + 19$, then $x = 7$', dist).newLines).toBe(2);
+    expect(correctedStep('Not $3x + 4 = 2x + 19$. Try again.', dist).shows).toBe(false);
+    const inv = {
+      problem: '4x + 3 = 23',
+      previousLine: '4x = 20',
+      wrongStep: 'x = 16',
+      correctStep: 'x = 5',
+    };
+    expect(correctedStep('Divide both sides of $4x = 20$ by $4$. What is $x$?', inv).shows).toBe(
+      false,
+    );
   });
 });
 

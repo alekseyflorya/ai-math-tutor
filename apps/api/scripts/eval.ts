@@ -2,16 +2,17 @@
  * Offline eval of the AI part against a real model (no database, no API server):
  *
  *   pnpm eval [--model gemini-3.5-flash] [--limit 10] [--concurrency 2] [--only SIGN_TRANSFER]
+ *   pnpm eval --rescore evals/reports/<file>.json   (re-apply the checks to saved answers, offline)
  *
  * For every case in evals/cases.ts: the diagnosis (= hint level 1) and hint levels 2 and 3, built
  * with the production prompt functions and zod schemas and sent through `callStructured` — the
  * same validation and retry the API uses. Writes evals/reports/<date>-<model>.md (+ .json).
  * Reads keys from the repo-root .env, like `pnpm smoke:llm`.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { checkStep, ERROR_TYPES, parseEquation, solve, type Fraction } from '@tutor/shared';
+import { checkStep, ERROR_TYPES, isFinalForm, parseEquation, solve } from '@tutor/shared';
 import { CASES, validateCases, type EvalCase } from '../evals/cases';
 import { correctedStep, detectLanguage, isQuestion, revealsAnswer } from '../evals/checks';
 import {
@@ -41,6 +42,7 @@ const { values: args } = parseArgs({
     concurrency: { type: 'string', default: '2' },
     only: { type: 'string' },
     out: { type: 'string', default: join(__dirname, '..', 'evals', 'reports') },
+    rescore: { type: 'string' },
   },
 });
 
@@ -111,26 +113,37 @@ async function call<T>(
         record(false);
         throw e;
       }
-      const wait = Math.min(60_000, 5000 * 2 ** retry) + Math.random() * 1000;
+      // Gemini says how long to wait ("Please retry in 41.2s"); otherwise back off exponentially.
+      const hinted = /retry in ([\d.]+)\s*s/i.exec((e as Error).message)?.[1];
+      const wait =
+        (hinted ? Number(hinted) * 1000 : Math.min(60_000, 5000 * 2 ** retry)) +
+        Math.random() * 1000;
       console.warn(`  429 — waiting ${(wait / 1000).toFixed(0)} s`);
       await sleep(wait);
     }
   }
 }
 
-function checkMessage(
-  k: EvalCase,
-  level: 1 | 2 | 3,
-  message: string,
-  solution: Fraction,
-  correctedIsFinal: boolean,
-): HintChecks {
+function checkMessage(k: EvalCase, level: 1 | 2 | 3, message: string): HintChecks {
+  const sol = solve(parseEquation(k.problem));
+  if (sol.kind !== 'unique') throw new Error(`${k.id}: the problem has no unique solution`);
   return {
-    revealsAnswer: revealsAnswer(message, solution),
-    answerAllowed: level === 3 && correctedIsFinal,
+    revealsAnswer: revealsAnswer(message, sol.value),
+    // When the corrected step is "x = 5", level 3 cannot show it without the answer.
+    answerAllowed: level === 3 && isFinalForm(parseEquation(k.correctStep)),
     language: detectLanguage(message),
     ...(level === 1 ? { question: isQuestion(message) } : {}),
-    ...(level === 3 ? { correctedStep: correctedStep(message, k.previousLine, k.problem) } : {}),
+    ...(level === 3 ? { correctedStep: correctedStep(message, k) } : {}),
+  };
+}
+
+/** (Re)applies the rule checks to the messages of a case. */
+function score(k: EvalCase, r: CaseResult): CaseResult {
+  return {
+    ...r,
+    hints: r.hints.map(({ checks: _old, ...h }) =>
+      h.message === null ? h : { ...h, checks: checkMessage(k, h.level, h.message) },
+    ),
   };
 }
 
@@ -140,8 +153,6 @@ async function runCase(
   calls: CallRecord[],
 ): Promise<CaseResult> {
   const check = checkStep(k.previousLine, k.wrongStep);
-  const sol = solve(parseEquation(k.problem));
-  if (sol.kind !== 'unique') throw new Error(`${k.id}: the problem has no unique solution`);
   const system = systemPrompt(k.locale);
 
   // What the API builds on a wrong step: the step is in the history and the dialogue.
@@ -180,15 +191,11 @@ async function runCase(
     });
   } catch (e) {
     result.hints.push({ level: 1, message: null, error: (e as Error).message });
-    return result;
+    return score(k, result);
   }
   result.predicted = diagnosis.errorType;
   result.misconception = diagnosis.misconception;
-  const hint = (level: 1 | 2 | 3, message: string): HintResult => ({
-    level,
-    message,
-    checks: checkMessage(k, level, message, sol.value, check.finalForm),
-  });
+  const hint = (level: 1 | 2 | 3, message: string): HintResult => ({ level, message });
   result.hints.push(hint(1, diagnosis.message));
 
   // "Hint" pressed twice while fixing the mistake: levels 2 and 3, as TutorService.hint builds them.
@@ -222,7 +229,7 @@ async function runCase(
       result.hints.push({ level, message: null, error: (e as Error).message });
     }
   }
-  return result;
+  return score(k, result);
 }
 
 async function pool<T, R>(items: T[], size: number, fn: (item: T) => Promise<R>): Promise<R[]> {
@@ -244,8 +251,35 @@ function today(): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+function write(base: string, info: RunInfo, results: CaseResult[], calls: CallRecord[]) {
+  const summary = summarize(results, calls);
+  writeFileSync(`${base}.md`, renderReport(info, summary, results));
+  writeFileSync(`${base}.json`, `${JSON.stringify({ info, summary, results, calls }, null, 2)}\n`);
+  console.log(
+    `\nError type accuracy ${summary.accuracy.ok}/${summary.accuracy.total}. Report: ${base}.md`,
+  );
+}
+
+/** Re-scores saved answers with the current checks: no model calls. */
+function rescore(file: string) {
+  const saved = JSON.parse(readFileSync(file, 'utf8')) as {
+    info: RunInfo;
+    results: CaseResult[];
+    calls?: CallRecord[];
+  };
+  if (!saved.calls) throw new Error(`${file} has no raw calls (written by an older version)`);
+  const byId = new Map(CASES.map((k) => [k.id, k]));
+  const results = saved.results.map((r) => {
+    const k = byId.get(r.id);
+    if (!k) throw new Error(`Case ${r.id} no longer exists`);
+    return score(k, r);
+  });
+  write(file.replace(/\.json$/, ''), saved.info, results, saved.calls);
+}
+
 async function main() {
   validateCases(CASES); // an invalid case is a bug in the eval, not a model failure
+  if (args.rescore) return rescore(args.rescore);
   const provider = makeProvider();
   const cases = selectCases();
   const concurrency = Number(args.concurrency);
@@ -265,7 +299,6 @@ async function main() {
     return r;
   });
 
-  const summary = summarize(results, calls);
   const info: RunInfo = {
     date: today(),
     provider: provider.name,
@@ -275,11 +308,11 @@ async function main() {
     filter: args.only,
   };
   mkdirSync(args.out, { recursive: true });
-  const base = join(args.out, `${info.date}-${provider.model.replace(/[^\w.-]+/g, '_')}`);
-  writeFileSync(`${base}.md`, renderReport(info, summary, results));
-  writeFileSync(`${base}.json`, `${JSON.stringify({ info, summary, results }, null, 2)}\n`);
-  console.log(
-    `\nError type accuracy ${summary.accuracy.ok}/${summary.accuracy.total}. Report: ${base}.md`,
+  write(
+    join(args.out, `${info.date}-${provider.model.replace(/[^\w.-]+/g, '_')}`),
+    info,
+    results,
+    calls,
   );
 }
 

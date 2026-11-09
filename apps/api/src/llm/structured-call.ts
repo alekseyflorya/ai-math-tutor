@@ -76,9 +76,11 @@ export async function callStructured<T>(
       if (controller.signal.aborted) {
         lastError = new LlmUnavailableError('timeout', 'The model did not answer in time');
       } else if (status === 429) {
+        // Keep the provider's text: it names the quota and says when to retry.
+        const detail = ((err as Error)?.message ?? '').replace(/\s+/g, ' ').slice(0, 300);
         lastError = new LlmUnavailableError(
           'rate_limited',
-          'The model provider is rate limiting requests',
+          `The model provider is rate limiting requests${detail ? `: ${detail}` : ''}`,
         );
         if (attempt < MAX_ATTEMPTS) await sleep(RATE_LIMIT_BACKOFF_MS);
       } else {
