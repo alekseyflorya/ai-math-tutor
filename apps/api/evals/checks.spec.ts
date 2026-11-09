@@ -1,7 +1,6 @@
 import { Fraction } from '@tutor/shared';
 import {
   computedCheckLines,
-  statedNumbers,
   studentNumbersUsed,
   correctedStep,
   detectLanguage,
@@ -164,12 +163,6 @@ describe('hints for a slip in the check', () => {
     substituted: '3(7 + 4) = 2·7 + 19',
     slip: '3·11 = 12 + 19',
   };
-
-  it('finds a value the student should compute themselves', () => {
-    expect(statedNumbers('First multiply $2 \\cdot 7$, then add $19$.', ['14', '33'])).toEqual([]);
-    expect(statedNumbers('Recompute $2 \\cdot 7 = 14$.', ['14', '33'])).toEqual(['14']);
-    expect(statedNumbers('Both sides should give 33.', ['14', '33'])).toEqual(['33']);
-  });
 
   it('finds a computed check line, but not the lines the student wrote', () => {
     expect(computedCheckLines('So $3 \\cdot 11 = 14 + 19$.', k)).toEqual(['3 * 11 = 14 + 19']);

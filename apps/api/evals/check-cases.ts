@@ -4,8 +4,10 @@ import {
   MathInputError,
   parseEquation,
   solve,
+  type Fraction,
   type Locale,
 } from '@tutor/shared';
+import { valuesIn } from '../src/tutor/check-hint-guard';
 
 /**
  * Eval cases for the check by substitution: the student has the root, substituted it correctly,
@@ -66,13 +68,23 @@ export function checkFacts(k: Pick<CheckCase, 'problem'>): { root: string; sideV
   return { root: s.value.toString(), sideValue: evaluateSide(eq.left, s.value).toString() };
 }
 
-/** Numbers the tutor must not state: the value of the sides and the slipped operation's result. */
-export const hiddenNumbers = (k: CheckCase): string[] => [
-  ...new Set([checkFacts(k).sideValue, k.slippedResult]),
-];
+/**
+ * Values the tutor must not state: the value of the sides at the root and the right result of the
+ * operation that slipped. Wider than what the API's guard forbids (it does not know which
+ * operation slipped), so the eval also sees what the guard lets through.
+ */
+export function hiddenValues(k: CheckCase): Fraction[] {
+  const side = solveSides(k);
+  const slipped = valuesIn(k.slippedResult)[0]!;
+  return side.equals(slipped) ? [side] : [side, slipped];
+}
 
-/** Every number written in a line (as text). */
-export const numbersIn = (text: string): string[] => text.match(/\d+(?:[.,]\d+)?/g) ?? [];
+function solveSides(k: CheckCase): Fraction {
+  const eq = parseEquation(k.problem);
+  const s = solve(eq);
+  if (s.kind !== 'unique') throw new InvalidCheckCaseError(`${k.problem} has no unique root`);
+  return evaluateSide(eq.left, s.value);
+}
 
 export class InvalidCheckCaseError extends Error {}
 
@@ -95,9 +107,11 @@ export function validateCheckCase(k: CheckCase): void {
     else if (slip.wrongSides.join() !== k.side) {
       fail(`the slip is in ${slip.wrongSides.join(' and ')}, not ${k.side}`);
     }
-    const written = new Set([k.problem, k.substituted, k.slip].flatMap(numbersIn));
-    for (const n of hiddenNumbers(k)) {
-      if (written.has(n)) fail(`hidden number ${n} already appears in what the student wrote`);
+    const written = [k.problem, k.substituted, k.slip].flatMap(valuesIn);
+    for (const v of hiddenValues(k)) {
+      if (written.some((w) => w.equals(v))) {
+        fail(`hidden number ${v.toString()} already appears in what the student wrote`);
+      }
     }
   } catch (e) {
     if (e instanceof MathInputError) fail(`the engine cannot read it (${e.message})`);

@@ -249,12 +249,6 @@ export function detectLanguage(message: string): DetectedLanguage {
 
 // --- Check by substitution ---------------------------------------------------------------------
 
-/** The hidden numbers (value of a side, result of the slipped operation) the message states. */
-export function statedNumbers(message: string, hidden: readonly string[]): string[] {
-  const written = new Set(plainText(message).match(/\d+(?:[.,]\d+)?/g) ?? []);
-  return hidden.filter((n) => written.has(n));
-}
-
 const NUMERIC_RUN = /[0-9+\-−–*·×/(). ]*=[0-9+\-−–*·×/(). =]*/g;
 
 /**

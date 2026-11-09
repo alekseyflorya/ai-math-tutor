@@ -211,6 +211,8 @@ export interface CheckHintChecks {
   question?: boolean;
   /** Hidden numbers stated (value of a side, result of the slipped operation). */
   statedNumbers: string[];
+  /** Values the API's guard forbids that the final message still states (0 by design). */
+  guardLeaks?: string[];
   /** Right check lines computed for the student. */
   computedLines: string[];
   /** Level 3: names the operations to carry out. */
@@ -226,6 +228,10 @@ export interface CheckHintResult {
   message: string | null;
   latexIntact?: boolean;
   error?: string;
+  /** The API's guard: the model was asked again, or the fixed hint replaced it. */
+  guard?: 'retried' | 'template' | null;
+  /** What the model stated before the guard acted. */
+  guardLeaked?: string[];
   checks?: CheckHintChecks;
 }
 
@@ -254,6 +260,10 @@ export interface CheckSummary {
   invalidJson: Rate;
   failedCalls: Rate;
   latency: { p50: number; p95: number };
+  /** Hints where the guard acted, and how. */
+  guard: { retried: number; template: number; hints: number };
+  /** Final messages free of every value the guard forbids. */
+  noLeakAfterGuard: Rate;
 }
 
 export const checkLevel3Passes = (c: CheckHintChecks) =>
@@ -292,6 +302,12 @@ export function summarizeChecks(
     invalidJson: count(answered, (a) => a.reason === 'invalid_output'),
     failedCalls: count(calls, (c) => !c.ok),
     latency: { p50: percentile(latencies, 50), p95: percentile(latencies, 95) },
+    guard: {
+      retried: results.flatMap((r) => r.hints).filter((h) => h.guard === 'retried').length,
+      template: results.flatMap((r) => r.hints).filter((h) => h.guard === 'template').length,
+      hints: hints.length,
+    },
+    noLeakAfterGuard: count(hints, (h) => (h.checks.guardLeaks ?? []).length === 0),
   };
 }
 
@@ -302,6 +318,7 @@ export function checkViolations(h: CheckHintResult, locale: Locale): string[] {
   const out: string[] = [];
   if (h.level === 1 && !c.question) out.push('level 1 is not a question');
   if (c.statedNumbers.length) out.push(`states ${c.statedNumbers.join(', ')}`);
+  if (c.guardLeaks?.length) out.push(`leaks past the guard: ${c.guardLeaks.join(', ')}`);
   if (c.computedLines.length) out.push(`shows a computed line: ${c.computedLines.join('; ')}`);
   if (h.level === 3 && !c.namesOperation) out.push('level 3 does not name the operations');
   if (c.level2StudentNumbers?.length) {

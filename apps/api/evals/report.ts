@@ -83,6 +83,8 @@ export const CHECK_HEADER = [
   'LaTeX intact',
   'Invalid JSON',
   'Latency p50 / p95',
+  'Guard: retried / template',
+  'No leak after the guard',
 ];
 
 export function checkHeadlineRow(info: RunInfo, s: CheckSummary): string[] {
@@ -98,6 +100,8 @@ export function checkHeadlineRow(info: RunInfo, s: CheckSummary): string[] {
     pct(s.latexIntact),
     pct(s.invalidJson),
     `${s.latency.p50} / ${s.latency.p95} ms`,
+    s.guard ? `${s.guard.retried} / ${s.guard.template} of ${s.guard.hints}` : '—',
+    s.noLeakAfterGuard ? pct(s.noLeakAfterGuard) : '—',
   ];
 }
 

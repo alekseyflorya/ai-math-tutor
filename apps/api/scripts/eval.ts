@@ -28,7 +28,7 @@ import { CASES, validateCases, type EvalCase } from '../evals/cases';
 import {
   CHECK_CASES,
   checkFacts,
-  hiddenNumbers,
+  hiddenValues,
   validateCheckCases,
   type CheckCase,
 } from '../evals/check-cases';
@@ -39,7 +39,6 @@ import {
   isQuestion,
   namesOperation,
   revealsAnswer,
-  statedNumbers,
   studentNumbersUsed,
 } from '../evals/checks';
 import {
@@ -72,6 +71,7 @@ import {
   FeedbackSchema,
   type Diagnosis,
 } from '../src/llm/tutor-schemas';
+import { checkHintFacts, guardCheckHint, leakedValues } from '../src/tutor/check-hint-guard';
 import { notices } from '../src/tutor/notices';
 import { DEFAULT_GEMINI_MODEL_DIAGNOSIS } from '../src/config/env';
 import { loadRootEnv } from './load-env';
@@ -335,7 +335,8 @@ function checkMessageRules(
   message: string,
 ): Omit<CheckHintResult['checks'] & object, 'latexIntact'> {
   return {
-    statedNumbers: statedNumbers(message, hiddenNumbers(k)),
+    statedNumbers: leakedValues(message, hiddenValues(k)),
+    guardLeaks: leakedValues(message, checkHintFacts(k.problem, k.slip)?.forbidden ?? []),
     computedLines: computedCheckLines(message, k),
     language: detectLanguage(message),
     ...(level === 1 ? { question: isQuestion(message) } : {}),
@@ -405,18 +406,51 @@ async function runCheckCase(
     hints: [],
   };
 
+  // The API's guard, exactly as in production: one retry naming the violation, then the template.
+  const slip = checkHintFacts(k.problem, k.slip)!;
+  const guarded = async <T extends { message: string }>(
+    level: 1 | 2 | 3,
+    purpose: CallRecord['purpose'],
+    req: Omit<LlmJsonRequest<T>, 'deadline'>,
+  ): Promise<{ hint: CheckHintResult; value: T | null }> => {
+    let latexIntact = true;
+    const outcome = await guardCheckHint({
+      forbidden: slip.forbidden,
+      generate: async (note) => {
+        const out = await call(provider, calls, k.id, purpose, {
+          ...req,
+          prompt: note ? `${req.prompt}\n\n${note}` : req.prompt,
+        });
+        latexIntact = out.latexIntact;
+        return out.value;
+      },
+    });
+    const message =
+      outcome.value?.message ?? notices.checkHintTemplate(k.locale, level, slip.wrongSides);
+    return {
+      hint: {
+        level,
+        message,
+        latexIntact: outcome.guard === 'template' ? true : latexIntact,
+        guard: outcome.guard,
+        ...(outcome.guard ? { guardLeaked: outcome.leaked } : {}),
+      },
+      value: outcome.guard === 'template' ? outcome.discarded : outcome.value,
+    };
+  };
+
   let misconception: string;
   try {
-    const { value, latexIntact } = await call(provider, calls, k.id, 'diagnose', {
+    const { hint, value } = await guarded(1, 'diagnose', {
       purpose: 'diagnose',
       system,
       prompt: checkDiagnosePrompt(base, k.slip, facts, 1),
       schema: CheckDiagnosisSchema,
       temperature: 0.3,
     });
-    misconception = value.misconception;
+    misconception = value!.misconception;
     result.misconception = misconception;
-    result.hints.push({ level: 1, message: value.message, latexIntact });
+    result.hints.push(hint);
   } catch (e) {
     if (e instanceof DailyQuotaError) throw e;
     result.hints.push({ level: 1, message: null, error: (e as Error).message });
@@ -441,14 +475,14 @@ async function runCheckCase(
       recentDialogue: [...dialogue],
     };
     try {
-      const { value, latexIntact } = await call(provider, calls, k.id, 'hint', {
+      const { hint } = await guarded(level, 'hint', {
         purpose: 'hint',
         system,
         prompt: hintPrompt(ctx, level),
         schema: FeedbackSchema,
       });
-      result.hints.push({ level, message: value.message, latexIntact });
-      dialogue.push({ role: 'Tutor', content: value.message });
+      result.hints.push(hint);
+      dialogue.push({ role: 'Tutor', content: hint.message! });
     } catch (e) {
       if (e instanceof DailyQuotaError) throw e;
       result.hints.push({ level, message: null, error: (e as Error).message });
