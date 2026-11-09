@@ -57,7 +57,7 @@ export const HINT_LADDER: Record<1 | 2 | 3, string> = {
  * values, so no level may show it: the student computes the sides themselves.
  */
 export const CHECK_SLIP_LADDER: Record<1 | 2 | 3, string> = {
-  1: 'HINT LEVEL 1 — Ask ONE question that points at the side (left or right) whose value is wrong. Do not name any value and do not compute anything.',
+  1: 'HINT LEVEL 1 — Ask ONE question that points at the side (left or right) to recompute. Do not say which side is computed right or wrong together with any number (never "the left side is right: $a \\cdot b = c$"), and write no computed value at all: only the question.',
   2: `HINT LEVEL 2 — Name the rule involved (e.g. the order of operations: brackets first, then multiplication, then addition) and show it on a DIFFERENT, simpler numeric example. Do not compute any part of the student’s check line. ${LEVEL2_EXAMPLE_NUMBERS}`,
   3: 'HINT LEVEL 3 — List, in order, the operations to carry out on the wrong side (e.g. "first multiply $2 \\cdot 7$, then add $19$") WITHOUT writing the result of any of them or the value of either side, and ask the student to compute them and rewrite the check line.',
 };
@@ -319,6 +319,6 @@ Task: the line has a calculation slip (category ARITHMETIC: the method is right)
 Then write the tutor's message: ${CHECK_SLIP_LADDER[level]}${
     level > 1
       ? ' The student already received a hint for this slip and tried again unsuccessfully; acknowledge the new attempt briefly.'
-      : ' Point at the side to recompute with a question; do not give the correct value.'
+      : ' Only ask a question that points at the side to recompute: do not say which side is right or wrong, and write no computed value.'
   }`;
 }
