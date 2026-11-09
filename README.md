@@ -22,7 +22,8 @@ open the **test scenario** `3(x + 4) = 2x + 19` and type the classic wrong step 
 
 1. **Detect.** The student writes `3x + 4 = 2x + 19`. The math engine expands both lines and
    compares their solution sets: the previous line gives `x = 7`, the new one `x = 15`, so the
-   error happened _in this transformation_ — a fact, not a guess.
+   error happened _in this transformation_ — a fact, not a guess. The ✗ appears in the
+   notebook as soon as the line is sent: the same engine runs in the browser.
 2. **Diagnose.** The model receives those computed facts (expanded sides, both solutions,
    what `x = 7` gives when substituted) and classifies the mistake: `DISTRIBUTION` —
    _“multiplied only the first term in the bracket”_.
@@ -212,8 +213,14 @@ Results for `gemini-3.5-flash-lite` (reports in `apps/api/evals/reports/`):
 | Baseline, original checks                          | 54    | 75.9% (41/54)       | 0.0%         | 916 / 1408 ms     | 100%             | 100%            | 85.2%   | 100%             | —            |
 | Baseline answers, current checks (`--rescore`)     | 54    | 75.9% (41/54)       | 0.0%         | 916 / 1408 ms     | 100%             | 98.8%           | 96.3%   | 100%             | 99.4%        |
 | Current prompts (`-2`, stopped by the daily quota) | 47    | 78.7% (37/47)       | 0.0%         | 1081 / 3058 ms    | 100%             | 100%            | 97.8%   | 100%             | 100%         |
+| `message` last + `propertyOrdering` (`-3`)         | 54    | 79.6% (43/54)       | 0.0%         | 912 / 1154 ms     | 100%             | 100%            | 96.3%   | 100%             | 100%         |
 
 `gemini-3.5-flash` is not measured: its free tier allows 20 requests a day, and a run needs about 160.
+
+The `-3` run checks the field order (the model decides before it writes; Gemini also gets
+`propertyOrdering`). On the same 54 cases it scores 43 against the baseline's 41: four cases
+flipped, three of them up. For diagnosis the order was already `message` last, so this is
+within run-to-run noise. The change is kept: nothing got worse.
 
 What the numbers say:
 
@@ -245,6 +252,50 @@ What the numbers say:
 about 20 requests per day for `gemini-3.5-flash`, and one run is about 160 requests. Run it by hand
 after changing prompts, schemas or the model, and commit the report next to the baseline.
 
+## Latency: an instant verdict, no streaming (yet)
+
+What the student waits for is the verdict on their line. The engine already runs in the
+browser (`@tutor/shared`), so the notebook shows the line with its ✓ or ✗ as soon as it is
+sent: the browser calls `judgeLine`, the same function the server acts on (about 0.06 ms on a
+laptop), and a screen reader hears "Correct step" / "There is a mistake". The tutor's words
+follow when the server answers, and its answer replaces the provisional line (a different
+verdict there would be a bug; it is logged in development).
+
+**Why the tutor's text is not streamed.** Measured with `generateContentStream` on a diagnosis
+(three fields, `message` last, thinking level low, two runs per model):
+
+| Model                 | First chunk | `message` starts | Whole answer | Chunks           |
+| --------------------- | ----------- | ---------------- | ------------ | ---------------- |
+| gemini-3.5-flash-lite | 0.61–1.02 s | 0.73–1.14 s      | 0.86–1.33 s  | 5 × ~100 chars   |
+| gemini-3.5-flash      | 0.97–1.14 s | 1.25–1.39 s      | 1.45–1.59 s  | 4–5 × ~100 chars |
+
+Streaming would show the text 0.2–0.3 s earlier, in two or three jumps. That does not pay for a
+new protocol, mid-turn disconnects, proxy changes and a Safari workaround. It starts to pay
+with longer replies, voice (speech can start on the first sentence), or slower models.
+
+**How it would be built** (planned and checked against the docs, then deferred):
+
+- `POST /api/attempts/:id/messages/stream` as `text/event-stream`, read with `fetch` (POST and
+  cookies; same origin). Events, typed in `@tutor/shared`: `verdict` (the engine, before the
+  model), `delta`, `replace` (the final validated text differs, e.g. after LaTeX repair or the
+  non-streamed retry), `done {attempt}` (only after the turn's transaction commits) and
+  `error`. The JSON endpoint stays, as the fallback and for tests.
+- `message` is the last field of every schema, and Gemini gets `propertyOrdering` (both already
+  done: the model decides before it writes). A small incremental parser takes only `message`
+  out of the partial JSON; the whole answer still goes through `callStructured` (zod, LaTeX
+  repair, logging, one retry), so the eval and the JSON endpoint run the same code.
+- Client gone while the model writes: abort the call, write nothing, release the lock. Gone
+  after the model answered: commit the turn anyway; it shows after a reload.
+- Caddy: a separate `handle` for the stream path without `encode` (its default `text/*` match
+  covers `text/event-stream`). No `flush_interval -1`: Caddy flushes event streams immediately
+  anyway, and that mode does not cancel the upstream request when the client disconnects.
+  `Cache-Control: no-cache`, `X-Accel-Buffering: no`, a heartbeat comment every 15 s.
+- Safari: an open WebKit bug (Bugzilla 319542) can stall a fetch stream that goes idle after a
+  burst, which is exactly verdict → model thinking → text. Test in WebKit first; fall back to
+  `XMLHttpRequest` progress events behind the same parser.
+- A server switch (`STREAMING_ENABLED`) that answers 503 before the first byte, so the web
+  app falls back to JSON without a deploy.
+
 ## Deployment
 
 Push to `main` → GitHub Actions runs the tests, builds two images (`api`, `web` = Caddy with the
@@ -273,7 +324,8 @@ unattended upgrades). The production stack fits a 2 GB VPS (memory limits per co
   tracks is content work, not code.
 - **Backend scale.** The API can already run as several replicas behind a load balancer (see
   Limitations for what is still per instance). Next: rate limits in Redis, managed
-  Postgres with read replicas for dashboards, and stream tutor replies over SSE. Cost control:
+  Postgres with read replicas for dashboards, and stream tutor replies over SSE once replies get
+  longer (see Latency). Cost control:
   small models for diagnosis, prompt caching, and per-plan quotas already modelled in
   `llm_calls`.
 - **Parents & teachers.** The progress data (typed mistakes, verified skills) is exactly what
@@ -293,7 +345,9 @@ Deliberate scope cuts for a three-day prototype, and what I would do next:
 - **Re-typing the previous line** is not accepted as a correction; a line that only reorders it
   (`3(x + 4) = 19 + 2x`) still is. Understanding is verified by the follow-up problem, which
   this cannot game.
-- **Replies are not streamed** (typing indicator instead); SSE is the next step for UX.
+- **Replies are not streamed.** The engine's verdict shows at once in the browser; the
+  tutor's text arrives whole about a second later. See
+  [Latency](#latency-an-instant-verdict-no-streaming-yet) for the measurements and the plan.
 - **Migrations and rollbacks.** Migrations so far only add (columns, indexes, foreign keys), so
   the previous image still runs after an automatic rollback. A migration that removes or renames
   something must be split across two releases.
