@@ -4,7 +4,7 @@ import {
   type GenerateContentResponse,
   type ThinkingConfig,
 } from '@google/genai';
-import type { LlmJsonRequest, LlmProvider } from '../llm.types';
+import type { LlmJsonRequest, LlmProvider, LlmPurpose } from '../llm.types';
 
 /** The part of the SDK the provider uses; replaced by a fake in tests. */
 export interface GenerateContentClient {
@@ -25,26 +25,46 @@ export class GeminiProvider implements LlmProvider {
   private readonly now: () => number;
   /** Primary model first, then fallbacks (free-tier models are often rate limited). */
   private readonly models: string[];
-  /** Models that answered 429, until the time the API named. Per process, by design. */
+  /** Other model lists for some purposes (e.g. a stronger model for diagnosis and hints). */
+  private readonly byPurpose: Partial<Record<LlmPurpose, string[]>>;
+  /**
+   * Models that answered 429, until the time the API named. One map for every purpose: a model is
+   * limited whichever call hit the limit. Per process, by design.
+   */
   private readonly cooling = new Map<string, Cooldown>();
 
   constructor(
     apiKey: string,
     models: string,
-    opts: { client?: GenerateContentClient; now?: () => number } = {},
+    opts: {
+      client?: GenerateContentClient;
+      now?: () => number;
+      /** Comma-separated model lists by purpose; the rest use `models`. */
+      byPurpose?: Partial<Record<LlmPurpose, string>>;
+    } = {},
   ) {
     // v1beta: structured output via responseJsonSchema and the newest models live there.
     this.client = opts.client ?? new GoogleGenAI({ apiKey, apiVersion: 'v1beta' }).models;
     this.now = opts.now ?? Date.now;
-    this.models = models
-      .split(',')
-      .map((m) => m.trim())
-      .filter(Boolean);
-    if (this.models.length === 0) throw new Error('GEMINI_MODEL is empty');
+    this.models = modelList(models, 'GEMINI_MODEL');
+    this.byPurpose = Object.fromEntries(
+      Object.entries(opts.byPurpose ?? {}).map(([purpose, list]) => [
+        purpose,
+        modelList(list, `models for ${purpose}`),
+      ]),
+    );
   }
 
   get model(): string {
     return this.models.join(',');
+  }
+
+  modelFor(purpose: LlmPurpose): string {
+    return this.modelsFor(purpose).join(',');
+  }
+
+  private modelsFor(purpose: LlmPurpose): string[] {
+    return this.byPurpose[purpose] ?? this.models;
   }
 
   /**
@@ -58,8 +78,9 @@ export class GeminiProvider implements LlmProvider {
     signal: AbortSignal,
     attempt = 0,
   ): Promise<string> {
-    const start = attempt % this.models.length;
-    const order = [...this.models.slice(start), ...this.models.slice(0, start)];
+    const models = this.modelsFor(req.purpose);
+    const start = attempt % models.length;
+    const order = [...models.slice(start), ...models.slice(0, start)];
     for (const model of order) {
       if (this.isCooling(model)) continue;
       try {
@@ -69,7 +90,7 @@ export class GeminiProvider implements LlmProvider {
         this.cooling.set(model, cooldownFrom(err, this.now()));
       }
     }
-    throw this.allCoolingError();
+    throw this.allCoolingError(models);
   }
 
   private isCooling(model: string): boolean {
@@ -80,13 +101,13 @@ export class GeminiProvider implements LlmProvider {
     return false;
   }
 
-  private allCoolingError(): Error {
-    const states = this.models.map((m) => this.cooling.get(m)!);
+  private allCoolingError(models: string[]): Error {
+    const states = models.map((m) => this.cooling.get(m)!);
     const waitS = Math.ceil((Math.min(...states.map((c) => c.until)) - this.now()) / 1000);
     const daily = states.every((c) => c.daily);
     return Object.assign(
       new Error(
-        `All Gemini models are rate limited (${this.model}); retry in ${waitS}s` +
+        `All Gemini models are rate limited (${models.join(',')}); retry in ${waitS}s` +
           (daily ? ' (requests per day quota)' : ''),
       ),
       { status: 429, cooldown: true },
@@ -116,6 +137,15 @@ export class GeminiProvider implements LlmProvider {
     if (!text) throw new Error(`Empty response from ${model}`);
     return text;
   }
+}
+
+function modelList(text: string, what: string): string[] {
+  const list = text
+    .split(',')
+    .map((m) => m.trim())
+    .filter(Boolean);
+  if (list.length === 0) throw new Error(`${what} is empty`);
+  return list;
 }
 
 /**

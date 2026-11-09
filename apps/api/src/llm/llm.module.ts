@@ -1,10 +1,16 @@
 import { Global, Logger, Module } from '@nestjs/common';
 import { AppConfig } from '../config/config.service';
-import { LLM_PROVIDER, type LlmProvider } from './llm.types';
+import { LLM_PROVIDER, type LlmProvider, type LlmPurpose } from './llm.types';
 import { LlmService } from './llm.service';
 import { AnthropicProvider } from './providers/anthropic.provider';
 import { GeminiProvider } from './providers/gemini.provider';
 import { MockProvider } from './providers/mock.provider';
+
+/** Diagnosis and hints use their own model list; everything else uses GEMINI_MODEL. */
+export const geminiRouting = (diagnosis: string): Partial<Record<LlmPurpose, string>> => ({
+  diagnose: diagnosis,
+  hint: diagnosis,
+});
 
 @Global()
 @Module({
@@ -23,10 +29,16 @@ import { MockProvider } from './providers/mock.provider';
             case 'mock':
               return new MockProvider();
             default:
-              return new GeminiProvider(config.get('GEMINI_API_KEY')!, config.get('GEMINI_MODEL'));
+              return new GeminiProvider(config.get('GEMINI_API_KEY')!, config.get('GEMINI_MODEL'), {
+                byPurpose: geminiRouting(config.get('GEMINI_MODEL_DIAGNOSIS')),
+              });
           }
         })();
-        new Logger('LlmModule').log(`Using LLM provider "${provider.name}" (${provider.model})`);
+        const diagnosis = provider.modelFor?.('diagnose');
+        new Logger('LlmModule').log(
+          `Using LLM provider "${provider.name}" (${provider.model}` +
+            `${diagnosis && diagnosis !== provider.model ? `; diagnose/hint: ${diagnosis}` : ''})`,
+        );
         return provider;
       },
     },

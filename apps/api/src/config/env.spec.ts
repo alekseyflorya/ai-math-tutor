@@ -31,4 +31,10 @@ describe('environment validation', () => {
       }).success,
     ).toBe(false);
   });
+
+  it('sends diagnosis and hints to gemini-3.6-flash by default, the rest to lite first', () => {
+    const env = EnvSchema.parse({ ...base, JWT_SECRET: 'q7Vb2xN9pLr4Tz8sWm3Kc6Hd1Yf5Jg0E' });
+    expect(env.GEMINI_MODEL).toBe('gemini-3.5-flash-lite,gemini-3.6-flash');
+    expect(env.GEMINI_MODEL_DIAGNOSIS).toBe('gemini-3.6-flash,gemini-3.5-flash-lite');
+  });
 });

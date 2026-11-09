@@ -72,6 +72,7 @@ import {
   type Diagnosis,
 } from '../src/llm/tutor-schemas';
 import { notices } from '../src/tutor/notices';
+import { DEFAULT_GEMINI_MODEL_DIAGNOSIS } from '../src/config/env';
 import { loadRootEnv } from './load-env';
 
 loadRootEnv();
@@ -103,7 +104,11 @@ function makeProvider(): LlmProvider {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY is not set');
   // One model only: the retry must not fall back to another model, or we would measure a mix.
-  const model = args.model ?? env('GEMINI_MODEL', 'gemini-3.5-flash-lite').split(',')[0]!.trim();
+  // The eval makes diagnosis and hint calls only, so by default it measures the primary model of
+  // GEMINI_MODEL_DIAGNOSIS, as in production.
+  const model =
+    args.model ??
+    env('GEMINI_MODEL_DIAGNOSIS', DEFAULT_GEMINI_MODEL_DIAGNOSIS).split(',')[0]!.trim();
   return new GeminiProvider(key, model);
 }
 

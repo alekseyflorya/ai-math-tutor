@@ -68,7 +68,7 @@ export class LlmService {
   }
 
   private async log(
-    purpose: string,
+    purpose: LlmJsonRequest<unknown>['purpose'],
     userId: string | null,
     ok: boolean,
     latencyMs: number,
@@ -83,7 +83,7 @@ export class LlmService {
         latencyMs,
         error: error?.slice(0, 500) ?? null,
         provider: this.provider.name,
-        model: this.provider.model,
+        model: this.provider.modelFor?.(purpose) ?? this.provider.model,
       })
       .catch((e: unknown) => this.logger.error(`Failed to log LLM call: ${String(e)}`));
   }
