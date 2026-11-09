@@ -169,7 +169,7 @@ number instead of an impression.
 pnpm eval --model gemini-3.5-flash-lite     # all 54 cases → apps/api/evals/reports/<date>-<model>.md
 pnpm eval --only SIGN_TRANSFER --limit 4    # a quick look at one category
 pnpm eval --resume apps/api/evals/reports/<file>.json   # finish a run cut short by the daily quota
-pnpm eval --rescore apps/api/evals/reports/<file>.json  # re-apply changed checks to saved answers, offline
+pnpm eval --rescore apps/api/evals/reports/<file>.json  # re-apply changed checks offline → <file>-rescored
 ```
 
 - **Cases** (`apps/api/evals/cases.ts`): 54 wrong steps, 8 per error type (6 for `OTHER`), half EN
@@ -190,27 +190,41 @@ pnpm eval --rescore apps/api/evals/reports/<file>.json  # re-apply changed check
   (`apps/api/evals/*.spec.ts`). Reports keep the raw answers, so an improved check is re-applied
   with `--rescore`.
 
-Baseline (2026-11-09):
+Results for `gemini-3.5-flash-lite` (reports in `apps/api/evals/reports/`):
 
-| Model                   | Error type accuracy                                                | Invalid JSON | Latency p50 / p95 | L1 is a question | No final answer | L3 = corrected step only | Language matches |
-| ----------------------- | ------------------------------------------------------------------ | ------------ | ----------------- | ---------------- | --------------- | ------------------------ | ---------------- |
-| `gemini-3.5-flash-lite` | 75.9% (41/54)                                                      | 0.0%         | 916 / 1408 ms     | 100%             | 100%            | 85.2%                    | 100%             |
-| `gemini-3.5-flash`      | _not measured: free tier allows 20 requests/day, a run needs ~160_ |              |                   |                  |                 |                          |                  |
+| Run                                                | Cases | Error type accuracy | Invalid JSON | Latency p50 / p95 | L1 is a question | No final answer | L3 rule | Language matches | LaTeX intact |
+| -------------------------------------------------- | ----- | ------------------- | ------------ | ----------------- | ---------------- | --------------- | ------- | ---------------- | ------------ |
+| Baseline, original checks                          | 54    | 75.9% (41/54)       | 0.0%         | 916 / 1408 ms     | 100%             | 100%            | 85.2%   | 100%             | —            |
+| Baseline answers, current checks (`--rescore`)     | 54    | 75.9% (41/54)       | 0.0%         | 916 / 1408 ms     | 100%             | 98.8%           | 96.3%   | 100%             | 99.4%        |
+| Current prompts (`-2`, stopped by the daily quota) | 47    | 78.7% (37/47)       | 0.0%         | 1081 / 3058 ms    | 100%             | 100%            | 97.8%   | 100%             | 100%         |
+
+`gemini-3.5-flash` is not measured: its free tier allows 20 requests a day, and a run needs about 160.
 
 What the numbers say:
 
-- **The five rule-based categories are solid.** `DISTRIBUTION`, `SIGN_TRANSFER`,
-  `COMBINING_LIKE_TERMS` and `INVERSE_OPERATION` all score 8/8.
+- **Diagnosis did not change beyond noise.**
+  - On the same 47 cases the baseline scored 40/47 and the current prompts 37/47.
+  - One of those cases is a 503 outage, not a wrong answer. On the 46 cases both runs answered,
+    it is 39/46 vs 37/46: four cases flipped (three down, one up).
+  - The diagnosis prompt changed by one sentence (doubling LaTeX backslashes), and diagnosis runs
+    at temperature 0.3, so a ±2 swing is run-to-run noise.
+- **Four categories are solid.** `DISTRIBUTION`, `SIGN_TRANSFER`, `COMBINING_LIKE_TERMS` and
+  `INVERSE_OPERATION` score 8/8 in every run (one 503 aside).
 - **The weak spots:**
-  - `ONE_SIDE_ONLY` (4/8) is read as combining or arithmetic.
-  - `ARITHMETIC` (5/8) is read as a sign or distribution error when the slip happens in that step.
+  - `ONE_SIDE_ONLY` (2–4/8) is read as combining, inverse operation or arithmetic.
+  - `ARITHMETIC` (4–5/8) is read as a sign or distribution error when the slip happens in that
+    step.
   - `OTHER` (0/6) is always forced into a named category. Some of those labels are arguable (for
     example, `3x + 6 → 3x + 6x` does look like combining), so read the confusion matrix, not only
     the total.
-- **Level 3 fails only when the corrected step is the final answer** (`4x = 20 → x = 5`). The
-  prompt says both "show the corrected step" and "never give the final answer", and the model
-  chooses the second. Whether level 3 may show `x = 5` is a product decision; the eval makes it
-  measurable either way.
+- **Level 3.** When the corrected step would be the answer (`4x = 20 → x = 5`), level 3 now names
+  the operation and the line ("divide both sides of 4x = 20 by 4") instead of saying nothing
+  useful. The rule check went from 85.2% to 97.8%. Most of that gain comes from the new check,
+  which accepts naming the operation: the re-scored baseline already reaches 96.3%. The prompt
+  change removes the contradiction that caused the failures.
+  - The eval counts `x = 35 : 5` as giving the answer away, the same way it counts `x = 14/2`.
+- **LaTeX.** One answer in about 160 had `\times` broken by JSON escaping. The API now repairs
+  it before use (`repairLatexEscapes`), and the eval reports how often the raw answer was broken.
 
 `pnpm eval` is not part of CI: it needs an API key and spends quota. The Gemini free tier allows
 about 20 requests per day for `gemini-3.5-flash`, and one run is about 160 requests. Run it by hand
