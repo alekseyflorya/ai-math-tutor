@@ -105,7 +105,7 @@ export class GeminiProvider implements LlmProvider {
       config: {
         systemInstruction: req.system,
         responseMimeType: 'application/json',
-        responseJsonSchema: jsonSchema,
+        responseJsonSchema: withPropertyOrdering(jsonSchema),
         temperature: req.temperature ?? 0.4,
         maxOutputTokens: req.maxOutputTokens ?? 2048,
         thinkingConfig: thinkingFor(model),
@@ -165,6 +165,22 @@ export function msUntilPacificMidnight(now: number): number {
   const elapsed = (get('hour') * 60 + get('minute')) * 60 + get('second');
   return (24 * 3600 - elapsed) * 1000;
 }
+
+/**
+ * Gemini writes the fields in the order of the schema's keys (Gemini 2.5+), and `propertyOrdering`
+ * makes that explicit: the decision fields come first and `message` last, so the model decides
+ * before it writes. Applied to every object in the schema.
+ */
+export function withPropertyOrdering(schema: object): object {
+  if (Array.isArray(schema)) return schema.map((s: unknown) => order(s));
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(schema)) out[k] = order(v);
+  const props = (schema as { properties?: Record<string, unknown> }).properties;
+  if (props && typeof props === 'object') out.propertyOrdering = Object.keys(props);
+  return out;
+}
+
+const order = (v: unknown): unknown => (v && typeof v === 'object' ? withPropertyOrdering(v) : v);
 
 /**
  * Tutor turns are short and the math is pre-computed by the engine, so long
