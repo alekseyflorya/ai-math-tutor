@@ -309,6 +309,13 @@ function write(base: string, info: RunInfo, results: CaseResult[], calls: CallRe
   }
 }
 
+/** "<date>-<model>", or "-2", "-3"… when a report of that day already exists. */
+function freshBase(base: string): string {
+  let candidate = base;
+  for (let n = 2; existsSync(`${candidate}.json`); n++) candidate = `${base}-${n}`;
+  return candidate;
+}
+
 /** Re-scores saved answers with the current checks: no model calls. */
 function rescore(file: string) {
   const saved = JSON.parse(readFileSync(file, 'utf8')) as {
@@ -323,7 +330,8 @@ function rescore(file: string) {
     if (!k) throw new Error(`Case ${r.id} no longer exists`);
     return score(k, r);
   });
-  write(file.replace(/\.json$/, ''), saved.info, results, saved.calls);
+  // Next to the original, which stays as it was measured.
+  write(`${file.replace(/(-rescored)?\.json$/, '')}-rescored`, saved.info, results, saved.calls);
 }
 
 interface Saved {
@@ -367,7 +375,7 @@ async function main() {
   mkdirSync(args.out, { recursive: true });
   const base = args.resume
     ? args.resume.replace(/\.json$/, '')
-    : join(args.out, `${info.date}-${provider.model.replace(/[^\w.-]+/g, '_')}`);
+    : freshBase(join(args.out, `${info.date}-${provider.model.replace(/[^\w.-]+/g, '_')}`));
   // Calls of cases that are re-run are dropped with them; the rest stay in the totals.
   const calls: CallRecord[] = saved
     ? saved.calls.filter((c) => !c.caseId || keptIds.has(c.caseId))
