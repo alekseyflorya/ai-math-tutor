@@ -37,12 +37,20 @@ open the **test scenario** `3(x + 4) = 2x + 19` and type the classic wrong step 
 4. **Correct.** When the student writes any line equivalent to the last correct one
    (`3x + 12 = 2x + 19`, `3x − 2x = 19 − 12`, `6x + 24 = 4x + 38` …) the mistake is marked
    _corrected_ — there is no single “expected path”.
-5. **Verify.** After the problem is solved, the model generates a similar problem aimed at the
+5. **Check the answer, as at school.** Reaching `x = 7` does not close the problem: the tutor asks
+   the student to substitute it into the **original** equation and compute both sides,
+   `3(7 + 4) = 2·7 + 19` → `33 = 33`. The engine judges every check line exactly (both sides
+   must equal the value the original equation takes at the root, in any order, however far
+   simplified). A calculation slip (`33 = 32`) is an `ARITHMETIC` mistake with the same hint
+   ladder; a line that is not this substitution gets a short explanation. The check can be
+   skipped (with a confirmation); Progress shows the share of problems solved with a check.
+6. **Verify.** After the problem is solved and checked (or the check skipped), the model generates a similar problem aimed at the
    same misconception (e.g. `5(x − 2) = 3x + 4`). The math engine acts as a referee: it must be
    linear, have one whole-number solution, be new, and _contain the same trap_ (a bracket with a
    coefficient). Rejected proposals go back to the model with the reason; a verified template is
-   the last resort. Solving it without repeating the error marks the mistake **verified**.
-6. **Track.** Steps, accuracy, mistakes by type (total / corrected / verified), per-skill mastery
+   the last resort. Solving it without repeating the error marks the mistake **verified** (a slip
+   while checking the practice problem does not count as repeating it).
+7. **Track.** Steps, accuracy, mistakes by type (total / corrected / verified), per-skill mastery
    and a 14-day activity chart on the Progress page. The next problem is recommended from the
    weakest skill within reach.
 
@@ -79,8 +87,10 @@ The same package runs in the browser (live preview, “step vs question” detec
 server, and also holds the zod schemas for the API contract.
 
 **Tutor state machine** (`apps/api/src/tutor/tutor.service.ts`): `SOLVING → REMEDIATION (hint 1→2→3)
-→ SOLVING → SOLVED → follow-up`. A turn makes one model call with a typed JSON response; the
-solving turn makes two (generate the follow-up problem, then the celebration that points at it).
+→ SOLVING → CHECKING (substitution; a slip climbs the same ladder) → SOLVED → follow-up`. The
+root is not in any API response until the student reaches it (`solutionLatex` stays null). A turn makes one model call with a typed JSON response; the
+turn that finishes the check (or skips it) makes two (generate the follow-up problem, then the
+celebration that points at it); lines of the check get fixed copy, a model call only for a slip.
 All calls of a turn share one time budget (25 s by default), so a slow model degrades a single
 message instead of hanging the request. A turn reads, checks with the engine, calls the model, and
 only then writes everything in **one transaction** (no transaction is open while the model
