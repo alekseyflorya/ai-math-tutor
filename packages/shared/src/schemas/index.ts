@@ -96,8 +96,14 @@ export const SubmitSchema = z.object({
 export type SubmitInput = z.infer<typeof SubmitSchema>;
 
 export type AttemptStatus = 'IN_PROGRESS' | 'SOLVED' | 'ABANDONED';
-/** SOLVING: working forward. REMEDIATION: a wrong step is being worked through. */
-export type TutorMode = 'SOLVING' | 'REMEDIATION';
+/**
+ * SOLVING: working forward. REMEDIATION: a wrong step is being worked through. CHECKING: the
+ * answer is reached; the student substitutes it into the original equation (a slip there is
+ * worked through in the same mode, with the hint ladder).
+ */
+export type TutorMode = 'SOLVING' | 'REMEDIATION' | 'CHECKING';
+export type StepPhase = 'SOLUTION' | 'CHECK';
+export type CheckOutcome = 'DONE' | 'SKIPPED';
 
 export interface StepView {
   id: string;
@@ -105,6 +111,7 @@ export interface StepView {
   latex: string;
   isCorrect: boolean;
   index: number;
+  phase: StepPhase;
 }
 
 export type MessageRole = 'STUDENT' | 'TUTOR' | 'SYSTEM';
@@ -143,14 +150,21 @@ export const MESSAGE_META = {
   GREETING: z.null(),
   /** A student's question, or the tutor's chat reply. */
   CHAT: z.object({ understood: z.literal(true) }).nullable(),
-  FEEDBACK: z.object({ correct: z.literal(true), fixedErrorType: ErrorTypeSchema.nullable() }),
+  FEEDBACK: z.object({
+    correct: z.literal(true),
+    fixedErrorType: ErrorTypeSchema.nullable(),
+    /** The answer is reached: the tutor asks for a check by substitution. */
+    checkRequested: z.literal(true).optional(),
+    /** A right line of the check that can still be simplified. */
+    checkStep: z.literal(true).optional(),
+  }),
   HINT: z.object({
     hintLevel: HintLevelSchema,
     errorType: ErrorTypeSchema.optional(),
     correct: z.literal(false).optional(),
     requested: z.literal(true).optional(),
   }),
-  CELEBRATION: z.object({ solved: z.literal(true) }),
+  CELEBRATION: z.object({ solved: z.literal(true), checked: z.boolean().optional() }),
   FOLLOW_UP: z.object({
     nextAttemptId: z.string(),
     equation: z.string(),
@@ -164,6 +178,10 @@ export const MESSAGE_META = {
       solved: z.literal(true).optional(),
       repeatedLine: z.literal(true).optional(),
       inputError: z.enum(MATH_ERROR_CODES).optional(),
+      /** A check line that is not a substitution of the root. */
+      checkError: z.enum(['not_numeric', 'not_substitution']).optional(),
+      /** The problem was closed without the check. */
+      checkSkipped: z.literal(true).optional(),
     })
     .nullable(),
 } satisfies Record<Exclude<MessageKind, 'EXPLANATION'>, z.ZodType>;
@@ -211,6 +229,13 @@ export interface AttemptView {
   title: string;
   status: AttemptStatus;
   mode: TutorMode;
+  /**
+   * The root, e.g. "x = 7" — only once the student has reached it (CHECKING) or the problem is
+   * solved; null before, so the answer never leaks through the API.
+   */
+  solutionLatex: string | null;
+  /** How the check ended; null while not solved or for problems solved before checks existed. */
+  check: CheckOutcome | null;
   hintLevel: number;
   /** Last line known to be correct; the next step is checked against it. */
   currentLine: string;
@@ -266,6 +291,8 @@ export interface ProgressView {
     verifiedMistakes: number;
     followUpsPassed: number;
   };
+  /** How solved problems ended their check (problems solved before checks existed are left out). */
+  checks: { done: number; skipped: number };
   mistakesByType: { errorType: ErrorType; total: number; corrected: number; verified: number }[];
   skills: { skill: Skill; mastery: number; attempts: number }[];
   recentMistakes: MistakeView[];
@@ -299,6 +326,7 @@ export const API_ERROR_CODES = [
   'ATTEMPT_NOT_FOUND',
   'PROBLEM_NOT_FOUND',
   'ATTEMPT_CLOSED',
+  'NOT_CHECKING',
   'BUSY',
   'INVALID_EQUATION',
   'NO_UNIQUE_SOLUTION',

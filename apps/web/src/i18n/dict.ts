@@ -108,6 +108,7 @@ const en = {
     ATTEMPT_NOT_FOUND: 'This problem was not found.',
     PROBLEM_NOT_FOUND: 'This problem was not found.',
     ATTEMPT_CLOSED: 'This problem is already solved. Start it again or pick another one.',
+    NOT_CHECKING: 'There is nothing to check yet: first reach the answer.',
     BUSY: 'The tutor is still answering your previous message.',
     INVALID_EQUATION: 'Enter a linear equation with one unknown, e.g. 2x + 3 = 11.',
     NO_UNIQUE_SOLUTION:
@@ -231,6 +232,7 @@ const uk: Dict = {
     ATTEMPT_NOT_FOUND: 'Цю задачу не знайдено.',
     PROBLEM_NOT_FOUND: 'Цю задачу не знайдено.',
     ATTEMPT_CLOSED: "Цю задачу вже розв'язано. Почни її заново або вибери іншу.",
+    NOT_CHECKING: 'Перевіряти ще нічого: спершу дійди до відповіді.',
     BUSY: 'Репетитор ще відповідає на попереднє повідомлення.',
     INVALID_EQUATION: 'Введи лінійне рівняння з одним невідомим, наприклад 2x + 3 = 11.',
     NO_UNIQUE_SOLUTION:

@@ -242,6 +242,7 @@ export class TutorService {
       input: text,
       latex: check.current.latex,
       isCorrect: check.equivalent,
+      phase: 'SOLUTION' as const,
       createdAt: new Date(),
     };
     turn.steps.push(step);
@@ -482,6 +483,7 @@ export class TutorService {
       description,
       previousLine: turn.attempt.currentLine,
       stepInput,
+      phase: 'SOLUTION',
       hintsUsed: 0,
       corrected: false,
       correctedAt: null,

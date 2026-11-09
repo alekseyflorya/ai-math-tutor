@@ -50,7 +50,7 @@ export interface TutorContext {
   problem: string;
   currentLine: string;
   steps: { input: string; isCorrect: boolean }[];
-  mode: 'SOLVING' | 'REMEDIATION';
+  mode: 'SOLVING' | 'REMEDIATION' | 'CHECKING';
   hintLevel: number;
   activeMistake: {
     errorType: ErrorType;

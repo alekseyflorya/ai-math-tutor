@@ -1,5 +1,11 @@
 import { Logger } from '@nestjs/common';
-import { parseEquation, parseMessageMeta, type AttemptView, type MessageView } from '@tutor/shared';
+import {
+  parseEquation,
+  parseMessageMeta,
+  solve,
+  type AttemptView,
+  type MessageView,
+} from '@tutor/shared';
 import type { Attempt, Message, Step } from '../db/schema';
 
 const latexOf = (equation: string) => {
@@ -25,6 +31,8 @@ export function toAttemptView(
     title: a.title,
     status: a.status,
     mode: a.mode,
+    solutionLatex: revealedSolution(a),
+    check: a.check ?? null,
     hintLevel: a.hintLevel,
     currentLine: a.currentLine,
     currentLatex: latexOf(a.currentLine),
@@ -36,6 +44,7 @@ export function toAttemptView(
       latex: s.latex,
       isCorrect: s.isCorrect,
       index: s.index,
+      phase: s.phase,
     })),
     messages: messages.map(toMessageView),
     nextAttemptId: next?.id ?? null,
@@ -63,4 +72,18 @@ export function toMessageView(m: Message): MessageView {
     createdAt: m.createdAt.toISOString(),
     meta: parsed.ok ? parsed.meta : null,
   } as MessageView;
+}
+
+/**
+ * The root, only once the student has reached it (checking) or the problem is solved. Before
+ * that the API must not carry anything the answer can be read from.
+ */
+function revealedSolution(a: Attempt): string | null {
+  if (a.mode !== 'CHECKING' && a.status !== 'SOLVED') return null;
+  try {
+    const s = solve(parseEquation(a.equation));
+    return s.kind === 'unique' ? `${a.variable} = ${s.value.toLatex()}` : null;
+  } catch {
+    return null;
+  }
 }

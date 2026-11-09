@@ -18,7 +18,11 @@ import {
 import { ERROR_TYPES } from '@tutor/shared';
 
 export const attemptStatus = pgEnum('attempt_status', ['IN_PROGRESS', 'SOLVED', 'ABANDONED']);
-export const tutorMode = pgEnum('tutor_mode', ['SOLVING', 'REMEDIATION']);
+export const tutorMode = pgEnum('tutor_mode', ['SOLVING', 'REMEDIATION', 'CHECKING']);
+/** Solving the equation, or checking the answer by substitution afterwards. */
+export const stepPhase = pgEnum('step_phase', ['SOLUTION', 'CHECK']);
+/** How a solved attempt ended its check; null for attempts solved before checks existed. */
+export const checkOutcome = pgEnum('check_outcome', ['DONE', 'SKIPPED']);
 export const messageRole = pgEnum('message_role', ['STUDENT', 'TUTOR', 'SYSTEM']);
 export const messageKind = pgEnum('message_kind', [
   'STEP',
@@ -92,6 +96,7 @@ export const attempts = pgTable(
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     solvedAt: timestamp('solved_at', { withTimezone: true }),
+    check: checkOutcome('check'),
     /** Turn lock (lease): set while a turn runs; see AttemptLock. */
     busyUntil: timestamp('busy_until', { withTimezone: true }),
     /** Who holds the lease: released only by the holder's token. */
@@ -118,6 +123,7 @@ export const steps = pgTable(
     input: text('input').notNull(),
     latex: text('latex').notNull(),
     isCorrect: boolean('is_correct').notNull(),
+    phase: stepPhase('phase').notNull().default('SOLUTION'),
     createdAt: createdAt(),
   },
   (t) => [index('steps_attempt_idx').on(t.attemptId, t.index)],
@@ -156,6 +162,8 @@ export const mistakes = pgTable(
     description: text('description').notNull(),
     previousLine: text('previous_line').notNull(),
     stepInput: text('step_input').notNull(),
+    /** A slip while checking the answer counts for skills, but is not what a follow-up targets. */
+    phase: stepPhase('phase').notNull().default('SOLUTION'),
     hintsUsed: integer('hints_used').notNull().default(0),
     corrected: boolean('corrected').notNull().default(false),
     correctedAt: timestamp('corrected_at', { withTimezone: true }),
