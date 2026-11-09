@@ -1,3 +1,4 @@
+import { isLatexIntact, repairLatexEscapes } from '@tutor/shared';
 import { z } from 'zod';
 import { LlmUnavailableError, type LlmJsonRequest, type LlmProvider } from './llm.types';
 
@@ -14,6 +15,8 @@ export interface AttemptReport {
   /** null when ok */
   reason: LlmUnavailableError['reason'] | null;
   error: string | null;
+  /** Answered attempts: whether the model's LaTeX survived JSON escaping (before repair). */
+  latexIntact?: boolean;
 }
 
 export interface StructuredCallOptions {
@@ -45,6 +48,7 @@ export async function callStructured<T>(
       break;
     }
     const timeoutMs = Math.min(opts.timeoutMs, left);
+    let stop = false;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     const started = Date.now();
@@ -56,7 +60,9 @@ export async function callStructured<T>(
         controller.signal,
         attempt - 1,
       );
-      const parsed = req.schema.safeParse(safeJson(raw));
+      const json = safeJson(raw);
+      const latexIntact = strings(json).every(isLatexIntact);
+      const parsed = req.schema.safeParse(mapStrings(json, repairLatexEscapes));
       if (parsed.success) {
         await opts.onAttempt?.({
           attempt,
@@ -64,6 +70,7 @@ export async function callStructured<T>(
           latencyMs: Date.now() - started,
           reason: null,
           error: null,
+          latexIntact,
         });
         return parsed.data;
       }
@@ -82,7 +89,10 @@ export async function callStructured<T>(
           'rate_limited',
           `The model provider is rate limiting requests${detail ? `: ${detail}` : ''}`,
         );
-        if (attempt < MAX_ATTEMPTS) await sleep(RATE_LIMIT_BACKOFF_MS);
+        // The provider already tried every model it has and knows they are all cooling down:
+        // a retry would not even reach the API.
+        if ((err as { cooldown?: boolean }).cooldown) stop = true;
+        else if (attempt < MAX_ATTEMPTS) await sleep(RATE_LIMIT_BACKOFF_MS);
       } else {
         lastError = new LlmUnavailableError(
           'provider_error',
@@ -100,8 +110,26 @@ export async function callStructured<T>(
       reason: lastError.reason,
       error: lastError.message,
     });
+    if (stop) break;
   }
   throw lastError ?? new LlmUnavailableError('provider_error', 'Unknown LLM failure');
+}
+
+/** Applies `f` to every string in a parsed JSON value. */
+function mapStrings(v: unknown, f: (s: string) => string): unknown {
+  if (typeof v === 'string') return f(v);
+  if (Array.isArray(v)) return v.map((x) => mapStrings(x, f));
+  if (v && typeof v === 'object') {
+    return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, mapStrings(x, f)]));
+  }
+  return v;
+}
+
+function strings(v: unknown): string[] {
+  if (typeof v === 'string') return [v];
+  if (Array.isArray(v)) return v.flatMap(strings);
+  if (v && typeof v === 'object') return Object.values(v).flatMap(strings);
+  return [];
 }
 
 function safeJson(raw: string): unknown {

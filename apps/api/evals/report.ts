@@ -45,6 +45,7 @@ export function headlineRow(info: RunInfo, s: Summary): string[] {
     pct(s.rules.noFinalAnswer),
     pct(s.rules.level3CorrectedOnly),
     pct(s.rules.language),
+    pct(s.rules.latexIntact),
   ];
 }
 
@@ -57,6 +58,7 @@ export const HEADLINE_HEADER = [
   'No final answer',
   'L3 = corrected step only',
   'Language matches',
+  'LaTeX intact',
 ];
 
 export function renderReport(info: RunInfo, s: Summary, results: readonly CaseResult[]): string {

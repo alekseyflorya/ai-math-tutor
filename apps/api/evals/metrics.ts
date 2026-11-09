@@ -7,16 +7,25 @@ export interface HintChecks {
   /** Level 1 only. */
   question?: boolean;
   revealsAnswer: boolean;
-  /** Level 3 when the corrected step IS the final line: showing "x = 7" is then the step itself. */
-  answerAllowed: boolean;
+  /**
+   * Level 3 when the corrected step is already the answer ("4x = 20 → x = 5"): then level 3 must not
+   * show it, but name the operation and the line instead.
+   */
+  finalStep?: boolean;
+  /** Level 3: names an operation ("divide both sides … by 4"). */
+  namesOperation?: boolean;
   /** Level 3 only. */
   correctedStep?: { shows: boolean; newLines: number };
   language: DetectedLanguage;
+  /** The model's LaTeX survived JSON escaping (checked before the repair). */
+  latexIntact: boolean;
 }
 
 export interface HintResult {
   level: 1 | 2 | 3;
   message: string | null;
+  /** Raw LaTeX check, recorded by the run (the stored message is already repaired). */
+  latexIntact?: boolean;
   error?: string;
   checks?: HintChecks;
 }
@@ -65,6 +74,7 @@ export interface Summary {
     noFinalAnswer: Rate;
     level3CorrectedOnly: Rate;
     language: Rate;
+    latexIntact: Rate;
   };
 }
 
@@ -83,9 +93,15 @@ const count = <T>(xs: readonly T[], f: (x: T) => boolean): Rate =>
   rate(xs.filter(f).length, xs.length);
 
 /** Level 3 passes when it shows the corrected step, nothing beyond it, and no answer. */
+/**
+ * Level 3 passes when it shows the corrected step and nothing beyond it, or, when that step is the
+ * answer, names the operation to do. Either way it must not give the answer away.
+ */
 export function level3Passes(c: HintChecks): boolean {
+  if (c.revealsAnswer) return false;
   const step = c.correctedStep;
-  return Boolean(step?.shows) && step!.newLines <= 1 && (!c.revealsAnswer || c.answerAllowed);
+  const showsStep = Boolean(step?.shows) && step!.newLines <= 1;
+  return showsStep || (Boolean(c.finalStep) && Boolean(c.namesOperation));
 }
 
 export function summarize(results: readonly CaseResult[], calls: readonly CallRecord[]): Summary {
@@ -147,12 +163,13 @@ export function summarize(results: readonly CaseResult[], calls: readonly CallRe
         hints.filter((h) => h.level === 1),
         (h) => h.checks.question === true,
       ),
-      noFinalAnswer: count(hints, (h) => !h.checks.revealsAnswer || h.checks.answerAllowed),
+      noFinalAnswer: count(hints, (h) => !h.checks.revealsAnswer),
       level3CorrectedOnly: count(
         hints.filter((h) => h.level === 3),
         (h) => level3Passes(h.checks),
       ),
       language: count(hints, (h) => h.checks.language === h.locale),
+      latexIntact: count(hints, (h) => h.checks.latexIntact),
     },
   };
 }
@@ -163,12 +180,14 @@ export function violations(h: HintResult, locale: Locale): string[] {
   const c = h.checks;
   const out: string[] = [];
   if (h.level === 1 && !c.question) out.push('level 1 is not a question');
-  if (c.revealsAnswer && !c.answerAllowed) out.push('reveals the final answer');
-  if (h.level === 3 && !level3Passes(c)) {
-    if (!c.correctedStep?.shows) out.push('level 3 does not show the corrected step');
+  if (c.revealsAnswer) out.push('reveals the final answer');
+  if (h.level === 3 && !c.revealsAnswer && !level3Passes(c)) {
+    if (c.finalStep) out.push('level 3 neither shows the step nor names the operation');
+    else if (!c.correctedStep?.shows) out.push('level 3 does not show the corrected step');
     else if (c.correctedStep.newLines > 1)
       out.push(`level 3 goes beyond the step (${c.correctedStep.newLines} new lines)`);
   }
   if (c.language !== locale) out.push(`language ${c.language}, expected ${locale}`);
+  if (!c.latexIntact) out.push('LaTeX broken by JSON escaping (repaired before use)');
   return out;
 }

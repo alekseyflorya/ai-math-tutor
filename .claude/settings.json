@@ -30,7 +30,10 @@
     ],
     "deny": [
       "Read(./.env)",
-      "Read(./.env.*)",
+      "Read(./.env.local)",
+      "Read(./.env.*.local)",
+      "Read(./.env.production)",
+      "Read(./.env.development)",
       "Bash(git push --force*)",
       "Bash(docker compose down -v*)"
     ]

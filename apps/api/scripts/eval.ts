@@ -13,9 +13,22 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { checkStep, ERROR_TYPES, isFinalForm, parseEquation, solve } from '@tutor/shared';
+import {
+  checkStep,
+  ERROR_TYPES,
+  isFinalForm,
+  isLatexIntact,
+  parseEquation,
+  solve,
+} from '@tutor/shared';
 import { CASES, validateCases, type EvalCase } from '../evals/cases';
-import { correctedStep, detectLanguage, isQuestion, revealsAnswer } from '../evals/checks';
+import {
+  correctedStep,
+  detectLanguage,
+  isQuestion,
+  namesOperation,
+  revealsAnswer,
+} from '../evals/checks';
 import {
   summarize,
   violations,
@@ -62,7 +75,7 @@ function makeProvider(): LlmProvider {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY is not set');
   // One model only: the retry must not fall back to another model, or we would measure a mix.
-  const model = args.model ?? env('GEMINI_MODEL', 'gemini-3.5-flash').split(',')[0]!.trim();
+  const model = args.model ?? env('GEMINI_MODEL', 'gemini-3.5-flash-lite').split(',')[0]!.trim();
   return new GeminiProvider(key, model);
 }
 
@@ -93,7 +106,7 @@ async function call<T>(
   caseId: string,
   purpose: CallRecord['purpose'],
   req: Omit<LlmJsonRequest<T>, 'deadline'>,
-): Promise<T> {
+): Promise<{ value: T; latexIntact: boolean }> {
   const attempts: AttemptReport[] = [];
   const record = (ok: boolean) => calls.push({ caseId, purpose, ok, attempts });
   for (let retry = 0; ; retry++) {
@@ -104,7 +117,8 @@ async function call<T>(
         { timeoutMs: TIMEOUT_MS, onAttempt: (a) => void attempts.push(a) },
       );
       record(true);
-      return out;
+      // Measured on the raw answer, before callStructured repairs it.
+      return { value: out, latexIntact: attempts.at(-1)?.latexIntact ?? true };
     } catch (e) {
       const limited = e instanceof LlmUnavailableError && e.reason === 'rate_limited';
       if (limited && /per ?day/i.test(e.message)) {
@@ -125,16 +139,26 @@ async function call<T>(
   }
 }
 
-function checkMessage(k: EvalCase, level: 1 | 2 | 3, message: string): HintChecks {
+function checkMessage(
+  k: EvalCase,
+  level: 1 | 2 | 3,
+  message: string,
+): Omit<HintChecks, 'latexIntact'> {
   const sol = solve(parseEquation(k.problem));
   if (sol.kind !== 'unique') throw new Error(`${k.id}: the problem has no unique solution`);
   return {
     revealsAnswer: revealsAnswer(message, sol.value),
-    // When the corrected step is "x = 5", level 3 cannot show it without the answer.
-    answerAllowed: level === 3 && isFinalForm(parseEquation(k.correctStep)),
+
     language: detectLanguage(message),
     ...(level === 1 ? { question: isQuestion(message) } : {}),
-    ...(level === 3 ? { correctedStep: correctedStep(message, k) } : {}),
+    ...(level === 3
+      ? {
+          correctedStep: correctedStep(message, k),
+          // "4x = 20 → x = 5": level 3 names the operation instead of showing the answer.
+          finalStep: isFinalForm(parseEquation(k.correctStep)),
+          namesOperation: namesOperation(message),
+        }
+      : {}),
   };
 }
 
@@ -143,7 +167,16 @@ function score(k: EvalCase, r: CaseResult): CaseResult {
   return {
     ...r,
     hints: r.hints.map(({ checks: _old, ...h }) =>
-      h.message === null ? h : { ...h, checks: checkMessage(k, h.level, h.message) },
+      h.message === null
+        ? h
+        : {
+            ...h,
+            checks: {
+              ...checkMessage(k, h.level, h.message),
+              // Raw flag from the run; reports from before the repair stored raw messages.
+              latexIntact: h.latexIntact ?? isLatexIntact(h.message),
+            },
+          },
     ),
   };
 }
@@ -182,14 +215,21 @@ async function runCase(
   };
 
   let diagnosis: Diagnosis;
+  let diagnosisLatexIntact: boolean;
   try {
-    diagnosis = await call(provider, calls, k.id, 'diagnose', {
-      purpose: 'diagnose',
-      system,
-      prompt: diagnosePrompt(base, k.wrongStep, check.facts, 1),
-      schema: DiagnosisSchema,
-      temperature: 0.3,
-    });
+    ({ value: diagnosis, latexIntact: diagnosisLatexIntact } = await call(
+      provider,
+      calls,
+      k.id,
+      'diagnose',
+      {
+        purpose: 'diagnose',
+        system,
+        prompt: diagnosePrompt(base, k.wrongStep, check.facts, 1),
+        schema: DiagnosisSchema,
+        temperature: 0.3,
+      },
+    ));
   } catch (e) {
     if (e instanceof DailyQuotaError) throw e;
     result.hints.push({ level: 1, message: null, error: (e as Error).message });
@@ -197,8 +237,12 @@ async function runCase(
   }
   result.predicted = diagnosis.errorType;
   result.misconception = diagnosis.misconception;
-  const hint = (level: 1 | 2 | 3, message: string): HintResult => ({ level, message });
-  result.hints.push(hint(1, diagnosis.message));
+  const hint = (level: 1 | 2 | 3, message: string, latexIntact: boolean): HintResult => ({
+    level,
+    message,
+    latexIntact,
+  });
+  result.hints.push(hint(1, diagnosis.message, diagnosisLatexIntact));
 
   // "Hint" pressed twice while fixing the mistake: levels 2 and 3, as TutorService.hint builds them.
   const dialogue: TutorContext['recentDialogue'] = [
@@ -219,13 +263,13 @@ async function runCase(
       recentDialogue: [...dialogue],
     };
     try {
-      const out = await call(provider, calls, k.id, 'hint', {
+      const { value: out, latexIntact } = await call(provider, calls, k.id, 'hint', {
         purpose: 'hint',
         system,
         prompt: hintPrompt(ctx, level),
         schema: FeedbackSchema,
       });
-      result.hints.push(hint(level, out.message));
+      result.hints.push(hint(level, out.message, latexIntact));
       dialogue.push({ role: 'Tutor', content: out.message });
     } catch (e) {
       if (e instanceof DailyQuotaError) throw e;
@@ -265,6 +309,13 @@ function write(base: string, info: RunInfo, results: CaseResult[], calls: CallRe
   }
 }
 
+/** "<date>-<model>", or "-2", "-3"… when a report of that day already exists. */
+function freshBase(base: string): string {
+  let candidate = base;
+  for (let n = 2; existsSync(`${candidate}.json`); n++) candidate = `${base}-${n}`;
+  return candidate;
+}
+
 /** Re-scores saved answers with the current checks: no model calls. */
 function rescore(file: string) {
   const saved = JSON.parse(readFileSync(file, 'utf8')) as {
@@ -279,7 +330,8 @@ function rescore(file: string) {
     if (!k) throw new Error(`Case ${r.id} no longer exists`);
     return score(k, r);
   });
-  write(file.replace(/\.json$/, ''), saved.info, results, saved.calls);
+  // Next to the original, which stays as it was measured.
+  write(`${file.replace(/(-rescored)?\.json$/, '')}-rescored`, saved.info, results, saved.calls);
 }
 
 interface Saved {
@@ -323,7 +375,7 @@ async function main() {
   mkdirSync(args.out, { recursive: true });
   const base = args.resume
     ? args.resume.replace(/\.json$/, '')
-    : join(args.out, `${info.date}-${provider.model.replace(/[^\w.-]+/g, '_')}`);
+    : freshBase(join(args.out, `${info.date}-${provider.model.replace(/[^\w.-]+/g, '_')}`));
   // Calls of cases that are re-run are dropped with them; the rest stay in the totals.
   const calls: CallRecord[] = saved
     ? saved.calls.filter((c) => !c.caseId || keptIds.has(c.caseId))
