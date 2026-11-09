@@ -3,13 +3,14 @@
  *
  *   pnpm eval [--model gemini-3.5-flash] [--limit 10] [--concurrency 2] [--only SIGN_TRANSFER]
  *   pnpm eval --rescore evals/reports/<file>.json   (re-apply the checks to saved answers, offline)
+ *   pnpm eval --resume evals/reports/<file>.json    (finish a run cut short by the daily quota)
  *
  * For every case in evals/cases.ts: the diagnosis (= hint level 1) and hint levels 2 and 3, built
  * with the production prompt functions and zod schemas and sent through `callStructured` — the
  * same validation and retry the API uses. Writes evals/reports/<date>-<model>.md (+ .json).
  * Reads keys from the repo-root .env, like `pnpm smoke:llm`.
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { checkStep, ERROR_TYPES, isFinalForm, parseEquation, solve } from '@tutor/shared';
@@ -43,6 +44,7 @@ const { values: args } = parseArgs({
     only: { type: 'string' },
     out: { type: 'string', default: join(__dirname, '..', 'evals', 'reports') },
     rescore: { type: 'string' },
+    resume: { type: 'string' },
   },
 });
 
@@ -77,7 +79,9 @@ function selectCases(): EvalCase[] {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-let consecutiveRateLimited = 0;
+
+/** The free tier allows ~20 requests per model per day: no point retrying, stop the run. */
+class DailyQuotaError extends Error {}
 
 /**
  * One production-equivalent call. The free tier rate-limits hard, so a 429 that survives
@@ -86,11 +90,12 @@ let consecutiveRateLimited = 0;
 async function call<T>(
   provider: LlmProvider,
   calls: CallRecord[],
+  caseId: string,
   purpose: CallRecord['purpose'],
   req: Omit<LlmJsonRequest<T>, 'deadline'>,
 ): Promise<T> {
   const attempts: AttemptReport[] = [];
-  const record = (ok: boolean) => calls.push({ purpose, ok, attempts });
+  const record = (ok: boolean) => calls.push({ caseId, purpose, ok, attempts });
   for (let retry = 0; ; retry++) {
     try {
       const out = await callStructured(
@@ -98,18 +103,14 @@ async function call<T>(
         { ...req, deadline: Date.now() + TURN_BUDGET_MS },
         { timeoutMs: TIMEOUT_MS, onAttempt: (a) => void attempts.push(a) },
       );
-      consecutiveRateLimited = 0;
       record(true);
       return out;
     } catch (e) {
       const limited = e instanceof LlmUnavailableError && e.reason === 'rate_limited';
+      if (limited && /per ?day/i.test(e.message)) {
+        throw new DailyQuotaError(`Daily quota of ${provider.model} is used up`, { cause: e });
+      }
       if (!limited || retry >= MAX_RATE_LIMIT_RETRIES) {
-        if (limited && ++consecutiveRateLimited >= 3) {
-          throw new Error(
-            'Rate limited on three calls in a row: the daily quota is likely used up',
-            { cause: e },
-          );
-        }
         record(false);
         throw e;
       }
@@ -182,7 +183,7 @@ async function runCase(
 
   let diagnosis: Diagnosis;
   try {
-    diagnosis = await call(provider, calls, 'diagnose', {
+    diagnosis = await call(provider, calls, k.id, 'diagnose', {
       purpose: 'diagnose',
       system,
       prompt: diagnosePrompt(base, k.wrongStep, check.facts, 1),
@@ -190,6 +191,7 @@ async function runCase(
       temperature: 0.3,
     });
   } catch (e) {
+    if (e instanceof DailyQuotaError) throw e;
     result.hints.push({ level: 1, message: null, error: (e as Error).message });
     return score(k, result);
   }
@@ -217,7 +219,7 @@ async function runCase(
       recentDialogue: [...dialogue],
     };
     try {
-      const out = await call(provider, calls, 'hint', {
+      const out = await call(provider, calls, k.id, 'hint', {
         purpose: 'hint',
         system,
         prompt: hintPrompt(ctx, level),
@@ -226,6 +228,7 @@ async function runCase(
       result.hints.push(hint(level, out.message));
       dialogue.push({ role: 'Tutor', content: out.message });
     } catch (e) {
+      if (e instanceof DailyQuotaError) throw e;
       result.hints.push({ level, message: null, error: (e as Error).message });
     }
   }
@@ -255,9 +258,11 @@ function write(base: string, info: RunInfo, results: CaseResult[], calls: CallRe
   const summary = summarize(results, calls);
   writeFileSync(`${base}.md`, renderReport(info, summary, results));
   writeFileSync(`${base}.json`, `${JSON.stringify({ info, summary, results, calls }, null, 2)}\n`);
-  console.log(
-    `\nError type accuracy ${summary.accuracy.ok}/${summary.accuracy.total}. Report: ${base}.md`,
-  );
+  if (info.complete !== false) {
+    console.log(
+      `\nError type accuracy ${summary.accuracy.ok}/${summary.accuracy.total}. Report: ${base}.md`,
+    );
+  }
 }
 
 /** Re-scores saved answers with the current checks: no model calls. */
@@ -277,43 +282,87 @@ function rescore(file: string) {
   write(file.replace(/\.json$/, ''), saved.info, results, saved.calls);
 }
 
+interface Saved {
+  info: RunInfo;
+  results: CaseResult[];
+  calls: CallRecord[];
+}
+
+/** A case is done when the diagnosis and all three hint levels came back. */
+const done = (r: CaseResult) =>
+  r.predicted !== null && r.hints.length === 3 && r.hints.every((h) => h.message !== null);
+
 async function main() {
   validateCases(CASES); // an invalid case is a bug in the eval, not a model failure
   if (args.rescore) return rescore(args.rescore);
+
+  let saved: Saved | null = null;
+  if (args.resume) {
+    if (!existsSync(args.resume)) throw new Error(`${args.resume} does not exist`);
+    saved = JSON.parse(readFileSync(args.resume, 'utf8')) as Saved;
+    args.model = saved.info.model;
+  }
   const provider = makeProvider();
-  const cases = selectCases();
+  const kept = (saved?.results ?? []).filter(done);
+  const keptIds = new Set(kept.map((r) => r.id));
+  const cases = selectCases().filter((k) => !keptIds.has(k.id));
   const concurrency = Number(args.concurrency);
   console.log(
-    `Eval: ${provider.name} / ${provider.model}, ${cases.length} cases, concurrency ${concurrency}`,
+    `Eval: ${provider.name} / ${provider.model}, ${cases.length} cases to run` +
+      `${kept.length ? ` (+${kept.length} done earlier)` : ''}, concurrency ${concurrency}`,
   );
 
-  const calls: CallRecord[] = [];
-  const started = Date.now();
-  const results = await pool(cases, concurrency, async (k) => {
-    const r = await runCase(provider, k, calls);
-    const broken = r.hints.flatMap((h) => violations(h, r.locale).map((v) => `L${h.level}: ${v}`));
-    const mark = r.predicted === r.expected ? '✓' : '✗';
-    console.log(
-      `${mark} ${r.id.padEnd(9)} ${r.expected} → ${r.predicted ?? 'failed'}${broken.length ? `  [${broken.join('; ')}]` : ''}`,
-    );
-    return r;
-  });
-
-  const info: RunInfo = {
+  const info: RunInfo = saved?.info ?? {
     date: today(),
     provider: provider.name,
     model: provider.model,
     concurrency,
-    durationMs: Date.now() - started,
+    durationMs: 0,
     filter: args.only,
   };
   mkdirSync(args.out, { recursive: true });
-  write(
-    join(args.out, `${info.date}-${provider.model.replace(/[^\w.-]+/g, '_')}`),
-    info,
-    results,
-    calls,
-  );
+  const base = args.resume
+    ? args.resume.replace(/\.json$/, '')
+    : join(args.out, `${info.date}-${provider.model.replace(/[^\w.-]+/g, '_')}`);
+  // Calls of cases that are re-run are dropped with them; the rest stay in the totals.
+  const calls: CallRecord[] = saved
+    ? saved.calls.filter((c) => !c.caseId || keptIds.has(c.caseId))
+    : [];
+  const fresh: CaseResult[] = [];
+  const started = Date.now();
+  const order = new Map(CASES.map((k, i) => [k.id, i]));
+  const all = () =>
+    [...kept, ...fresh].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+  const snapshot = (complete: boolean) =>
+    write(
+      base,
+      { ...info, durationMs: info.durationMs + Date.now() - started, complete },
+      all(),
+      calls,
+    );
+
+  try {
+    await pool(cases, concurrency, async (k) => {
+      const r = await runCase(provider, k, calls);
+      fresh.push(r);
+      const broken = r.hints.flatMap((h) =>
+        violations(h, r.locale).map((v) => `L${h.level}: ${v}`),
+      );
+      const mark = r.predicted === r.expected ? '✓' : '✗';
+      console.log(
+        `${mark} ${r.id.padEnd(9)} ${r.expected} → ${r.predicted ?? 'failed'}${broken.length ? `  [${broken.join('; ')}]` : ''}`,
+      );
+      snapshot(false); // checkpoint: a quota stop loses at most the cases in flight
+    });
+  } catch (e) {
+    if (!(e instanceof DailyQuotaError)) throw e;
+    snapshot(false);
+    console.error(
+      `\n${e.message}. Partial results saved; continue later with:\n  pnpm eval --resume ${base}.json`,
+    );
+    process.exit(2);
+  }
+  snapshot(all().every(done));
 }
 
 main().catch((e: unknown) => {

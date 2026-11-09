@@ -32,6 +32,8 @@ export interface CaseResult {
 }
 
 export interface CallRecord {
+  /** Absent in reports written before --resume existed. */
+  caseId?: string;
   purpose: 'diagnose' | 'hint';
   ok: boolean;
   attempts: AttemptReport[];
