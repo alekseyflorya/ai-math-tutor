@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -51,6 +52,12 @@ import { AppConfig } from '../config/config.service';
 import { AttemptLock } from './attempt-lock';
 import { AttemptRepository, type AttemptPatch } from './attempt.repository';
 import { FollowUpService } from './follow-up.service';
+import {
+  checkHintFacts,
+  guardCheckHint,
+  type CheckHintFacts,
+  type GuardResult,
+} from './check-hint-guard';
 import { meta } from './message-meta';
 import { notices } from './notices';
 import { TutorContextBuilder } from './tutor-context.builder';
@@ -81,6 +88,8 @@ const MAX_FOLLOW_UP_DEPTH = 2;
  */
 @Injectable()
 export class TutorService {
+  private readonly logger = new Logger(TutorService.name);
+
   constructor(
     private readonly repo: AttemptRepository,
     private readonly llm: LlmService,
@@ -184,25 +193,42 @@ export class TutorService {
       const turn = await this.loadTurn(userId, attemptId);
       const level = Math.min(MAX_HINT, turn.attempt.hintLevel + 1) as 1 | 2 | 3;
       const ctx = await this.contexts.build(turn, { hintLevel: level });
+      // A slip in the check: the hint must not state a value the student has to compute.
+      const active = activeMistake(turn);
+      const slip =
+        active?.phase === 'CHECK' ? checkHintFacts(turn.attempt.equation, active.stepInput) : null;
       try {
-        const out = await this.llm.generate(
-          {
-            purpose: 'hint',
-            system: systemPrompt(turn.locale),
-            prompt: hintPrompt(ctx, level),
-            schema: FeedbackSchema,
-            deadline: turn.deadline,
-          },
-          userId,
-        );
+        const prompt = hintPrompt(ctx, level);
+        const ask = (note: string | null) =>
+          this.llm.generate(
+            {
+              purpose: 'hint',
+              system: systemPrompt(turn.locale),
+              prompt: note ? `${prompt}\n\n${note}` : prompt,
+              schema: FeedbackSchema,
+              deadline: turn.deadline,
+            },
+            userId,
+          );
+        let message: string;
+        let guard: 'retried' | 'template' | null = null;
+        if (slip) {
+          const result = await guardCheckHint({ forbidden: slip.forbidden, generate: ask });
+          this.logGuard('hint', level, result);
+          message =
+            result.value?.message ?? notices.checkHintTemplate(turn.locale, level, slip.wrongSides);
+          guard = result.guard;
+        } else {
+          message = (await ask(null)).message;
+        }
         // Raised only once the hint exists: an outage must not silently "spend" a level.
         this.update(turn, { hintLevel: level });
         this.say(
           turn,
           'TUTOR',
           level === 3 ? 'EXPLANATION' : 'HINT',
-          out.message,
-          meta.hint(level, { requested: true }),
+          message,
+          meta.hint(level, { requested: true, ...(guard ? { guard } : {}) }),
         );
       } catch (e) {
         this.sayUnavailable(turn, e, notices.aiUnavailable(turn.locale));
@@ -454,24 +480,38 @@ export class TutorService {
     const active = activeMistake(turn);
     const level = (active ? Math.min(MAX_HINT, attempt.hintLevel + 1) : 1) as 1 | 2 | 3;
     const ctx = await this.contexts.build(turn, { hintLevel: level }, text);
+    const slip: CheckHintFacts = checkHintFacts(attempt.equation, text) ?? {
+      forbidden: [],
+      wrongSides: [],
+    };
 
     let tutorMessage: string | null = null;
+    let guard: 'retried' | 'template' | null = null;
     let unavailable: unknown = null;
     let misconception = notices.notDiagnosed(locale);
     try {
-      const diagnosis = await this.llm.generate(
-        {
-          purpose: 'diagnose',
-          system: systemPrompt(locale),
-          prompt: checkDiagnosePrompt(ctx, text, facts, level),
-          schema: CheckDiagnosisSchema,
-          deadline: turn.deadline,
-          temperature: 0.3,
-        },
-        attempt.userId,
-      );
-      misconception = diagnosis.misconception;
-      tutorMessage = diagnosis.message;
+      const prompt = checkDiagnosePrompt(ctx, text, facts, level);
+      const result = await guardCheckHint({
+        forbidden: slip.forbidden,
+        generate: (note) =>
+          this.llm.generate(
+            {
+              purpose: 'diagnose',
+              system: systemPrompt(locale),
+              prompt: note ? `${prompt}\n\n${note}` : prompt,
+              schema: CheckDiagnosisSchema,
+              deadline: turn.deadline,
+              temperature: 0.3,
+            },
+            attempt.userId,
+          ),
+      });
+      this.logGuard('diagnose', level, result);
+      // The diagnosis stays useful for the teacher even when its message gave a value away.
+      misconception = (result.value ?? result.discarded).misconception;
+      tutorMessage =
+        result.value?.message ?? notices.checkHintTemplate(locale, level, slip.wrongSides);
+      guard = result.guard;
     } catch (e) {
       if (!(e instanceof LlmUnavailableError)) throw e;
       unavailable = e;
@@ -489,7 +529,7 @@ export class TutorService {
         'TUTOR',
         level === 3 ? 'EXPLANATION' : 'HINT',
         tutorMessage,
-        meta.hint(level, { errorType: 'ARITHMETIC', correct: false }),
+        meta.hint(level, { errorType: 'ARITHMETIC', correct: false, ...(guard ? { guard } : {}) }),
       );
     } else {
       this.sayUnavailable(turn, unavailable, notices.stepWrongNoAi(locale), { correct: false });
@@ -674,6 +714,15 @@ export class TutorService {
     this.later(turn, (r) => r.insertMistake(mistake));
     if (errorType !== 'OTHER') this.recordSkill(turn, ERROR_TO_SKILL[errorType], OUTCOME.MISTAKE);
     return mistake;
+  }
+
+  /** The check-hint guard caught a stated value: logged with what it did about it. */
+  private logGuard(purpose: string, level: number, result: GuardResult<{ message: string }>) {
+    if (!result.guard) return;
+    this.logger.warn(
+      `Check-hint guard (${purpose}, level ${level}): the model stated ${result.leaked.join(', ')}; ` +
+        (result.guard === 'retried' ? 'clean after one retry' : 'replaced with the template'),
+    );
   }
 
   // --- Unit of work: queued writes, applied together --------------------------

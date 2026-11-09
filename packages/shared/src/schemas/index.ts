@@ -163,6 +163,11 @@ export const MESSAGE_META = {
     errorType: ErrorTypeSchema.optional(),
     correct: z.literal(false).optional(),
     requested: z.literal(true).optional(),
+    /**
+     * A hint on a slip in the check stated a value the student must compute: the model was asked
+     * again ("retried"), or a fixed hint was shown instead ("template").
+     */
+    guard: z.enum(['retried', 'template']).optional(),
   }),
   CELEBRATION: z.object({ solved: z.literal(true), checked: z.boolean().optional() }),
   FOLLOW_UP: z.object({
