@@ -1,6 +1,11 @@
 import { percentile, summarize, violations, type CaseResult, type HintChecks } from './metrics';
 
-const ok: HintChecks = { revealsAnswer: false, answerAllowed: false, language: 'en' };
+const ok: HintChecks = {
+  revealsAnswer: false,
+  answerAllowed: false,
+  language: 'en',
+  latexIntact: true,
+};
 
 function result(over: Partial<CaseResult>): CaseResult {
   return {
@@ -90,7 +95,12 @@ describe('summarize', () => {
         {
           level: 3,
           message: 'm',
-          checks: { ...ok, language: 'uk', correctedStep: { shows: true, newLines: 2 } },
+          checks: {
+            ...ok,
+            language: 'uk',
+            latexIntact: false,
+            correctedStep: { shows: true, newLines: 2 },
+          },
         },
       ],
     });
@@ -113,12 +123,16 @@ describe('summarize', () => {
     expect(s.rules.noFinalAnswer).toEqual({ ok: 5, total: 6 });
     expect(s.rules.level3CorrectedOnly).toEqual({ ok: 2, total: 3 });
     expect(s.rules.language).toEqual({ ok: 5, total: 6 });
+    expect(s.rules.latexIntact).toEqual({ ok: 5, total: 6 });
     expect(violations(bad.hints[0]!, 'uk')).toEqual([
       'level 1 is not a question',
       'reveals the final answer',
       'language en, expected uk',
     ]);
     expect(violations(bad.hints[1]!, 'uk')).toEqual(['call failed: timeout']);
-    expect(violations(bad.hints[2]!, 'uk')).toEqual(['level 3 goes beyond the step (2 new lines)']);
+    expect(violations(bad.hints[2]!, 'uk')).toEqual([
+      'level 3 goes beyond the step (2 new lines)',
+      'LaTeX broken by JSON escaping (repaired before use)',
+    ]);
   });
 });

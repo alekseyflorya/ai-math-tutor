@@ -12,11 +12,15 @@ export interface HintChecks {
   /** Level 3 only. */
   correctedStep?: { shows: boolean; newLines: number };
   language: DetectedLanguage;
+  /** The model's LaTeX survived JSON escaping (checked before the repair). */
+  latexIntact: boolean;
 }
 
 export interface HintResult {
   level: 1 | 2 | 3;
   message: string | null;
+  /** Raw LaTeX check, recorded by the run (the stored message is already repaired). */
+  latexIntact?: boolean;
   error?: string;
   checks?: HintChecks;
 }
@@ -65,6 +69,7 @@ export interface Summary {
     noFinalAnswer: Rate;
     level3CorrectedOnly: Rate;
     language: Rate;
+    latexIntact: Rate;
   };
 }
 
@@ -153,6 +158,7 @@ export function summarize(results: readonly CaseResult[], calls: readonly CallRe
         (h) => level3Passes(h.checks),
       ),
       language: count(hints, (h) => h.checks.language === h.locale),
+      latexIntact: count(hints, (h) => h.checks.latexIntact),
     },
   };
 }
@@ -170,5 +176,6 @@ export function violations(h: HintResult, locale: Locale): string[] {
       out.push(`level 3 goes beyond the step (${c.correctedStep.newLines} new lines)`);
   }
   if (c.language !== locale) out.push(`language ${c.language}, expected ${locale}`);
+  if (!c.latexIntact) out.push('LaTeX broken by JSON escaping (repaired before use)');
   return out;
 }

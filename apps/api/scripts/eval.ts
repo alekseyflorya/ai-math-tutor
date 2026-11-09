@@ -13,7 +13,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { checkStep, ERROR_TYPES, isFinalForm, parseEquation, solve } from '@tutor/shared';
+import {
+  checkStep,
+  ERROR_TYPES,
+  isFinalForm,
+  isLatexIntact,
+  parseEquation,
+  solve,
+} from '@tutor/shared';
 import { CASES, validateCases, type EvalCase } from '../evals/cases';
 import { correctedStep, detectLanguage, isQuestion, revealsAnswer } from '../evals/checks';
 import {
@@ -93,7 +100,7 @@ async function call<T>(
   caseId: string,
   purpose: CallRecord['purpose'],
   req: Omit<LlmJsonRequest<T>, 'deadline'>,
-): Promise<T> {
+): Promise<{ value: T; latexIntact: boolean }> {
   const attempts: AttemptReport[] = [];
   const record = (ok: boolean) => calls.push({ caseId, purpose, ok, attempts });
   for (let retry = 0; ; retry++) {
@@ -104,7 +111,8 @@ async function call<T>(
         { timeoutMs: TIMEOUT_MS, onAttempt: (a) => void attempts.push(a) },
       );
       record(true);
-      return out;
+      // Measured on the raw answer, before callStructured repairs it.
+      return { value: out, latexIntact: attempts.at(-1)?.latexIntact ?? true };
     } catch (e) {
       const limited = e instanceof LlmUnavailableError && e.reason === 'rate_limited';
       if (limited && /per ?day/i.test(e.message)) {
@@ -125,7 +133,11 @@ async function call<T>(
   }
 }
 
-function checkMessage(k: EvalCase, level: 1 | 2 | 3, message: string): HintChecks {
+function checkMessage(
+  k: EvalCase,
+  level: 1 | 2 | 3,
+  message: string,
+): Omit<HintChecks, 'latexIntact'> {
   const sol = solve(parseEquation(k.problem));
   if (sol.kind !== 'unique') throw new Error(`${k.id}: the problem has no unique solution`);
   return {
@@ -143,7 +155,16 @@ function score(k: EvalCase, r: CaseResult): CaseResult {
   return {
     ...r,
     hints: r.hints.map(({ checks: _old, ...h }) =>
-      h.message === null ? h : { ...h, checks: checkMessage(k, h.level, h.message) },
+      h.message === null
+        ? h
+        : {
+            ...h,
+            checks: {
+              ...checkMessage(k, h.level, h.message),
+              // Raw flag from the run; reports from before the repair stored raw messages.
+              latexIntact: h.latexIntact ?? isLatexIntact(h.message),
+            },
+          },
     ),
   };
 }
@@ -182,14 +203,21 @@ async function runCase(
   };
 
   let diagnosis: Diagnosis;
+  let diagnosisLatexIntact: boolean;
   try {
-    diagnosis = await call(provider, calls, k.id, 'diagnose', {
-      purpose: 'diagnose',
-      system,
-      prompt: diagnosePrompt(base, k.wrongStep, check.facts, 1),
-      schema: DiagnosisSchema,
-      temperature: 0.3,
-    });
+    ({ value: diagnosis, latexIntact: diagnosisLatexIntact } = await call(
+      provider,
+      calls,
+      k.id,
+      'diagnose',
+      {
+        purpose: 'diagnose',
+        system,
+        prompt: diagnosePrompt(base, k.wrongStep, check.facts, 1),
+        schema: DiagnosisSchema,
+        temperature: 0.3,
+      },
+    ));
   } catch (e) {
     if (e instanceof DailyQuotaError) throw e;
     result.hints.push({ level: 1, message: null, error: (e as Error).message });
@@ -197,8 +225,12 @@ async function runCase(
   }
   result.predicted = diagnosis.errorType;
   result.misconception = diagnosis.misconception;
-  const hint = (level: 1 | 2 | 3, message: string): HintResult => ({ level, message });
-  result.hints.push(hint(1, diagnosis.message));
+  const hint = (level: 1 | 2 | 3, message: string, latexIntact: boolean): HintResult => ({
+    level,
+    message,
+    latexIntact,
+  });
+  result.hints.push(hint(1, diagnosis.message, diagnosisLatexIntact));
 
   // "Hint" pressed twice while fixing the mistake: levels 2 and 3, as TutorService.hint builds them.
   const dialogue: TutorContext['recentDialogue'] = [
@@ -219,13 +251,13 @@ async function runCase(
       recentDialogue: [...dialogue],
     };
     try {
-      const out = await call(provider, calls, k.id, 'hint', {
+      const { value: out, latexIntact } = await call(provider, calls, k.id, 'hint', {
         purpose: 'hint',
         system,
         prompt: hintPrompt(ctx, level),
         schema: FeedbackSchema,
       });
-      result.hints.push(hint(level, out.message));
+      result.hints.push(hint(level, out.message, latexIntact));
       dialogue.push({ role: 'Tutor', content: out.message });
     } catch (e) {
       if (e instanceof DailyQuotaError) throw e;
