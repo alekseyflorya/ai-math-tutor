@@ -40,6 +40,7 @@ import {
   namesOperation,
   revealsAnswer,
   statedNumbers,
+  studentNumbersUsed,
 } from '../evals/checks';
 import {
   checkViolations,
@@ -191,6 +192,15 @@ function checkMessage(
 
     language: detectLanguage(message),
     ...(level === 1 ? { question: isQuestion(message) } : {}),
+    ...(level === 2
+      ? {
+          level2StudentNumbers: studentNumbersUsed(message, [
+            k.problem,
+            k.previousLine,
+            k.wrongStep,
+          ]),
+        }
+      : {}),
     ...(level === 3
       ? {
           correctedStep: correctedStep(message, k),
@@ -329,6 +339,9 @@ function checkMessageRules(
     computedLines: computedCheckLines(message, k),
     language: detectLanguage(message),
     ...(level === 1 ? { question: isQuestion(message) } : {}),
+    ...(level === 2
+      ? { level2StudentNumbers: studentNumbersUsed(message, [k.problem, k.substituted, k.slip]) }
+      : {}),
     ...(level === 3 ? { namesOperation: namesOperation(message) } : {}),
   };
 }

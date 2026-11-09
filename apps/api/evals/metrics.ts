@@ -16,6 +16,8 @@ export interface HintChecks {
   namesOperation?: boolean;
   /** Level 3 only. */
   correctedStep?: { shows: boolean; newLines: number };
+  /** Level 2 only: the student's numbers used outside a quote of their work. */
+  level2StudentNumbers?: string[];
   language: DetectedLanguage;
   /** The model's LaTeX survived JSON escaping (checked before the repair). */
   latexIntact: boolean;
@@ -73,6 +75,8 @@ export interface Summary {
     level1Question: Rate;
     noFinalAnswer: Rate;
     level3CorrectedOnly: Rate;
+    /** Level 2 illustrates on other numbers and states no value from the student's line. */
+    level2OtherNumbers: Rate;
     language: Rate;
     latexIntact: Rate;
   };
@@ -168,6 +172,10 @@ export function summarize(results: readonly CaseResult[], calls: readonly CallRe
         hints.filter((h) => h.level === 3),
         (h) => level3Passes(h.checks),
       ),
+      level2OtherNumbers: count(
+        hints.filter((h) => h.level === 2 && h.checks.level2StudentNumbers),
+        (h) => h.checks.level2StudentNumbers!.length === 0,
+      ),
       language: count(hints, (h) => h.checks.language === h.locale),
       latexIntact: count(hints, (h) => h.checks.latexIntact),
     },
@@ -187,6 +195,9 @@ export function violations(h: HintResult, locale: Locale): string[] {
     else if (c.correctedStep.newLines > 1)
       out.push(`level 3 goes beyond the step (${c.correctedStep.newLines} new lines)`);
   }
+  if (c.level2StudentNumbers?.length) {
+    out.push(`level 2 uses the student's numbers: ${c.level2StudentNumbers.join(', ')}`);
+  }
   if (c.language !== locale) out.push(`language ${c.language}, expected ${locale}`);
   if (!c.latexIntact) out.push('LaTeX broken by JSON escaping (repaired before use)');
   return out;
@@ -204,6 +215,8 @@ export interface CheckHintChecks {
   computedLines: string[];
   /** Level 3: names the operations to carry out. */
   namesOperation?: boolean;
+  /** Level 2 only: the student's numbers used outside a quote of their work. */
+  level2StudentNumbers?: string[];
   language: DetectedLanguage;
   latexIntact: boolean;
 }
@@ -234,6 +247,8 @@ export interface CheckSummary {
   noComputedLine: Rate;
   /** Level 3 lists the operations, with no results. */
   level3OperationsOnly: Rate;
+  /** Level 2 illustrates on other numbers and states no value from the student's line. */
+  level2OtherNumbers: Rate;
   language: Rate;
   latexIntact: Rate;
   invalidJson: Rate;
@@ -268,6 +283,10 @@ export function summarizeChecks(
       hints.filter((h) => h.level === 3),
       (h) => checkLevel3Passes(h.checks),
     ),
+    level2OtherNumbers: count(
+      hints.filter((h) => h.level === 2 && h.checks.level2StudentNumbers),
+      (h) => h.checks.level2StudentNumbers!.length === 0,
+    ),
     language: count(hints, (h) => h.checks.language === h.locale),
     latexIntact: count(hints, (h) => h.checks.latexIntact),
     invalidJson: count(answered, (a) => a.reason === 'invalid_output'),
@@ -285,6 +304,9 @@ export function checkViolations(h: CheckHintResult, locale: Locale): string[] {
   if (c.statedNumbers.length) out.push(`states ${c.statedNumbers.join(', ')}`);
   if (c.computedLines.length) out.push(`shows a computed line: ${c.computedLines.join('; ')}`);
   if (h.level === 3 && !c.namesOperation) out.push('level 3 does not name the operations');
+  if (c.level2StudentNumbers?.length) {
+    out.push(`level 2 uses the student's numbers: ${c.level2StudentNumbers.join(', ')}`);
+  }
   if (c.language !== locale) out.push(`language ${c.language}, expected ${locale}`);
   if (!c.latexIntact) out.push('LaTeX broken by JSON escaping (repaired before use)');
   return out;
