@@ -1,5 +1,6 @@
 import { Global, Inject, Injectable, Logger, Module, OnModuleDestroy } from '@nestjs/common';
-import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { drizzle, type NodePgDatabase, type NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
+import type { PgDatabase } from 'drizzle-orm/pg-core';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { join } from 'node:path';
 import { Pool } from 'pg';
@@ -7,6 +8,8 @@ import { AppConfig } from '../config/config.service';
 import * as schema from './schema';
 
 export type Db = NodePgDatabase<typeof schema>;
+/** The database or a transaction on it: what repositories run their queries on. */
+export type Executor = PgDatabase<NodePgQueryResultHKT, typeof schema>;
 export const DB = Symbol('DB');
 export const MIGRATIONS_DIR = join(__dirname, '..', '..', 'drizzle');
 

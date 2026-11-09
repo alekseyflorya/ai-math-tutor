@@ -16,6 +16,7 @@ import { SkillsService } from './progress/skills.service';
 import { FollowUpService } from './tutor/follow-up.service';
 import { TutorController } from './tutor/tutor.controller';
 import { AttemptLock } from './tutor/attempt-lock';
+import { AttemptRepository } from './tutor/attempt.repository';
 import { TutorContextBuilder } from './tutor/tutor-context.builder';
 import { TutorService } from './tutor/tutor.service';
 
@@ -35,6 +36,7 @@ import { TutorService } from './tutor/tutor.service';
     ProgressService,
     FollowUpService,
     AttemptLock,
+    AttemptRepository,
     TutorContextBuilder,
     TutorService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
