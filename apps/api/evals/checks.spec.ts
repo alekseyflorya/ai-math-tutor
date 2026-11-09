@@ -1,5 +1,7 @@
 import { Fraction } from '@tutor/shared';
 import {
+  computedCheckLines,
+  statedNumbers,
   correctedStep,
   detectLanguage,
   extractEquations,
@@ -152,5 +154,30 @@ describe('namesOperation', () => {
     expect(namesOperation('Поділи обидві частини на $-3$ і запиши результат.')).toBe(true);
     expect(namesOperation('What does $x$ equal now?')).toBe(false);
     expect(namesOperation('Look at $4x \\div 4$ again.')).toBe(false); // math only
+  });
+});
+
+describe('hints for a slip in the check', () => {
+  const k = {
+    problem: '3(x + 4) = 2x + 19',
+    substituted: '3(7 + 4) = 2·7 + 19',
+    slip: '3·11 = 12 + 19',
+  };
+
+  it('finds a value the student should compute themselves', () => {
+    expect(statedNumbers('First multiply $2 \\cdot 7$, then add $19$.', ['14', '33'])).toEqual([]);
+    expect(statedNumbers('Recompute $2 \\cdot 7 = 14$.', ['14', '33'])).toEqual(['14']);
+    expect(statedNumbers('Both sides should give 33.', ['14', '33'])).toEqual(['33']);
+  });
+
+  it('finds a computed check line, but not the lines the student wrote', () => {
+    expect(computedCheckLines('So $3 \\cdot 11 = 14 + 19$.', k)).toEqual(['3 * 11 = 14 + 19']);
+    expect(computedCheckLines('Now $33 = 33$!', k)).toEqual(['33 = 33']);
+    expect(
+      computedCheckLines('You wrote $3 \\cdot 11 = 12 + 19$. Look at $2 \\cdot 7$.', k),
+    ).toEqual([]);
+    expect(computedCheckLines('We substituted: $3(7 + 4) = 2 \\cdot 7 + 19$.', k)).toEqual([]);
+    // A wrong numeric line is not "computed for them" (and an example with other numbers is fine).
+    expect(computedCheckLines('For example, $2 \\cdot 3 + 5 = 11$.', k)).toEqual([]);
   });
 });

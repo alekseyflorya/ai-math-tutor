@@ -1,5 +1,13 @@
 import { ERROR_TYPES } from '@tutor/shared';
-import { pct, violations, type CaseResult, type Summary } from './metrics';
+import {
+  checkViolations,
+  pct,
+  violations,
+  type CaseResult,
+  type CheckCaseResult,
+  type CheckSummary,
+  type Summary,
+} from './metrics';
 
 export interface RunInfo {
   date: string;
@@ -61,7 +69,70 @@ export const HEADLINE_HEADER = [
   'LaTeX intact',
 ];
 
-export function renderReport(info: RunInfo, s: Summary, results: readonly CaseResult[]): string {
+export const CHECK_HEADER = [
+  'Model',
+  'Cases',
+  'L1 is a question',
+  'No value of a side',
+  'No computed line',
+  'L3 = operations, no results',
+  'Language matches',
+  'LaTeX intact',
+  'Invalid JSON',
+  'Latency p50 / p95',
+];
+
+export function checkHeadlineRow(info: RunInfo, s: CheckSummary): string[] {
+  return [
+    `\`${info.model}\``,
+    String(s.cases),
+    pct(s.level1Question),
+    pct(s.noValue),
+    pct(s.noComputedLine),
+    pct(s.level3OperationsOnly),
+    pct(s.language),
+    pct(s.latexIntact),
+    pct(s.invalidJson),
+    `${s.latency.p50} / ${s.latency.p95} ms`,
+  ];
+}
+
+function renderChecks(info: RunInfo, s: CheckSummary, results: readonly CheckCaseResult[]): string {
+  const failures = results.flatMap((r) =>
+    r.hints.flatMap((h) =>
+      checkViolations(h, r.locale).map((v) => [
+        r.id,
+        `L${h.level}`,
+        v,
+        h.message ? oneLine(h.message).slice(0, 220) : '—',
+      ]),
+    ),
+  );
+  return `
+## Check by substitution
+
+A slip while checking the answer (\`evals/check-cases.ts\`: left or right side, in a multiplication or
+an addition, EN and UK). Level 1 is \`checkDiagnosePrompt\`, levels 2 and 3 are \`hintPrompt\` with the
+check's own ladder, as the API builds them. No level may state the value of a side or the result of
+the operation that slipped, or show a computed check line (the engine judges each line it finds);
+level 3 lists the operations without their results.
+
+${table(CHECK_HEADER, [checkHeadlineRow(info, s)])}
+
+- Calls that failed even after the retry: ${frac(s.failedCalls)}
+
+### Rule violations
+
+${failures.length ? table(['Case', 'Level', 'Rule', 'Message'], failures) : 'None.'}
+`;
+}
+
+export function renderReport(
+  info: RunInfo,
+  s: Summary,
+  results: readonly CaseResult[],
+  check?: { summary: CheckSummary; results: readonly CheckCaseResult[] },
+): string {
   const cols = [...ERROR_TYPES, 'FAILED'] as const;
   const confusion = table(
     ['expected ↓ / predicted →', ...cols.map((c) => SHORT[c]!)],
@@ -127,5 +198,5 @@ ${misses.length ? table(['Case', 'Expected', 'Predicted', 'Model’s misconcepti
 ## Hint rule violations
 
 ${failures.length ? table(['Case', 'Level', 'Rule', 'Message'], failures) : 'None.'}
-`;
+${check && check.results.length ? renderChecks(info, check.summary, check.results) : ''}`;
 }

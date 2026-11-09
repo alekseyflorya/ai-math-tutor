@@ -1,4 +1,15 @@
-import { percentile, summarize, violations, type CaseResult, type HintChecks } from './metrics';
+import {
+  checkViolations,
+  percentile,
+  summarize,
+  summarizeChecks,
+  violations,
+  type CaseResult,
+  type CheckCaseResult,
+  type CheckHintChecks,
+  type CheckHintResult,
+  type HintChecks,
+} from './metrics';
 
 const ok: HintChecks = {
   revealsAnswer: false,
@@ -136,5 +147,56 @@ describe('summarize', () => {
       'level 3 goes beyond the step (2 new lines)',
       'LaTeX broken by JSON escaping (repaired before use)',
     ]);
+  });
+});
+
+describe('check-by-substitution metrics', () => {
+  const checks = (over: Partial<CheckHintChecks> = {}): CheckHintChecks => ({
+    statedNumbers: [],
+    computedLines: [],
+    language: 'en',
+    latexIntact: true,
+    ...over,
+  });
+  const result = (hints: CheckHintResult[]): CheckCaseResult => ({
+    id: 'check-1',
+    locale: 'en',
+    side: 'right',
+    operation: 'multiplication',
+    hints,
+  });
+
+  it('counts each rule per hint, and level 3 only when it names operations without results', () => {
+    const s = summarizeChecks(
+      [
+        result([
+          { level: 1, message: 'q?', checks: checks({ question: true }) },
+          { level: 2, message: 'm', checks: checks({ statedNumbers: ['14'] }) },
+          { level: 3, message: 'm', checks: checks({ namesOperation: true }) },
+        ]),
+        result([
+          { level: 1, message: 'm', checks: checks({ question: false }) },
+          {
+            level: 3,
+            message: 'm',
+            checks: checks({ namesOperation: true, computedLines: ['33 = 33'] }),
+          },
+        ]),
+      ],
+      [],
+    );
+    expect(s.level1Question).toEqual({ ok: 1, total: 2 });
+    expect(s.noValue).toEqual({ ok: 4, total: 5 });
+    expect(s.noComputedLine).toEqual({ ok: 4, total: 5 });
+    expect(s.level3OperationsOnly).toEqual({ ok: 1, total: 2 });
+  });
+
+  it('names what a hint broke', () => {
+    const h: CheckHintResult = {
+      level: 3,
+      message: 'm',
+      checks: checks({ statedNumbers: ['33'], namesOperation: false }),
+    };
+    expect(checkViolations(h, 'en')).toEqual(['states 33', 'level 3 does not name the operations']);
   });
 });
