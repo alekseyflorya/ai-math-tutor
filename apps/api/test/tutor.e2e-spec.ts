@@ -14,6 +14,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import type { ApiErrorBody, AttemptView, ProblemView, ProgressView, UserView } from '@tutor/shared';
 import { LLM_PROVIDER, type LlmProvider } from '../src/llm/llm.types';
+import { AttemptRepository } from '../src/tutor/attempt.repository';
 
 const DB_URL = process.env.DATABASE_URL_TEST ?? 'postgres://tutor:tutor@localhost:5433/tutor_test';
 
@@ -225,6 +226,28 @@ describe('AI tutor — test scenario 3(x + 4) = 2x + 19', () => {
     a = await say(a.id, 'x = 5');
     expect(a.status).toBe('SOLVED');
     expect(lastTutor(a)).toMatchObject({ kind: 'NOTICE', meta: { solved: true } });
+  });
+
+  it('writes a turn all or nothing: a failing write leaves the attempt as it was', async () => {
+    const before = await startCustom('4(x + 1) = 2x + 10');
+    // The mistake is written in the middle of the turn: after the student message and the
+    // step, before the attempt update and the tutor's hint.
+    const failing = jest
+      .spyOn(AttemptRepository.prototype, 'insertMistake')
+      .mockRejectedValue(new Error('disk full'));
+
+    await agent
+      .post(`/api/attempts/${before.id}/messages`)
+      .send({ text: '4x + 1 = 2x + 10' })
+      .expect(500);
+    const after = (await agent.get(`/api/attempts/${before.id}`).expect(200)).body as AttemptView;
+    expect(after).toEqual(before);
+
+    // The turn lock was released, and the next turn works normally.
+    failing.mockRestore();
+    const next = await say(before.id, '4x + 1 = 2x + 10');
+    expect(next.mode).toBe('REMEDIATION');
+    expect(next.steps).toHaveLength(1);
   });
 
   it('rejects overlapping turns and messages to a finished problem', async () => {

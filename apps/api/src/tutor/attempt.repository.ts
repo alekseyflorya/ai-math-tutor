@@ -42,6 +42,11 @@ export class AttemptRepository {
     return new AttemptRepository(tx);
   }
 
+  /** Runs `fn` in a transaction, with this repository bound to it. */
+  transaction<T>(fn: (repo: AttemptRepository, tx: Executor) => Promise<T>): Promise<T> {
+    return this.db.transaction((tx) => fn(this.in(tx), tx));
+  }
+
   // --- Reads -------------------------------------------------------------------
 
   async findOwned(userId: string, attemptId: string): Promise<Attempt | null> {

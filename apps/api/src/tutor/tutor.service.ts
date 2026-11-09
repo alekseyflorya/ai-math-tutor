@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -18,6 +19,7 @@ import {
   type ListAttemptsQuery,
   type MessageKind,
   type MessageRole,
+  type Skill,
   type StartAttemptInput,
   type StepCheckResult,
 } from '@tutor/shared';
@@ -35,9 +37,9 @@ import {
 import { ChatReplySchema, DiagnosisSchema, FeedbackSchema } from '../llm/tutor-schemas';
 import { ProblemsService } from '../problems/problems.service';
 import { OUTCOME, SkillsService } from '../progress/skills.service';
-import { AttemptRepository, type AttemptPatch } from './attempt.repository';
 import { AppConfig } from '../config/config.service';
 import { AttemptLock } from './attempt-lock';
+import { AttemptRepository, type AttemptPatch } from './attempt.repository';
 import { FollowUpService } from './follow-up.service';
 import { notices } from './notices';
 import { TutorContextBuilder } from './tutor-context.builder';
@@ -57,6 +59,11 @@ const MAX_FOLLOW_UP_DEPTH = 2;
  *
  * Correctness is decided by the math engine (exact solution-set comparison).
  * The LLM explains WHY a step is wrong and writes every teaching message.
+ *
+ * A turn reads, checks with the engine, calls the model, and only then writes: every write of
+ * the turn is queued (the in-memory Turn is updated at once, so later prompts see it) and applied
+ * in ONE transaction at the end. No transaction is open while the model thinks, and a failure
+ * leaves the attempt exactly as it was.
  */
 @Injectable()
 export class TutorService {
@@ -134,15 +141,18 @@ export class TutorService {
       throw e;
     }
 
-    const attempt = await this.repo.insert({
-      userId,
-      problemId,
-      title,
-      equation,
-      variable,
-      currentLine: equation,
+    const attempt = await this.repo.transaction(async (r) => {
+      const row = await r.insert({
+        userId,
+        problemId,
+        title,
+        equation,
+        variable,
+        currentLine: equation,
+      });
+      await r.say(row.id, 'TUTOR', 'GREETING', notices.greeting(locale, latex, false));
+      return row;
     });
-    await this.say(attempt.id, 'TUTOR', 'GREETING', notices.greeting(locale, latex, false));
     return this.getView(userId, attempt.id);
   }
 
@@ -151,6 +161,7 @@ export class TutorService {
       const turn = await this.loadTurn(userId, attemptId);
       if (classifyInput(text) === 'step') await this.handleStep(turn, text);
       else await this.handleChat(turn, text);
+      await this.commit(turn);
       return this.getView(userId, attemptId);
     });
   }
@@ -172,14 +183,15 @@ export class TutorService {
           userId,
         );
         // Raised only once the hint exists: an outage must not silently "spend" a level.
-        await this.update(turn, { hintLevel: level });
-        await this.say(attemptId, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', out.message, {
+        this.update(turn, { hintLevel: level });
+        this.say(turn, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', out.message, {
           hintLevel: level,
           requested: true,
         });
       } catch (e) {
-        await this.sayUnavailable(attemptId, e, notices.aiUnavailable(turn.locale));
+        this.sayUnavailable(turn, e, notices.aiUnavailable(turn.locale));
       }
+      await this.commit(turn);
       return this.getView(userId, attemptId);
     });
   }
@@ -188,18 +200,14 @@ export class TutorService {
 
   private async handleStep(turn: Turn, text: string) {
     const { attempt, locale } = turn;
-    await this.say(attempt.id, 'STUDENT', 'STEP', text);
+    this.say(turn, 'STUDENT', 'STEP', text);
 
     // Re-typing the last correct line is "equivalent" but proves nothing; after a mistake it
     // would otherwise count as the correction.
     if (sameText(text, attempt.currentLine)) {
-      await this.say(
-        attempt.id,
-        'TUTOR',
-        'NOTICE',
-        notices.sameLine(locale, attempt.mode === 'REMEDIATION'),
-        { repeatedLine: true },
-      );
+      this.say(turn, 'TUTOR', 'NOTICE', notices.sameLine(locale, attempt.mode === 'REMEDIATION'), {
+        repeatedLine: true,
+      });
       return;
     }
 
@@ -208,7 +216,7 @@ export class TutorService {
       check = checkStep(attempt.currentLine, text, attempt.variable);
     } catch (e) {
       if (e instanceof MathInputError) {
-        await this.say(attempt.id, 'TUTOR', 'NOTICE', notices.parseError(locale, e.code), {
+        this.say(turn, 'TUTOR', 'NOTICE', notices.parseError(locale, e.code), {
           inputError: e.code,
         });
         return;
@@ -216,14 +224,17 @@ export class TutorService {
       throw e;
     }
 
-    const step = await this.repo.insertStep({
+    const step = {
+      id: randomUUID(),
       attemptId: attempt.id,
       index: turn.steps.length,
       input: text,
       latex: check.current.latex,
       isCorrect: check.equivalent,
-    });
+      createdAt: new Date(),
+    };
     turn.steps.push(step);
+    this.later(turn, (r) => r.insertStep(step));
 
     if (check.equivalent) await this.onCorrectStep(turn, text, check);
     else await this.onWrongStep(turn, text, check);
@@ -234,20 +245,16 @@ export class TutorService {
     const fixed = attempt.mode === 'REMEDIATION' ? activeMistake(turn) : null;
 
     if (fixed) {
-      await this.repo.markCorrected(fixed.id, attempt.hintLevel);
+      const hintsUsed = attempt.hintLevel;
       fixed.corrected = true;
-      await this.skills.record(attempt.userId, ERROR_TO_SKILL[fixed.errorType], OUTCOME.CORRECTED);
+      this.later(turn, (r) => r.markCorrected(fixed.id, hintsUsed));
+      this.recordSkill(turn, ERROR_TO_SKILL[fixed.errorType], OUTCOME.CORRECTED);
     }
-    await this.update(turn, {
-      currentLine: text,
-      mode: 'SOLVING',
-      hintLevel: 0,
-      activeMistakeId: null,
-    });
+    this.update(turn, { currentLine: text, mode: 'SOLVING', hintLevel: 0, activeMistakeId: null });
 
-    if (check.solved) return this.onSolved(turn, check);
+    if (check.solved) return this.onSolved(turn, check, text);
 
-    const ctx = await this.contexts.build(turn);
+    const ctx = await this.contexts.build(turn, {}, text);
     try {
       const out = await this.llm.generate(
         {
@@ -259,12 +266,12 @@ export class TutorService {
         },
         attempt.userId,
       );
-      await this.say(attempt.id, 'TUTOR', 'FEEDBACK', out.message, {
+      this.say(turn, 'TUTOR', 'FEEDBACK', out.message, {
         correct: true,
         fixedErrorType: fixed?.errorType ?? null,
       });
     } catch (e) {
-      await this.sayUnavailable(attempt.id, e, notices.stepCorrectNoAi(locale), { correct: true });
+      this.sayUnavailable(turn, e, notices.stepCorrectNoAi(locale), { correct: true });
     }
   }
 
@@ -274,7 +281,7 @@ export class TutorService {
     // Still fixing a mistake and tried again unsuccessfully → climb the hint ladder.
     // Otherwise it is a new mistake → diagnose it and start at level 1.
     const level = (active ? Math.min(MAX_HINT, attempt.hintLevel + 1) : 1) as 1 | 2 | 3;
-    const ctx = await this.contexts.build(turn, { hintLevel: level });
+    const ctx = await this.contexts.build(turn, { hintLevel: level }, text);
 
     let errorType: ErrorType = active?.errorType ?? 'OTHER';
     let tutorMessage: string | null = null;
@@ -300,41 +307,34 @@ export class TutorService {
       unavailable = e; // the math engine still knows the step is wrong; record it anyway
     }
 
-    const mistakeId =
-      active?.id ?? (await this.recordMistake(turn, text, errorType, misconception)).id;
-    await this.update(turn, { mode: 'REMEDIATION', hintLevel: level, activeMistakeId: mistakeId });
+    const mistakeId = active?.id ?? this.recordMistake(turn, text, errorType, misconception).id;
+    this.update(turn, { mode: 'REMEDIATION', hintLevel: level, activeMistakeId: mistakeId });
 
     if (tutorMessage) {
-      await this.say(attempt.id, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', tutorMessage, {
+      this.say(turn, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', tutorMessage, {
         hintLevel: level,
         errorType,
         correct: false,
       });
     } else {
-      await this.sayUnavailable(attempt.id, unavailable, notices.stepWrongNoAi(locale), {
-        correct: false,
-      });
+      this.sayUnavailable(turn, unavailable, notices.stepWrongNoAi(locale), { correct: false });
     }
   }
 
-  private async onSolved(turn: Turn, check: StepCheckResult) {
+  private async onSolved(turn: Turn, check: StepCheckResult, text: string) {
     const { attempt, locale } = turn;
-    await this.update(turn, { status: 'SOLVED', solvedAt: new Date() });
+    this.update(turn, { status: 'SOLVED', solvedAt: new Date() });
 
     const outcome = turn.mistakes.length ? OUTCOME.SOLVED_WITH_MISTAKES : OUTCOME.CLEAN;
-    for (const skill of turn.problemSkills)
-      await this.skills.record(attempt.userId, skill, outcome);
+    for (const skill of turn.problemSkills) this.recordSkill(turn, skill, outcome);
 
     // Follow-up passed: the original error was not repeated → understanding verified.
     if (attempt.targetErrorType && attempt.sourceMistakeId) {
       const repeated = turn.mistakes.some((m) => m.errorType === attempt.targetErrorType);
       if (!repeated) {
-        await this.repo.markVerified(attempt.sourceMistakeId, attempt.userId);
-        await this.skills.record(
-          attempt.userId,
-          ERROR_TO_SKILL[attempt.targetErrorType],
-          OUTCOME.CLEAN,
-        );
+        const { sourceMistakeId, userId, targetErrorType } = attempt;
+        this.later(turn, (r) => r.markVerified(sourceMistakeId, userId));
+        this.recordSkill(turn, ERROR_TO_SKILL[targetErrorType], OUTCOME.CLEAN);
       }
     }
 
@@ -349,7 +349,7 @@ export class TutorService {
     // Build the follow-up first so the celebration can point at the real problem.
     const followUp = target ? await this.createFollowUp(turn, target) : null;
 
-    const ctx = await this.contexts.build(turn);
+    const ctx = await this.contexts.build(turn, {}, text);
     try {
       const out = await this.llm.generate(
         {
@@ -366,16 +366,14 @@ export class TutorService {
         },
         attempt.userId,
       );
-      await this.say(attempt.id, 'TUTOR', 'CELEBRATION', out.message, { solved: true });
+      this.say(turn, 'TUTOR', 'CELEBRATION', out.message, { solved: true });
     } catch (e) {
-      await this.sayUnavailable(attempt.id, e, notices.solvedNoAi(locale, solution), {
-        solved: true,
-      });
+      this.sayUnavailable(turn, e, notices.solvedNoAi(locale, solution), { solved: true });
     }
 
     if (followUp && target) {
-      await this.say(
-        attempt.id,
+      this.say(
+        turn,
         'TUTOR',
         'FOLLOW_UP',
         notices.followUpReady(locale, followUp.latex, followUp.title),
@@ -391,8 +389,8 @@ export class TutorService {
 
   private async handleChat(turn: Turn, text: string) {
     const { attempt, locale } = turn;
-    await this.say(attempt.id, 'STUDENT', 'CHAT', text);
-    const ctx = await this.contexts.build(turn);
+    this.say(turn, 'STUDENT', 'CHAT', text);
+    const ctx = await this.contexts.build(turn, {}, text);
     try {
       const reply = await this.llm.generate(
         {
@@ -406,13 +404,13 @@ export class TutorService {
       );
       if (attempt.mode === 'REMEDIATION' && activeMistake(turn) && reply.escalate) {
         const level = Math.min(MAX_HINT, attempt.hintLevel + 1);
-        await this.update(turn, { hintLevel: level });
-        await this.say(attempt.id, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', reply.message, {
+        this.update(turn, { hintLevel: level });
+        this.say(turn, 'TUTOR', level === 3 ? 'EXPLANATION' : 'HINT', reply.message, {
           hintLevel: level,
         });
       } else {
-        await this.say(
-          attempt.id,
+        this.say(
+          turn,
           'TUTOR',
           'CHAT',
           reply.message,
@@ -420,7 +418,7 @@ export class TutorService {
         );
       }
     } catch (e) {
-      await this.sayUnavailable(attempt.id, e, notices.aiUnavailable(locale));
+      this.sayUnavailable(turn, e, notices.aiUnavailable(locale));
     }
   }
 
@@ -439,7 +437,8 @@ export class TutorService {
       deadline: Date.now() + (turn.deadline - Date.now()) / 2,
     });
     const parsed = parseEquation(problem.equation);
-    const child = await this.repo.insert({
+    const child = {
+      id: randomUUID(),
       userId: parent.userId,
       title: notices.followUpTitle(locale, mistake.errorType),
       equation: problem.equation,
@@ -447,8 +446,11 @@ export class TutorService {
       parentAttemptId: parent.id,
       targetErrorType: mistake.errorType,
       sourceMistakeId: mistake.id,
+    };
+    this.later(turn, async (r) => {
+      await r.insert(child);
+      await r.say(child.id, 'TUTOR', 'GREETING', notices.greeting(locale, parsed.latex, true));
     });
-    await this.say(child.id, 'TUTOR', 'GREETING', notices.greeting(locale, parsed.latex, true));
     return {
       id: child.id,
       equation: problem.equation,
@@ -458,48 +460,74 @@ export class TutorService {
     };
   }
 
-  private async recordMistake(
+  private recordMistake(
     turn: Turn,
     stepInput: string,
     errorType: ErrorType,
     description: string,
-  ) {
-    const mistake = await this.repo.insertMistake({
+  ): Mistake {
+    const mistake: Mistake = {
+      id: randomUUID(),
       userId: turn.attempt.userId,
       attemptId: turn.attempt.id,
       errorType,
       description,
       previousLine: turn.attempt.currentLine,
       stepInput,
-    });
+      hintsUsed: 0,
+      corrected: false,
+      correctedAt: null,
+      verified: false,
+      verifiedAt: null,
+      createdAt: new Date(),
+    };
     turn.mistakes.push(mistake);
-    if (errorType !== 'OTHER')
-      await this.skills.record(turn.attempt.userId, ERROR_TO_SKILL[errorType], OUTCOME.MISTAKE);
+    this.later(turn, (r) => r.insertMistake(mistake));
+    if (errorType !== 'OTHER') this.recordSkill(turn, ERROR_TO_SKILL[errorType], OUTCOME.MISTAKE);
     return mistake;
   }
 
-  private async update(turn: Turn, patch: AttemptPatch) {
-    turn.attempt = await this.repo.update(turn.attempt.id, patch);
+  // --- Unit of work: queued writes, applied together --------------------------
+
+  /** Queues a write of this turn; it runs in the turn's transaction. */
+  private later(turn: Turn, write: Turn['writes'][number]) {
+    turn.writes.push(write);
   }
 
-  private async say(
-    attemptId: string,
+  /** Applies every queued write of the turn in one transaction. */
+  private async commit(turn: Turn) {
+    if (turn.writes.length === 0) return;
+    const writes = turn.writes.splice(0);
+    await this.repo.transaction(async (r, tx) => {
+      for (const write of writes) await write(r, tx);
+    });
+  }
+
+  private update(turn: Turn, patch: AttemptPatch) {
+    turn.attempt = { ...turn.attempt, ...patch, updatedAt: new Date() };
+    const id = turn.attempt.id;
+    this.later(turn, (r) => r.update(id, patch));
+  }
+
+  private recordSkill(turn: Turn, skill: Skill, outcome: number) {
+    const userId = turn.attempt.userId;
+    this.later(turn, (_r, tx) => this.skills.record(userId, skill, outcome, tx));
+  }
+
+  private say(
+    turn: Turn,
     role: MessageRole,
     kind: MessageKind,
     content: string,
     meta: Record<string, unknown> | null = null,
   ) {
-    await this.repo.say(attemptId, role, kind, content, meta);
+    const attemptId = turn.attempt.id;
+    this.later(turn, (r) => r.say(attemptId, role, kind, content, meta));
   }
 
-  private async sayUnavailable(
-    attemptId: string,
-    e: unknown,
-    text: string,
-    meta: Record<string, unknown> = {},
-  ) {
+  private sayUnavailable(turn: Turn, e: unknown, text: string, meta: Record<string, unknown> = {}) {
     if (!(e instanceof LlmUnavailableError)) throw e;
-    await this.say(attemptId, 'TUTOR', 'NOTICE', text, { ...meta, aiUnavailable: e.reason });
+    this.say(turn, 'TUTOR', 'NOTICE', text, { ...meta, aiUnavailable: e.reason });
   }
 
   private async findOwned(userId: string, attemptId: string): Promise<Attempt> {
@@ -521,6 +549,7 @@ export class TutorService {
       attempt,
       ...(await this.repo.loadTurnData(attempt)),
       deadline: Date.now() + this.config.get('LLM_TURN_BUDGET_MS'),
+      writes: [],
     };
   }
 }

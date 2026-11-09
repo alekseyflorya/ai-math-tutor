@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { sql } from 'drizzle-orm';
 import type { Skill } from '@tutor/shared';
-import { DB, type Db } from '../db/db.module';
+import { DB, type Db, type Executor } from '../db/db.module';
 import { skillStats } from '../db/schema';
 
 /** How fast mastery reacts to new evidence. 0.25 ≈ the last ~4 outcomes dominate. */
@@ -20,10 +20,18 @@ export const OUTCOME = { CLEAN: 1, SOLVED_WITH_MISTAKES: 0.7, CORRECTED: 0.6, MI
 export class SkillsService {
   constructor(@Inject(DB) private readonly db: Db) {}
 
-  /** Atomic upsert of the moving average: mastery += α · (outcome − mastery). */
-  async record(userId: string, skill: Skill, outcome: number): Promise<void> {
+  /**
+   * Atomic upsert of the moving average: mastery += α · (outcome − mastery).
+   * `db` lets the tutor record it inside the transaction of a turn.
+   */
+  async record(
+    userId: string,
+    skill: Skill,
+    outcome: number,
+    db: Executor = this.db,
+  ): Promise<void> {
     const initial = 0.5 + ALPHA * (outcome - 0.5);
-    await this.db
+    await db
       .insert(skillStats)
       .values({ userId, skill, mastery: initial, attempts: 1 })
       .onConflictDoUpdate({
