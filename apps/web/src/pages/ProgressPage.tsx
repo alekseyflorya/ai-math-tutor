@@ -13,7 +13,7 @@ export function ProgressPage() {
 
   if (isLoading || !data) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {Array.from({ length: 4 }, (_, i) => (
           <div key={i} className="h-24 animate-pulse rounded-xl bg-paper-2" />
         ))}
@@ -21,7 +21,8 @@ export function ProgressPage() {
     );
   }
 
-  const { totals } = data;
+  const { totals, checks } = data;
+  const finished = checks.done + checks.skipped;
   return (
     <div className="space-y-6">
       <h1 className="font-serif text-2xl font-bold text-text">{t.progress}</h1>
@@ -39,6 +40,11 @@ export function ProgressPage() {
         />
         <Stat label={t.statCorrected} value={`${totals.correctedMistakes}/${totals.mistakes}`} />
         <Stat label={t.statVerified} value={String(totals.verifiedMistakes)} accent />
+        <Stat
+          label={t.statChecked}
+          value={finished ? `${Math.round((checks.done / finished) * 100)}%` : '—'}
+          sub={finished ? `${checks.done}/${finished}` : undefined}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
